@@ -1,0 +1,31 @@
+# file: host_vars/{{ hostvars[item]['hostname'] }}
+#
+# bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
+# bootstrap default IPv4 address: {{ hostvars[item].ansible_default_ipv4.address }}
+# bootstrap default MAC: {{ hostvars[item].ansible_default_ipv4.macaddress }}
+# bootstrap OS: {{ hostvars[item]['ansible_distribution'] }} {{ hostvars[item].ansible_distribution_version }} {{ hostvars[item].ansible_distribution_release }}
+# bootstrap kernel: {{ hostvars[item].ansible_kernel }}
+# bootstrap memory: {{ hostvars[item].ansible_memtotal_mb }} MB total
+# bootstrap swap: {{ hostvars[item].ansible_swaptotal_mb }} MB total
+# bootstrap processor: {{ hostvars[item].ansible_processor_cores }} cores, {{ hostvars[item].ansible_processor_vcpus }} vCPUs
+# bootstrap virtualization: {{ hostvars[item].ansible_virtualization_type }} {{ hostvars[item].ansible_virtualization_role }}
+{% for dev, device in hostvars[item].ansible_devices.iteritems() %}
+# bootstrap device: {{ dev }} {{ device.size }}
+#             host: {{ device.host }}
+#            model: {{ device.model }}
+{% for part, info in device.partitions.iteritems() %}
+#        partition: {{ part }} {{ info.size }}
+{% endfor %}{% endfor %}
+{% for mount in hostvars[item].ansible_mounts %}
+# bootstrap mount: {{ mount.device }} {{ mount.fstype }} {{ mount.mount }} {{ mount.options }}
+{% endfor %}
+# bootstrap selinux: {{ hostvars[item].ansible_selinux.status }}
+# bootstrap SSH host key DSA public: {{ hostvars[item].ansible_ssh_host_key_dsa_public }}
+# bootstrap SSH host key RSA public: {{ hostvars[item].ansible_ssh_host_key_rsa_public }}
+
+#
+# roles/backup_client
+#
+backup_onsite_protocol: sftp
+#backup_onsite_service: u?????.your-backup.de
+#backup_onsite_account: u?????

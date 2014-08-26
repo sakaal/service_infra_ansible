@@ -1,0 +1,7 @@
+# file: roles/admin_access/vars/main.yml
+#
+# Access the default SSH port as root before the
+# target host is configured for management access.
+#
+ansible_ssh_user: root
+ansible_ssh_port: 22

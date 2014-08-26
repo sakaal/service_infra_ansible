@@ -1,0 +1,45 @@
+# file: roles/firewall/tasks/main.yml
+
+- name: Enable iptables
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+  sudo: yes
+  service: name=iptables enabled=yes
+
+- name: Open firewall ports (iptables)
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+  sudo: yes
+  template: src=iptables.j2 dest=/etc/sysconfig/iptables owner=root group=root mode=0600
+  notify:
+  - Restart iptables
+
+- name: Install firewalld
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  sudo: yes
+  yum: pkg=firewalld state=present
+
+- name: Deactivate firewalld
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  sudo: yes
+  service: name=firewalld state=stopped enabled=no
+
+- name: Open firewalld ports
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  sudo: yes
+  command: firewall-offline-cmd --zone={{ firewalld_zone | mandatory }} --add-port={{ item.port }}/{{ item.protocol }}
+  with_items: firewall_allow
+
+- name: Check the firewalld zone
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  sudo: yes
+  command: firewall-offline-cmd --get-default-zone
+  register: current_firewall_zone
+
+- name: Set the firewalld zone
+  when: not current_firewall_zone|skipped and "{{ firewalld_zone | mandatory }}" not in current_firewall_zone.stdout
+  sudo: yes
+  command: firewall-offline-cmd --set-default-zone={{ firewalld_zone | mandatory }}
+
+- name: Activate firewalld
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+  sudo: yes
+  service: name=firewalld state=started enabled=yes

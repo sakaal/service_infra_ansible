@@ -1,0 +1,6 @@
+# file: roles/firewall/handlers/main.yml
+
+- name: Restart iptables
+  sudo: yes
+  service: name=iptables state=restarted
+

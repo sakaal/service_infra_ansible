@@ -1,0 +1,11 @@
+# file:	roles/dynect_session/vars/main.yml
+
+dynect_api_url: "https://api2.dynect.net/REST"
+
+#
+# Set the following variables in
+# /mnt/sensitive_data/etc/ansible/vars/dynect.yml
+#
+#dynect_customer:
+#dynect_api_user:
+#dynect_api_password:

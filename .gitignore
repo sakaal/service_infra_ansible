@@ -1,0 +1,6 @@
+/.project
+*~
+*.swp
+*.swo
+/bootstrap
+/zones

@@ -1,0 +1,75 @@
+# file: roles/dynect_zones/tasks/main.yml
+#
+# Creates managed DNS zones via the DynECT API.
+#
+# Please specify the following in host_vars/<ip_address>
+#
+#dns_zone: example.com
+#dns_soa_rname: "hostmaster@{{ dns_zone }}"
+#dns_soa_ttl: 300
+#
+
+#
+# DynECT ZoneCreate user permission is required to create a primary zone.
+#
+- name: Create DNS zones
+  local_action: >
+                command curl -v -v -X POST -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone | mandatory }}
+                -d '{
+                "rname": "{{ hostvars[item].dns_soa_rname | mandatory }}",
+                "serial_style": "day",
+                "ttl": "{{ hostvars[item].dns_soa_ttl | default(60) }}"
+                }'
+  with_items: groups['zone_defaults']
+
+#
+# DynECT ZoneAddNode user permission is required to add records. 
+#
+- name: Make zone default DNS A records
+  local_action: >
+                command curl -X POST
+                -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/ARecord/{{ hostvars[item].dns_zone | mandatory }}/{{ hostvars[item].dns_zone }}
+                -d '{
+                "rdata": { "address": "{{ item }}" }
+                }'
+  with_items: groups['zone_defaults']
+
+#
+# ZoneInitialPublish user permission is required to publish a new zone.
+#
+- name: Publish DNS zones
+  local_action: >
+                command curl -v -v -X PUT
+                -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone | mandatory }}
+                -d '{"publish":true}'
+  with_items: groups['zone_defaults']
+
+#
+# DynECT DNSSECAdd user permission is required to enable DNSSEC.
+#
+- name: Enable DNSSEC for zones
+  local_action: >
+                command curl -X POST
+                -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone | mandatory }}
+                -d '{
+                "keys":[{
+                  "type":"ZSK",
+                  "algorithm":"RSA/SHA-1",
+                  "bits":"1024"
+                },{
+                  "type":"KSK",
+                  "algorithm":"RSA/SHA-1",
+                  "bits":"2048"
+                }],
+                "contact_nickname":"{{ hostvars[item].dynect_dnssec_contact_nickname | mandatory }}",
+                "notify_events":"{{ hostvars[item].dynect_dnssec_notify_events | default('create,expire,warning') }}"
+                }'
+  with_items: groups['zone_defaults']

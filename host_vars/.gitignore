@@ -1,0 +1,6 @@
+# Ignore everything in the host_vars directory.
+# Each host is removed from the temporary bootstrap inventory
+# as soon as they have been configured for the main inventory.
+*
+# Except:
+!.gitignore

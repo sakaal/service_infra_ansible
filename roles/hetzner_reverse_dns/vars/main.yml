@@ -1,0 +1,11 @@
+# file:	roles/hetzner_reverse_dns/vars/main.yml
+
+hetzner_api_url: "https://robot-ws.your-server.de"
+
+#
+# Create the file /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
+# and specify the following two variables there:
+#
+#hetzner_api_user:
+#hetzner_api_password:
+#

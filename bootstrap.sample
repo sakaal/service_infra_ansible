@@ -1,0 +1,14 @@
+# file: bootstrap
+
+#
+# Hosts in the bootstrap inventory are in the process of being installed
+# and prepared for use.  Add the IP address of each dedicated server
+# (physical machine) that has a minimal operating system already installed
+# by the hosting provider's standard method.
+#
+
+[managed_servers]
+#203.0.113.1
+
+[libvirt_hosts]
+#203.0.113.1

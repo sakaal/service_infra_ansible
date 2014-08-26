@@ -1,0 +1,23 @@
+# file: roles/hetzner_reverse_dns/tasks/main.yml
+
+#
+# Create the webservice user in Hetzner robot under Settings
+# and configure /mnt/sensitive_data/etc/ansible/vars/hetzner.yml with:
+#hetzner_api_user: "your username"
+#hetzner_api_password: "your password"
+#
+
+- name: Loading Hetzner Webservice access credentials
+  sudo: yes
+  no_log: True
+  include_vars: /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
+
+- name: Update Hetzner server names
+  no_log: True
+  local_action: "command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}' {{ hetzner_api_url }}/server/{{ item }} -d 'server_name={{ hostvars[item].hostname | mandatory }}'"
+  with_items: groups['libvirt_hosts']
+
+- name: Update Hetzner reverse DNS records
+  no_log: True
+  local_action: "command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}' {{ hetzner_api_url }}/rdns/{{ item }} -d 'ptr={{ hostvars[item].hostname | mandatory }}'"
+  with_items: groups['libvirt_hosts']

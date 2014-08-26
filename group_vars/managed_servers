@@ -1,0 +1,14 @@
+# file: group_vars/managed_servers
+
+#
+# Set the configuration management access credentials in: groups_vars/all
+#
+ansible_ssh_port: "{{ admin_ssh_port | mandatory }}"
+ansible_ssh_user: "{{ admin_username | mandatory }}"
+
+#
+# roles/firewall
+#
+firewall_allow:
+  - { 'protocol': 'tcp', 'port': 22 }
+  - { 'protocol': 'tcp', 'port': "{{ admin_ssh_port | mandatory }}" }

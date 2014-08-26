@@ -1,0 +1,38 @@
+# file: roles/admin_access/tasks/main.yml
+
+# The administrative access role enables configuration management access.
+
+- name: Enable Ansible under SELinux
+  yum: pkg=libselinux-python state=present
+
+- name: Create the admin SSH account
+  user: name={{ admin_username | mandatory }} comment="{{ admin_fullname }}" append=yes groups=wheel shell=/bin/bash generate_ssh_key=yes ssh_key_comment={{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }} state=present
+
+- name: Authorize SSH keys
+  template: src=authorized_keys.j2 dest=/home/{{ admin_username | mandatory }}/.ssh/authorized_keys owner={{ admin_username }} group={{ admin_username }} mode=0600
+
+- name: Configure Git
+  template: src=gitconfig.j2 dest=/home/{{ admin_username | mandatory }}/.gitconfig owner={{ admin_username }} group={{ admin_username }} mode=0664
+
+- name: Configure sudoers
+  lineinfile: dest=/etc/sudoers state=present regexp="{{ item.regexp }}" line="{{ item.line }}" validate='visudo -qcf %s'
+  with_items:
+    - regexp: '^%wheel ALL\='
+      line: '%wheel ALL=(ALL) NOPASSWD:ALL'
+    - regexp: '^Defaults\s+secure_path'
+      line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
+
+- name: Disallow root SSH access
+  lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
+  notify:
+   - Restart sshd
+
+- name: Disallow password authentication
+  lineinfile: dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication" line="PasswordAuthentication no" state=present
+  notify:
+   - Restart sshd
+
+- name: Set SSH port
+  lineinfile: dest=/etc/ssh/sshd_config regexp="^Port" line="Port {{ admin_ssh_port | mandatory }}" state=present
+  notify:
+   - Restart sshd

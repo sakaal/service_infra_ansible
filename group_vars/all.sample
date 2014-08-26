@@ -1,0 +1,37 @@
+# file: group_vars/all
+
+#
+# Configuration management access
+#
+# Set the admin_username separate from the root user account
+# and use a randomly chosen high admin_ssh_port.
+# Keep these private to service administration.
+#
+#admin_username:
+#admin_fullname:
+#admin_email:
+#admin_ssh_port:
+#admin_authorized_keys:
+#  - ssh-rsa ADUMMYZGBlQ2nEaEClBlOswkWe6Rx61Nvck+ye3hjQZHp2CdHpuN1lgLPKo3hvdkRHTU8rh7CFMbPPqJI/zI/8CpcOoBhX3qU5hZJJrmJRckqhyWOQpru2L5COBOWHC1SGyBEXAMPLE johndoe@acs.example.com-2014-08-24T20:25:09Z
+
+#
+# The main configuration data repository where the hosts will be moved
+# after the bootstrap stage has completed successfully
+#
+#target_ansible_repo_name: com.example.main_ansible
+#target_ansible_repo_url: "git@github.com:sakaal/{{ target_ansible_repo_name }}.git"
+
+#
+# Local parent directory that contains a working copy of the main repository
+#
+#target_ansible_parent: "~/workspace"
+
+#
+# Name of the inventory file inside the main repository
+#
+target_ansible_inventory: production
+
+#
+# Name of the inventory group where to add the new hosts
+#
+target_ansible_group: libvirt_hosts

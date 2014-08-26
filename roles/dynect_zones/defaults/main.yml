@@ -1,0 +1,4 @@
+# file: roles/dynect_zones/defaults/main.yml
+
+dynect_dnssec_contact_nickname: "{{ dynect_api_user }}"
+dynect_dnssec_notify_events: "create,expire,warning"

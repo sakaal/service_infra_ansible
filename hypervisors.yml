@@ -1,0 +1,13 @@
+# file: hypervisors.yml
+#
+# Prepares hypervisors for hosting virtual guest machines.
+#
+
+- hosts: libvirt_hosts
+  roles:
+    - dynect_dns_record
+    - hetzner_reverse_dns
+    - network_hostname
+    - hetzner_bridged_networking
+    - linux_kvm
+    - libvirt_pools

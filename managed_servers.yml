@@ -1,0 +1,11 @@
+# file: managed_servers.yml
+#
+# Prepares new hosts for Ansible configuration management. Usually run as:
+#
+# ansible-playbook -vvv managed_servers.yml -ki bootstrap
+#
+- hosts: managed_servers
+  roles:
+    - admin_access
+    - admin_tools
+    - firewall

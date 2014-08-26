@@ -1,0 +1,20 @@
+# file: roles/network_hostname/tasks/main.yml
+
+- name: Set hostname in in /etc/sysconfig/network
+  sudo: yes
+  lineinfile: dest=/etc/sysconfig/network regexp="^#?HOSTNAME" line='HOSTNAME="{{ hostname | mandatory }}"' state=present
+
+- name: Set hostname from shell
+  sudo: yes
+  command: hostname {{ hostname | mandatory }}
+  when: "'{{ hostname }}' not in ansible_fqdn"
+
+- name: Set hostname for IPv4 in /etc/hosts
+  sudo: yes
+  lineinfile: dest=/etc/hosts regexp="^{{ ansible_default_ipv4.address }}" line="{{ ansible_default_ipv4.address }} {{ hostname }}"
+  when: hostname is defined
+
+- name: Set hostname for IPv6 in /etc/hosts
+  sudo: yes
+  lineinfile: dest=/etc/hosts regexp="^{{ ansible_default_ipv6.address }}" line="{{ ansible_default_ipv6.address }} {{ hostname }}"
+  when: ansible_default_ipv6.address is defined and hostname is defined

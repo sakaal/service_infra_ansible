@@ -1,0 +1,50 @@
+# file: roles/admin_tools/tasks/main.yml
+
+- name: python-setuptools
+  sudo: yes
+  yum: pkg=python-setuptools state=present
+
+- name: gnupg
+  sudo: yes
+  yum: pkg=gnupg state=present
+
+- name: screen
+  sudo: yes
+  yum: pkg=screen state=present
+
+- name: nano
+  sudo: yes
+  yum: pkg=nano state=present
+
+- name: sysstat
+  sudo: yes
+  yum: pkg=sysstat state=present
+
+- name: procps
+  sudo: yes
+  yum: pkg=procps state=present
+
+- name: iptraf
+  sudo: yes
+  yum: pkg=iptraf state=present
+
+- name: tcpdump
+  sudo: yes
+  yum: pkg=tcpdump state=present
+
+- name: strace
+  sudo: yes
+  yum: pkg=strace state=present
+
+- name: mtr
+  sudo: yes
+  yum: pkg=mtr state=present
+
+#- name: munin-node
+#  sudo: yes
+#  yum: pkg=munin-node state=present
+
+# Fully Automated Nagios (FAN)
+
+# Cacti
+

@@ -1,0 +1,18 @@
+# file: host_vars/203.0.113.1
+
+#
+# For a DNS zone default host, use the default A record IP address as the file name.
+#
+# roles/dynect_zones
+#
+dns_zone: example.com
+dns_soa_rname: "hostmaster@{{ dns_zone }}"
+dns_soa_ttl: 300
+#dynect_dnssec_contact_nickname: {{ dynect_api_user }}
+#dynect_dnssec_notify_events: create,expire,warning
+
+#
+# A fully qualified domain name (FQDN) to configure for the host. Note that
+# also the zone default host may have another fully qualified domain name.
+#
+hostname: host.example.com
