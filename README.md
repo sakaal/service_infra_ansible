@@ -119,6 +119,7 @@ via a secure private channel over the Internet.
         ansible-playbook forget_servers.yml -i bootstrap
 
 1. Prepare the hosts for automated configuration:
+
         ansible-playbook managed_servers.yml -ki bootstrap
     * You may need to provide the root password manually on the initial run.
     * You may need to accept the target host key fingerprint at first connect.
@@ -129,6 +130,7 @@ via a secure private channel over the Internet.
 
 1. After the new managed nodes are ready, they will be transferred over
    from the bootstrap inventory to the main configuration management inventory.
+
         ansible-playbook handovers.yml -i bootstrap
     * Ensure that the bootstrap inventory is again empty.
     * Manually push the target inventory changes to the main repository.
