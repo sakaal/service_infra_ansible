@@ -73,13 +73,10 @@ service instance name.
 
 * If you are deploying new servers, obtain one or more dedicated servers
   from the hosting provider to your account.
-
     * This may involve some of your account details
       being passed to RIPE for IP address registration.
-
     * Preparing the servers may take some time depending on the hosting provider.
       Some hosting providers process orders only during their office hours.
-
 * If you are re-installing existing servers, bring them to their initial state
   according to your hosting provider's method.
 
@@ -87,9 +84,7 @@ Once you have the servers:
 
 1. Perform a minimal operating system installation using whichever approach
    is most convenient in the hosting provider's environment.
-
     * [Hetzner installimage CentOS](Hetzner_installimage_CentOS.md)
-
 1. Set a strong root account password as appropriate.
    It will only be used when preparing the host for automated configuration.
    Keep the credentials according to the administrative access plan, just in case.
@@ -105,10 +100,8 @@ via a secure private channel over the Internet.
 1. Examine until you understand the configuration files.
    Make working copies of the sample files as appropriate for your environment.
    Observe instructions found in the configuration files.
-
     * Add the management DNS zone default A record IP address
       to the `zones` inventory.
-
     * Add the target host addresses to the `bootstrap` inventory.
 
 1. Open the sensitive data volume:
@@ -126,9 +119,7 @@ via a secure private channel over the Internet.
         ansible-playbook forget_servers.yml -i bootstrap
 
 1. Prepare the hosts for automated configuration:
-
         ansible-playbook managed_servers.yml -ki bootstrap
-
     * You may need to provide the root password manually on the initial run.
     * You may need to accept the target host key fingerprint at first connect.
 
@@ -138,9 +129,7 @@ via a secure private channel over the Internet.
 
 1. After the new managed nodes are ready, they will be transferred over
    from the bootstrap inventory to the main configuration management inventory.
-
         ansible-playbook handovers.yml -i bootstrap
-
     * Ensure that the bootstrap inventory is again empty.
     * Manually push the target inventory changes to the main repository.
 
