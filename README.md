@@ -15,6 +15,8 @@ identification, authentication, and key management
 support for the service infrastructure resources
 and their secure administration.
 
+![Deployment diagram](service_infra_deployment.png "Deployment diagram")
+
 ## Current implementation
 
 This Git repository contains Ansible playbooks for
