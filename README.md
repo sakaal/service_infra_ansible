@@ -113,7 +113,7 @@ via a secure private channel over the Internet.
 1. If you haven't already created a security enabled DNS zone,
    you can deploy one using:
 
-        sudo ansible-playbook -v dns.yml -i zones
+        ansible-playbook -v dns.yml -i zones
 
 1. If you are redeploying previously existed hosts,
    remove the old server keys from your known hosts file:
