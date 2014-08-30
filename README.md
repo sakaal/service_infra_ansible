@@ -71,6 +71,34 @@ service instance name.
 
 ## Deployment procedure
 
+The playbooks are run on an Administrative Client System (ACS)
+that has access to the service infrastructure nodes and external services
+via a secure private channel over the Internet.
+
+    git clone git@github.com:sakaal/service_infra_ansible.git
+
+1. Examine until you understand the configuration files.
+   Make working copies of the sample files as appropriate for your environment.
+
+1. Observe instructions found in the configuration files.
+
+1. Open the sensitive data volume:
+
+        sudo open_sensitive_data
+
+### Deploying the DNS zones
+
+If you haven't already created a security enabled DNS zone:
+
+1. Add the management DNS zone default A record IP address
+   to the `zones` inventory.
+
+1. Deploy the zone using:
+
+        ansible-playbook -v dns.yml -i zones
+1. Add the Delegation Signer (DS) record from the DNS management console
+   to your domain registration.
+
 ### Obtaining the servers
 
 * If you are deploying new servers, obtain one or more dedicated servers
@@ -84,6 +112,14 @@ service instance name.
 
 Once you have the servers:
 
+1. Add the target host addresses to the `bootstrap` inventory.
+
+1. Copy the `host_vars/203.0.113.1.sample` to a file with
+   a name matching the inventory entry, and edit it to set
+   at least the `dns_zone` and `hostname`:
+
+        cp host_vars/203.0.113.1.sample 203.0.113.1
+
 1. Perform a minimal operating system installation using whichever approach
    is most convenient in the hosting provider's environment.
     * [Hetzner installimage CentOS](Hetzner_installimage_CentOS.md)
@@ -93,32 +129,11 @@ Once you have the servers:
 
 ### Configuring the servers
 
-The playbooks are run on an Administrative Client System (ACS)
-that has access to the service infrastructure nodes and external services
-via a secure private channel over the Internet.
-
-    git clone git@github.com:sakaal/service_infra_ansible.git
-
-1. Examine until you understand the configuration files.
-   Make working copies of the sample files as appropriate for your environment.
-   Observe instructions found in the configuration files.
-    * Add the management DNS zone default A record IP address
-      to the `zones` inventory.
-    * Add the target host addresses to the `bootstrap` inventory.
-
-1. Open the sensitive data volume:
-
-        sudo open_sensitive_data
-
-1. If you haven't already created a security enabled DNS zone,
-   you can deploy one using:
-
-        ansible-playbook -v dns.yml -i zones
-
 1. If you are redeploying previously existed hosts,
    remove the old server keys from your known hosts file:
 
         ansible-playbook forget_servers.yml -i bootstrap
+    * You may need to contact the hosts manually once, to accept their new host keys.
 
 1. Prepare the hosts for automated configuration:
 
