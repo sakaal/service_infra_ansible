@@ -1,0 +1,96 @@
+# file: roles/hetzner_single_ips/tasks/main.yml
+
+#
+# Collects additional single IPs allocated to a Hetzner dedicated root server
+# for use with virtualization. Makes sure every IP has a separate MAC assigned.
+#
+# Before applying this role, the host variables file for each server must exist
+# in the target Ansible repository, at:
+#
+# <target repository>/host_vars/<hypervisor ip>
+#
+# This role will add the single IPs and their MAC addresses to the said file.
+#
+
+- name: Query a list of server single IPs
+  local_action: >
+                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+                {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
+  register: hetzner_ips_result
+
+- name: Store the server IPs as Ansible local facts
+  sudo: yes
+  when: "hetzner_ips_result|success and '\"server_ip\":\"{{ inventory_hostname }}\"' in hetzner_ips_result.stdout"
+  local_action: >
+                template src=hetzner_ips.fact.j2
+                dest=/etc/ansible/facts.d/hetzner_ips_{{ inventory_hostname }}.fact
+                owner=root group=root mode=0644
+
+#
+# Makes the Hetzner server single IPs locally available as
+# ansible_local.hetzner_ips with the following data structure:
+#
+# [
+#     {
+#         "ip": {
+#             "ip": "203.0.113.24",
+#             "locked": false,
+#             "separate_mac": "00:53:56:00:4A:C5",
+#             "server_ip": "203.0.113.1",
+#             "server_number": 987654,
+#             "traffic_daily": 2000,
+#             "traffic_hourly": 200,
+#             "traffic_monthly": 20,
+#             "traffic_warnings": false
+#         }
+#     },
+#     ...
+# ]
+#
+- name: Load Ansible local facts
+  sudo: yes
+  run_once: yes
+  local_action: setup filter=ansible_local
+
+- name: Request a separate MAC for every single IP that is still missing one
+  local_action: >
+                command curl -X PUT -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+                {{ hetzner_api_url }}/ip/{{ item.ip.ip }}/mac
+  with_items: ansible_local['hetzner_ips_{{ inventory_hostname }}']
+  when: (item.ip.ip != item.ip.server_ip) and (item.ip.separate_mac == None)
+
+- name: Query the list of single IPs again to collect the MACs
+  local_action: >
+                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+                {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
+  register: hetzner_ips_result
+
+- name: Store the server IPs and MACs as Ansible local facts
+  sudo: yes
+  when: "hetzner_ips_result|success and '\"server_ip\":\"{{ inventory_hostname }}\"' in hetzner_ips_result.stdout"
+  local_action: >
+                template src=hetzner_ips.fact.j2
+                dest=/etc/ansible/facts.d/hetzner_ips_{{ inventory_hostname }}.fact
+                owner=root group=root mode=0644
+
+- name: Reload Ansible local facts
+  sudo: yes
+  run_once: yes
+  local_action: setup filter=ansible_local
+
+- name: Declare the hetzner_single_ips variable in target Ansible repo host_vars
+  local_action: >
+                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname]['hostname'] }}"
+                regexp="^hetzner_single_ips:"
+                line="hetzner_single_ips:"
+                state=present
+
+- name: Add the Hetzner single IPs and their corresponding MAC addresses
+  local_action: >
+                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname]['hostname'] }}"
+                insertafter="hetzner_single_ips"
+                regexp="^  - { 'ip': '{{ item.ip.ip }}'"
+                line="  - { 'ip': '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"
+                state=present
+  with_items: ansible_local['hetzner_ips_{{ inventory_hostname }}']
+  when: item.ip.separate_mac != None

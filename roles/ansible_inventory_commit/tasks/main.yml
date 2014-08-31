@@ -1,0 +1,35 @@
+# file: roles/ansible_inventory_commit/tasks/main.yml
+
+#
+# Commits changes to the target Ansible inventory.
+#
+
+- name: Add the target inventory changes to git commit index
+  run_once: yes
+  local_action: >
+                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
+                git add {{ target_ansible_inventory }}
+
+- name: Add host_vars to git commit index
+  local_action: >
+                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
+                git add host_vars/{{ hostvars[inventory_hostname].hostname | mandatory }}
+
+- name: Check if there are any pending changes
+  run_once: yes
+  local_action: >
+                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
+                git status
+  register: status_result
+  changed_when: "'new file:' in status_result.stdout or 'modified:' in status_result.stdout" 
+
+- name: Commit target Ansible repository changes
+  run_once: yes
+  local_action: >
+                command chdir='{{ target_ansible_parent }}/{{ target_ansible_repo_name }}'
+                git commit -m "bootstrap handed over {{ play_hosts | join(' ') }}"
+  when: status_result|changed
+
+- name: Remove the hosts from the bootstrap inventory
+  local_action: command sed -i '/^{{ inventory_hostname }}/d' bootstrap
+

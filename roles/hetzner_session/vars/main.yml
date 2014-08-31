@@ -1,4 +1,4 @@
-# file:	roles/hetzner_reverse_dns/vars/main.yml
+# file:	roles/hetzner_session/vars/main.yml
 
 hetzner_api_url: "https://robot-ws.your-server.de"
 

@@ -1,0 +1,4 @@
+# file: roles/hetzner_reverse_dns/meta/main.yml
+
+dependencies:
+  - { role: hetzner_session }

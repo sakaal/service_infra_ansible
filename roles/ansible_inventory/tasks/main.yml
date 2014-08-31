@@ -1,15 +1,18 @@
 # file: roles/ansible_inventory/tasks/main.yml
 
-# Adds a freshly provisioned managed server to a given Ansible configuration
-# management inventory and then removes it from the local bootstrap inventory.
+#
+# Adds freshly provisioned managed servers to the target inventory.
+#
 
-- name: Checkout target Ansible repository
+- name: Checkout the target Ansible repository
+  run_once: yes
   local_action: >
                 command chdir="{{ target_ansible_parent | mandatory }}"
                 git clone {{ target_ansible_repo_url | mandatory }} {{ target_ansible_repo_name | mandatory }}
                 creates="{{ target_ansible_repo_name }}"
 
 - name: Check that there are no pending commits
+  run_once: yes
   local_action: >
                 command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
                 git status
@@ -20,41 +23,11 @@
 - name: Add hosts under the target inventory group
   local_action: >
                 lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/{{ target_ansible_inventory }}"
-                regexp="^{{ hostvars[item]['hostname'] }}" line="{{ hostvars[item]['hostname'] }}"
+                regexp="^{{ hostvars[inventory_hostname].hostname }}" line="{{ hostvars[inventory_hostname].hostname }}"
                 insertafter="^\[{{ target_ansible_group | mandatory }}\]"
                 state=present
-  with_items: groups['libvirt_hosts']
 
 - name: Add host_vars
   local_action: >
                 template backup=yes src=host_vars.j2
-                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[item]['hostname'] }}"
-  with_items: groups['libvirt_hosts']
-
-- name: Add inventory changes to git commit index
-  local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git add {{ target_ansible_inventory }}
-
-- name: Add host_vars to git commit index
-  local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git add host_vars/{{ hostvars[item]['hostname'] }}
-  with_items: groups['libvirt_hosts']
-
-- name: Check if there are any pending changes
-  local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git status
-  register: status_result
-  changed_when: "'new file:' in status_result.stdout or 'modified:' in status_result.stdout" 
-
-- name: Commit target Ansible repository changes
-  local_action: >
-                command chdir='{{ target_ansible_parent }}/{{ target_ansible_repo_name }}'
-                git commit -m "bootstrap handed over {{ groups['libvirt_hosts'] | join(' ') }}"
-  when: status_result|changed
-
-- name: Remove the hosts from the bootstrap inventory
-  local_action: command sed -i '/^{{ item }}/d' bootstrap
-  with_items: groups['libvirt_hosts']
+                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
