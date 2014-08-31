@@ -71,7 +71,8 @@ service instance name.
 
 ## Deployment procedure
 
-The playbooks are run on an Administrative Client System (ACS)
+The playbooks are run on an
+[Administrative Client System (ACS)](https://github.com/sakaal/admin_client)
 that has access to the service infrastructure nodes and external services
 via a secure private channel over the Internet.
 
