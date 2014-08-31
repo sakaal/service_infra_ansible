@@ -112,6 +112,10 @@ If you haven't already created a security enabled DNS zone:
 
 Once you have the servers:
 
+1. If you need additional public IP addresses for any of the guest
+   virtual machines, allocate them with the hosting provider. 
+    * You may need to specify the purpose of use according to RIPE guidelines.
+
 1. Add the target host addresses to the `bootstrap` inventory.
 
 1. Copy the `host_vars/203.0.113.1.sample` to a file with
