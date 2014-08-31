@@ -1,5 +1,10 @@
 # file: roles/hetzner_bridged_networking/tasks/main.yml
 
+#
+# Hetzner CentOS bridged networking for additional IP addresses (virtualization)  
+# See: http://wiki.hetzner.de/index.php/Netzkonfiguration_CentOS/en#Bridged
+#
+
 - name: Ensure bridge-utils is present
   sudo: yes
   yum: name=bridge-utils state=present
