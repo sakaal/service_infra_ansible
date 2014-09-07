@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#
+# The logical volume group that serves as a libvirt storage pool.
+#
+VG=vg_pool
+LV=lv_{{ item }}_sys
+KS=guest_{{ item }}-ks.cfg
+
+# Tested on CentOS 7 hypervisors
+virt-install --connect=qemu:///system \
+--network network=default,mac=RANDOM,model=virtio \
+--initrd-inject ~/kickstart/$KS \
+--extra-args="ks=file:/$KS console=tty0 console=xvc0,115200n8" \
+--name={{ item }} \
+--description="{{ hostvars[item].guest_description | mandatory }}" \
+--disk path=/dev/$VG/$LV,size=12,bus=virtio,sparse=false,cache=writethrough \
+--ram={{ hostvars[item].guest_ram | mandatory }} \
+--vcpus={{ hostvars[item].guest_vcpus | mandatory }} \
+--check-cpu \
+--accelerate \
+--virt-type=kvm \
+--arch=x86_64 \
+--os-type=linux \
+--os-variant={{ hostvars[item].guest_os_variant | mandatory }} \
+--location={{ hostvars[item].centos_repo_url | mandatory }} \
+--graphics=spice \
+--noautoconsole

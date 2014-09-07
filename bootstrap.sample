@@ -12,3 +12,18 @@
 
 [libvirt_hosts]
 #203.0.113.1
+
+#
+# Add the fully qualified domain name (FQDN) of each guest server
+# (virtual machine) that will be provisioned on a hypervisor.
+# You may add more groups to provision a different set of guests on different
+# hypervisors. Set the libvirt_guests_group variable for the hypervisor host
+# accordingly.
+#
+# The guest subdomains are assumed to be a local naming policy on the
+# hypervisor host. Guest names are not registered in DNS, but only
+# configured for local name resolution on the hypervisor.
+#
+
+[libvirt_guests]
+#guest.host.example.com

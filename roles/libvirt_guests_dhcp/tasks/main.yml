@@ -1,0 +1,62 @@
+# file: roles/libvirt_guests_dhcp/tasks/main.yml
+
+#
+# Configures static DHCP for the libvirt guests' local management network
+# on the hypervisor. Lets libvirt assign the MACs and IPs first and then
+# makes them permanent.
+#
+# When a guest is reinstalled with the same name, replaces any previously
+# assigned MAC and IP for that name.
+#
+# Run this playbook each time after new guests have been provisioned.
+# Let the new guests' installation finish before executing this configuration.
+#
+# Goal: New guests are accessible from the hypervisor by their names, so that
+#       Ansible playbooks targeting the guests can be run from (or via) the
+#       hypervisor.
+#
+
+#
+# Returns the MAC of the guest's first default network interface.
+# This interface is used for provisioning and management access.
+# It's only available locally on the hypervisor.
+#
+- name: Look up the default network interface MAC of each guest
+  sudo: yes
+  shell: >
+         virsh domiflist {{ item }} |
+         grep --max-count=1 "[ ]\+network[ ]\+default[ ]\+" |
+         tr -s ' ' | cut -d ' ' -f 5
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  register: macs
+
+- name: Look up the local IP address of each guest
+  sudo: yes
+  shell: >
+         cat /var/lib/libvirt/dnsmasq/default.leases |
+         grep --max-count=1 " {{ item.stdout }} " | cut -d ' ' -f 3
+  when: item.rc == 0
+  with_items: macs.results
+  register: macs_and_ips
+
+- name: Configure static local IP addresses in the libvirt default network
+  sudo: yes
+  lineinfile: >
+              dest="/etc/libvirt/qemu/networks/default.xml"
+              insertafter='[ \t]+<range[ \t]+start="192\.168\.122\.'
+              regexp='^[ \t]+<host[ \t]+.*name="{{ item.item.item }}"'
+              line='      <host mac="{{ item.item.stdout }}" name="{{ item.item.item }}" ip="{{ item.stdout }}" />'
+              state=present
+  when: item.rc == 0
+  with_items: macs_and_ips.results
+
+- name: Configure static local IP addresses in /etc/hosts
+  sudo: yes
+  lineinfile: >
+              dest="/etc/hosts"
+              insertafter='^[ \t]*{{ inventory_hostname }}[ \t]+.*{{ hostvars[inventory_hostname].hostname }}'
+              regexp='^[^ \t]+[ \t]*{{ item.item.item }}[ \t]+'
+              line='{{ item.stdout }} {{ item.item.item }} {{ item.item.item | regex_replace("^([^\.]*)\..*$", "\\1") }}'
+              state=present
+  when: item.rc == 0
+  with_items: macs_and_ips.results

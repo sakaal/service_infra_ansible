@@ -1,0 +1,44 @@
+# file: roles/libvirt_guests_centos/tasks/main.yml
+#
+# Generates libvirt virt-install scripts for CentOS guests on hypervisors.
+#
+# One virt-install script and kickstart file are generated for each guest
+# on each hypervisor.
+#
+# Currently, the scripts are not run automatically.
+# Review the generated scripts and run them as necessary to reinstall nodes.
+#
+
+#
+# Set the variable libvirt_guests_group for a hypervisor to provision the
+# virtual guests in that group on that hypervisor.
+#
+
+#
+# Change the guest root password at first login immediately after provision
+# of the new virtual machine in a private network.
+# On CentOS, to create an SHA-512 hashed password, you can use:
+# grub-crypt --sha-512
+#
+# Set the variable guest_rootpw_sha512 in file:
+# /mnt/sensitive_data/etc/ansible/vars/libvirt_guests_centos.yml
+#
+- name: Loading libvirt guest provisioning access credentials
+  sudo: yes
+  run_once: yes
+  no_log: True
+  include_vars: /mnt/sensitive_data/etc/ansible/vars/libvirt_guests_centos.yml
+
+- name: Ensure user home ~/bin directory exists
+  file: state=directory path=~/bin mode=0750
+
+- name: Generate libvirt guest installation scripts in ~/bin/
+  template: src=guest-install.sh.j2 dest="~/bin/guest_{{ item }}-install.sh" mode=0740
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+
+- name: Ensure user home ~/kickstart directory exists
+  file: state=directory path=~/kickstart mode=0750
+
+- name: Generate libvirt guest configuration files in ~/kickstart/
+  template: src=guest-ks.cfg.j2 dest="~/kickstart/guest_{{ item }}-ks.cfg" mode=0640
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']

@@ -36,6 +36,14 @@
   sudo: yes
   yum: pkg=strace state=present
 
+- name: bind-utils
+  sudo: yes
+  yum: pkg=bind-utils state=present
+
+- name: net-tools
+  sudo: yes
+  yum: pkg=net-tools state=present
+
 - name: mtr
   sudo: yes
   yum: pkg=mtr state=present
