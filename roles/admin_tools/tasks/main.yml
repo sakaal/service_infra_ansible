@@ -1,5 +1,9 @@
 # file: roles/admin_tools/tasks/main.yml
 
+#
+# Installs tools to support automated administration tasks.
+#
+
 - name: python-setuptools
   sudo: yes
   yum: pkg=python-setuptools state=present
