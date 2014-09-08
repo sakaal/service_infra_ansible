@@ -1,0 +1,23 @@
+# file: decommission
+
+#
+# Hosts in the decommission inventory are in the process of being terminated
+# and removed from use.
+#
+
+[managed_servers:children]
+libvirt_hosts
+
+#
+# Add the IP address of each hypervisor that is running any guests
+# to be decommissioned. The hypervisors themselves will remain active.
+#
+[libvirt_hosts]
+#203.0.113.1
+
+#
+# Add the fully qualified domain name (FQDN) of each guest virtual machine
+# that will be permanently removed from use.
+#
+[ex_libvirt_guests_host.example.com]
+#guest.host.example.com

@@ -1,0 +1,49 @@
+# file: roles/libvirt_guests_terminate/tasks/main.yml
+
+- name: Remove static local IP addresses from /etc/hosts
+  sudo: yes
+  lineinfile: >
+              dest="/etc/hosts"
+              regexp='^[^ \t]*[ \t]+{{ item }}[ \t]+'
+              state=absent
+  with_items: groups['ex_{{ libvirt_guests_group | mandatory }}']
+
+- name: Remove static local IP addresses from the libvirt default network
+  sudo: yes
+  lineinfile: >
+              dest="/etc/libvirt/qemu/networks/default.xml"
+              regexp='^[ \t]+<host[ \t]+.*name="{{ item }}"'
+              state=absent
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+
+- name: Destroy the guest domain
+  sudo: yes
+  virt: name="{{ item }}" command=destroy state=destroyed
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
+- name: Undefine the guest domain
+  sudo: yes
+  virt: name="{{ item }}" command=undefine
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
+- name: Remove FQDNs from SSH known hosts
+  command: ssh-keygen -R {{ item }}
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
+- name: Remove FQDNs (admin port) from SSH known hosts
+  command: ssh-keygen -R "[{{ item }}]:{{ admin_ssh_port }}"
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
+- name: Remove simple hostnames from SSH known hosts
+  command: ssh-keygen -R {{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
+- name: Remove simple hostnames (admin port) from SSH known hosts
+  command: ssh-keygen -R "[{{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}]:{{ admin_ssh_port }}"
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes

@@ -1,0 +1,10 @@
+# file: terminate.yml
+#
+# Decommission hosts that are no longer required.
+#
+# ansible-playbook -vvv terminate.yml -i decommission
+#
+- hosts: libvirt_hosts
+  roles:
+    - libvirt_guests_terminate
+
