@@ -29,15 +29,17 @@
          tr -s ' ' | cut -d ' ' -f 5
   with_items: groups['{{ libvirt_guests_group | mandatory }}']
   register: macs
+  failed_when: macs is defined and macs.stderr.strip() != ''
 
 - name: Look up the local IP address of each guest
   sudo: yes
   shell: >
          cat /var/lib/libvirt/dnsmasq/default.leases |
          grep --max-count=1 " {{ item.stdout }} " | cut -d ' ' -f 3
-  when: item.rc == 0
+  when: item|success
   with_items: macs.results
   register: macs_and_ips
+  failed_when: macs_and_ips is defined and macs_and_ips.stderr.strip() != ''
 
 - name: Configure static local IP addresses in the libvirt default network
   sudo: yes
@@ -47,7 +49,7 @@
               regexp='^[ \t]+<host[ \t]+.*name="{{ item.item.item }}"'
               line='      <host mac="{{ item.item.stdout }}" name="{{ item.item.item }}" ip="{{ item.stdout }}" />'
               state=present
-  when: item.rc == 0
+  when: item|success
   with_items: macs_and_ips.results
 
 - name: Configure static local IP addresses in /etc/hosts
@@ -55,8 +57,8 @@
   lineinfile: >
               dest="/etc/hosts"
               insertafter='^[ \t]*{{ inventory_hostname }}[ \t]+.*{{ hostvars[inventory_hostname].hostname }}'
-              regexp='^[^ \t]+[ \t]*{{ item.item.item }}[ \t]+'
+              regexp='^[^ \t]*[ \t]+{{ item.item.item }}[ \t]+'
               line='{{ item.stdout }} {{ item.item.item }} {{ item.item.item | regex_replace("^([^\.]*)\..*$", "\\1") }}'
               state=present
-  when: item.rc == 0
+  when: item|success
   with_items: macs_and_ips.results
