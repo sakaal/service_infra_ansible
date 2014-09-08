@@ -7,6 +7,9 @@
 rootpw --iscrypted {{ guest_rootpw_sha512 | mandatory }}
 authconfig --enableshadow --passalgo=sha512
 
+# Create the admin SSH account
+user --name={{ hostvars[item].admin_username | mandatory }} --gecos="{{ admin_fullname }}" --groups=wheel --shell=/bin/bash
+
 cmdline
 skipx
 install
@@ -50,20 +53,33 @@ repo --name="CentOS" --baseurl={{ hostvars[item].centos_repo_url }} --cost=100
 @web-server
 acpid
 audit
+bind-utils
 coreutils
 crypto-utils
 cryptsetup-luks
 dhclient
 e2fsprogs
 git
+gnupg
+iptraf
+libselinux-python
 lvm2
+mtr
 nano
+net-tools
 ntp
 openssh-clients
 openssh-server
 openssl
+policycoreutils-python
+procps
+python-setuptools
 rpm
+screen
+strace
 sudo
+sysstat
+tcpdump
 vim
 wget
 yum
@@ -106,7 +122,6 @@ yum
 -rt61pci-firmware
 -rt73usb-firmware
 -sendmail
--sysstat
 -webalizer
 -xorg-x11-drv-ati-firmware
 -yum-cron
@@ -126,17 +141,53 @@ echo "{{ item }} kickstart configured" >> /etc/motd
 date -u +"%FT%TZ %G-W%V-%u %A %y-%j" >> /etc/motd
 
 echo "Installing the Extra Packages for Enterprise Linux (EPEL) repository."
-rpm -Uvh {{ hostvars[item]['epel_rpm_url'] }}
+rpm -Uvh {{ hostvars[item].epel_rpm_url | mandatory }}
 
-cd /root
+# Authorize SSH keys
+cd /home/{{ admin_username | mandatory }}
 mkdir --mode=700 .ssh
+ssh-keygen -q -N "" -t rsa -f .ssh/id_rsa -C "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
 cat >> .ssh/authorized_keys << "PUBLIC"
 {% for authorized_key in hostvars[item].admin_authorized_keys %}
 {{ authorized_key }}
 {% endfor %}
 PUBLIC
+chown -R {{ admin_username }}:{{ admin_username }} .ssh
 chmod 600 .ssh/authorized_keys
 restorecon -R .ssh/
+
+# Configure Git
+cat >> .gitconfig << "GITCONFIG"
+[user]
+        name = {{ admin_fullname | mandatory }}
+        email = {{ admin_email | mandatory }}
+[push]
+        default = simple
+GITCONFIG
+chown {{ admin_username }}:{{ admin_username }} .gitconfig
+chmod 664 .gitconfig
+
+# sed 4.2.1 preserves SELinux security contexts:
+# http://freecode.com/projects/sed/releases/301607
+
+# Configure sudoers
+sed -i 's/^%wheel[ \t]\+ALL=(ALL).*$/%wheel ALL=(ALL) NOPASSWD:ALL/g'\
+ /etc/sudoers
+
+# Disallow root SSH access
+sed -i 's/^#\?PermitRootLogin[ \t]\+yes.*$/PermitRootLogin no/g'\
+ /etc/ssh/sshd_config
+
+# Disallow password authentication
+sed -i 's/^PasswordAuthentication[ \t]\+yes.*$/PasswordAuthentication no/g'\
+ /etc/ssh/sshd_config
+
+# Configure SELinux to allow SSH on the administrative SSH port
+semanage port -a -t ssh_port_t -p tcp {{ hostvars[item].admin_ssh_port }}
+
+# Set SSH port
+sed -i 's/^#\?Port[ \t]\+22/Port {{ hostvars[item].admin_ssh_port }}/g'\
+ /etc/ssh/sshd_config
 
 yum -y update
 
