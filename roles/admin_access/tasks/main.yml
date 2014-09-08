@@ -5,6 +5,13 @@
 - name: Enable Ansible under SELinux
   yum: pkg=libselinux-python state=present
 
+- name: SELinux management (semanage)
+  yum: pkg=policycoreutils-python state=present
+
+- name: SELinux mode
+  sudo: yes
+  lineinfile: dest="/etc/selinux/config" regexp="^SELINUX=" line="SELINUX=permissive" state=present
+
 - name: Create the admin SSH account
   user: name={{ admin_username | mandatory }} comment="{{ admin_fullname }}" append=yes groups=wheel shell=/bin/bash generate_ssh_key=yes ssh_key_comment={{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }} state=present
 
@@ -17,7 +24,7 @@
 - name: Configure sudoers
   lineinfile: dest=/etc/sudoers state=present regexp="{{ item.regexp }}" line="{{ item.line }}" validate='visudo -qcf %s'
   with_items:
-    - regexp: '^%wheel ALL\='
+    - regexp: '^%wheel\s+ALL='
       line: '%wheel ALL=(ALL) NOPASSWD:ALL'
     - regexp: '^Defaults\s+secure_path'
       line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
@@ -32,7 +39,13 @@
   notify:
    - Restart sshd
 
+- name: Configure SELinux to allow SSH on the administrative SSH port
+  sudo: yes
+  command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
+
 - name: Set SSH port
   lineinfile: dest=/etc/ssh/sshd_config regexp="^Port" line="Port {{ admin_ssh_port | mandatory }}" state=present
   notify:
    - Restart sshd
+
+
