@@ -25,13 +25,3 @@
 # Local parent directory that contains a working copy of the main repository
 #
 #target_ansible_parent: "~/workspace"
-
-#
-# Name of the inventory file inside the main repository
-#
-target_ansible_inventory: production
-
-#
-# Name of the inventory group where to add the new hosts
-#
-target_ansible_group: libvirt_hosts

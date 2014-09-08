@@ -16,10 +16,3 @@ dns_soa_ttl: 300
 # also the zone default host may have another fully qualified domain name.
 #
 hostname: host.example.com
-
-#
-# The inventory group of guests that will be provisioned on this host.
-#
-# roles/libvirt_guests_centos
-#
-libvirt_guests_group: libvirt_guests

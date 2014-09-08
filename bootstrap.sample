@@ -2,28 +2,35 @@
 
 #
 # Hosts in the bootstrap inventory are in the process of being installed
-# and prepared for use.  Add the IP address of each dedicated server
-# (physical machine) that has a minimal operating system already installed
-# by the hosting provider's standard method.
+# and prepared for use.
 #
 
-[managed_servers]
-#203.0.113.1
+#
+# Managed servers are configured for unattended administrative access.
+# Both hypervisors and virtual machines will be in this group.
+#
+[managed_servers:children]
+libvirt_hosts
+#libvirt_guests_host.example.com
 
+#
+# Add the IP address of each dedicated server (physical machine) that
+# has a minimal operating system already installed
+# by the hosting provider's standard method.
+#
 [libvirt_hosts]
 #203.0.113.1
 
 #
 # Add the fully qualified domain name (FQDN) of each guest server
 # (virtual machine) that will be provisioned on a hypervisor.
-# You may add more groups to provision a different set of guests on different
-# hypervisors. Set the libvirt_guests_group variable for the hypervisor host
-# accordingly.
+# You may add more groups to provision different sets of guests on different
+# hypervisors.
 #
 # The guest subdomains are assumed to be a local naming policy on the
 # hypervisor host. Guest names are not registered in DNS, but only
 # configured for local name resolution on the hypervisor.
 #
 
-[libvirt_guests]
+[libvirt_guests_host.example.com]
 #guest.host.example.com

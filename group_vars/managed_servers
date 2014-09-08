@@ -1,6 +1,11 @@
 # file: group_vars/managed_servers
 
 #
+# Managed servers are configured for unattended administrative access.
+# Both hypervisors and virtual machines will be in this group.
+#
+
+#
 # Set the configuration management access credentials in: groups_vars/all
 #
 ansible_ssh_port: "{{ admin_ssh_port | mandatory }}"

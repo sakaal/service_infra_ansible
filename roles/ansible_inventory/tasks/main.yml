@@ -23,11 +23,11 @@
 - name: Add hosts under the target inventory group
   local_action: >
                 lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/{{ target_ansible_inventory }}"
-                regexp="^{{ hostvars[inventory_hostname].hostname }}" line="{{ hostvars[inventory_hostname].hostname }}"
+                regexp="^{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}" line="{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}"
                 insertafter="^\[{{ target_ansible_group | mandatory }}\]"
                 state=present
 
 - name: Add host_vars
   local_action: >
                 template backup=yes src=host_vars.j2
-                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}"

@@ -13,7 +13,7 @@
 - name: Add host_vars to git commit index
   local_action: >
                 command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git add host_vars/{{ hostvars[inventory_hostname].hostname | mandatory }}
+                git add host_vars/{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}
 
 - name: Check if there are any pending changes
   run_once: yes

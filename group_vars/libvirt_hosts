@@ -1,0 +1,19 @@
+# file: group_vars/libvirt_hosts
+
+#
+# Name of the inventory group for guests that will be
+# provisioned on each hypervisor host.
+#
+# roles/libvirt_guests_centos
+#
+libvirt_guests_group: libvirt_guests_{{ hostvars[inventory_hostname].hostname | mandatory }}
+
+#
+# Name of the inventory file inside the main repository
+#
+target_ansible_inventory: production
+
+#
+# Name of the inventory group where to add the new hosts
+#
+target_ansible_group: libvirt_hosts
