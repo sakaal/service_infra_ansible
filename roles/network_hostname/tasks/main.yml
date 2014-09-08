@@ -4,9 +4,14 @@
   sudo: yes
   lineinfile: dest=/etc/sysconfig/network regexp="^#?HOSTNAME" line='HOSTNAME="{{ hostname | mandatory }}"' state=present
 
+- name: Set hostname in /etc/hostname
+  sudo: yes
+  shell: echo "{{ hostname }}" > /etc/hostname
+  when: "'{{ hostname }}' not in ansible_fqdn"
+
 - name: Set hostname from shell
   sudo: yes
-  command: hostname {{ hostname | mandatory }}
+  command: hostname {{ hostname }}
   when: "'{{ hostname }}' not in ansible_fqdn"
 
 - name: Set hostname for IPv4 in /etc/hosts
