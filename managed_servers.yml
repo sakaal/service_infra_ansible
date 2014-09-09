@@ -2,10 +2,11 @@
 #
 # Prepares new hosts for Ansible configuration management. Usually run as:
 #
-# ansible-playbook -vvv managed_servers.yml -ki bootstrap
+# ansible-playbook -vv managed_servers.yml -ki bootstrap
 #
-- hosts: managed_servers
+- hosts: libvirt_hosts
   roles:
     - admin_access
     - admin_tools
     - firewall
+
