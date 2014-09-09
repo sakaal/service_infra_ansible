@@ -29,6 +29,9 @@
     - regexp: '^Defaults\s+secure_path'
       line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
 
+- name: Prevent entering interactive boot
+  lineinfile: dest=/etc/sysconfig/init regexp="^\s*PROMPT" line="PROMPT=no" state=present
+
 - name: Disallow root SSH access
   lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
   notify:
@@ -40,12 +43,10 @@
    - Restart sshd
 
 - name: Configure SELinux to allow SSH on the administrative SSH port
-  sudo: yes
   command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
 
 - name: Set SSH port
   lineinfile: dest=/etc/ssh/sshd_config regexp="^Port" line="Port {{ admin_ssh_port | mandatory }}" state=present
   notify:
    - Restart sshd
-
 
