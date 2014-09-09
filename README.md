@@ -123,7 +123,8 @@ Once you have the servers:
    a name matching the inventory entry, and edit it to set
    at least the `dns_zone` and `hostname`:
 
-        cp host_vars/203.0.113.1.sample 203.0.113.1
+        cd host_vars/
+        cp 203.0.113.1.sample 203.0.113.1
 
 1. Perform a minimal operating system installation using whichever approach
    is most convenient in the hosting provider's environment.
@@ -158,6 +159,29 @@ Once you have the servers:
     * Manually push the target inventory changes to the main repository.
 
 The hypervisors are now ready for service operation.
+
+### Provisioning guest virtual machines
+
+1. Replace the `[libvirt_guests_host.example.com]` group in the
+   `bootstrap` inventory by substituting your hypervisor hostnames for
+   `host.example.com`. Create one group per hypervisor.
+
+1. Add the guest virtual machine fully qualified domain names (FQDNs)
+   in the `bootstrap` inventory under the guests group
+   of the desired hypervisor.
+
+1. For each guest, copy the `host_vars/guest.host.example.com.sample`
+   to a file with a name matching the guest FQDN, and
+   edit the file to set the guest provisioning parameters:
+
+        cd host_vars/
+        cp guest.host.example.com.sample guest.host.example.com
+
+1. Provision the guest virtual machines:
+
+        ansible-playbook guests.yml -i bootstrap
+
+1. TODO: Transfer the guests to the main CMDB.
 
 ## Continual improvement
 

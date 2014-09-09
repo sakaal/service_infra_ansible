@@ -1,12 +1,10 @@
 # file: roles/libvirt_guests_centos/tasks/main.yml
 #
-# Generates libvirt virt-install scripts for CentOS guests on hypervisors.
+# Generates libvirt virt-install scripts for CentOS guests on hypervisors
+# and runs them to install guests (unless they already exist).
 #
 # One virt-install script and kickstart file are generated for each guest
 # on each hypervisor.
-#
-# Currently, the scripts are not run automatically.
-# Review the generated scripts and run them as necessary to reinstall nodes.
 #
 
 #
@@ -32,13 +30,35 @@
 - name: Ensure user home ~/bin directory exists
   file: state=directory path=~/bin mode=0750
 
-- name: Generate libvirt guest installation scripts in ~/bin/
-  template: src=guest-install.sh.j2 dest="~/bin/guest_{{ item }}-install.sh" mode=0740
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
-
 - name: Ensure user home ~/kickstart directory exists
   file: state=directory path=~/kickstart mode=0750
 
-- name: Generate libvirt guest configuration files in ~/kickstart/
-  template: src=guest-ks.cfg.j2 dest="~/kickstart/guest_{{ item }}-ks.cfg" mode=0640
+- name: Check which guests already exist
+  sudo: yes
+  shell: virsh -q dominfo "{{ item }}"
   with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  register: domains
+  changed_when: domains.rc != 0 and 'Domain not found' in domains.stderr
+  failed_when: False
+
+- name: Generate libvirt guest installation scripts in ~/bin/
+  template: >
+            src=guest-install.sh.j2
+            dest="~/bin/guest_{{ item.item }}-install.sh"
+            mode=0740
+  when: item|changed
+  with_items: domains.results
+
+- name: Generate libvirt guest configuration files in ~/kickstart/
+  no_log: True
+  template: >
+            src=guest-ks.cfg.j2
+            dest="~/kickstart/guest_{{ item.item }}-ks.cfg"
+            mode=0640
+  when: item|changed
+  with_items: domains.results
+
+- name: Install missing guests
+  shell: "~/bin/guest_{{ item.item }}-install.sh"
+  when: item|changed
+  with_items: domains.results

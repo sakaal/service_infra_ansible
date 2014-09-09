@@ -29,6 +29,7 @@
          tr -s ' ' | cut -d ' ' -f 5
   with_items: groups['{{ libvirt_guests_group | mandatory }}']
   register: macs
+  changed_when: False
   failed_when: macs is defined and macs.stderr.strip() != ''
 
 - name: Look up the local IP address of each guest
@@ -39,6 +40,7 @@
   when: item|success
   with_items: macs.results
   register: macs_and_ips
+  changed_when: False
   failed_when: macs_and_ips is defined and macs_and_ips.stderr.strip() != ''
 
 - name: Configure static local IP addresses in the libvirt default network

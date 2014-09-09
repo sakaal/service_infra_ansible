@@ -1,4 +1,12 @@
 #!/bin/bash
+#
+# CentOS 7 libvirt guest installation {{ ansible_date_time.iso8601 }}
+#
+
+sudo virsh -q dominfo "{{ item }}" >/dev/null 2>&1 && {
+    >&2 echo "Domain {{ item }} already exists."
+    exit 1
+}
 
 #
 # The logical volume group that serves as a libvirt storage pool.

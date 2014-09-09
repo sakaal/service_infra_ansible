@@ -1,4 +1,7 @@
-# CentOS 7 KVM guest kickstart configuration
+# CentOS 7 KVM guest kickstart configuration {{ ansible_date_time.iso8601 }}
+#
+# Prepares a guest virtual machine for Ansible configuration management.
+#
 
 #
 # Do not use the same password elsewhere.
@@ -170,24 +173,38 @@ chmod 664 .gitconfig
 # sed 4.2.1 preserves SELinux security contexts:
 # http://freecode.com/projects/sed/releases/301607
 
-# Configure sudoers
+## Configure sudoers
 sed -i 's/^%wheel[ \t]\+ALL=(ALL).*$/%wheel ALL=(ALL) NOPASSWD:ALL/g'\
  /etc/sudoers
+echo "Administrative sudo without password enabled"
 
-# Disallow root SSH access
+## Disable interactive startup
+grep -q -e '^\s*PROMPT' /etc/sysconfig/init ||\
+ ( echo "# disable interactive startup"; echo "PROMPT=no"; )\
+ >> /etc/sysconfig/init
+sed -i 's/PROMPT=yes/PROMPT=no/g' /etc/sysconfig/init
+echo "Interactive startup disabled"
+
+## Disallow root SSH access
 sed -i 's/^#\?PermitRootLogin[ \t]\+yes.*$/PermitRootLogin no/g'\
  /etc/ssh/sshd_config
+echo "SSH root login disabled"
 
-# Disallow password authentication
+## Disallow password authentication
 sed -i 's/^PasswordAuthentication[ \t]\+yes.*$/PasswordAuthentication no/g'\
  /etc/ssh/sshd_config
+echo "SSH password authentication disabled"
 
-# Configure SELinux to allow SSH on the administrative SSH port
+## Configure SELinux to allow SSH on the administrative SSH port
 semanage port -a -t ssh_port_t -p tcp {{ hostvars[item].admin_ssh_port }}
 
-# Set SSH port
+## Set SSH port
 sed -i 's/^#\?Port[ \t]\+22/Port {{ hostvars[item].admin_ssh_port }}/g'\
  /etc/ssh/sshd_config
+echo "SSH daemon set to a non-standard port"
+
+# TODO: Further hardening according to:
+# https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Security_Guide/
 
 yum -y update
 

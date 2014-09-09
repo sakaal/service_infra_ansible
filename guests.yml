@@ -1,0 +1,12 @@
+# file: guests.yml
+#
+# Installs virtual guest machines on the hypervisors. Usually run as:
+#
+# ansible-playbook -vv guests.yml -i bootstrap
+#
+
+- hosts: libvirt_hosts
+  roles:
+    - libvirt_guests_centos
+    - libvirt_guests_dhcp
+
