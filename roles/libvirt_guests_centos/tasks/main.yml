@@ -44,19 +44,17 @@
 - name: Generate libvirt guest installation scripts in ~/bin/
   template: >
             src=guest-install.sh.j2
-            dest="~/bin/guest_{{ item.item }}-install.sh"
+            dest="~/bin/guest_{{ item }}-install.sh"
             mode=0740
-  when: item|changed
-  with_items: domains.results
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
 
 - name: Generate libvirt guest configuration files in ~/kickstart/
   no_log: True
   template: >
             src=guest-ks.cfg.j2
-            dest="~/kickstart/guest_{{ item.item }}-ks.cfg"
+            dest="~/kickstart/guest_{{ item }}-ks.cfg"
             mode=0640
-  when: item|changed
-  with_items: domains.results
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
 
 - name: Install missing guests
   shell: "~/bin/guest_{{ item.item }}-install.sh"

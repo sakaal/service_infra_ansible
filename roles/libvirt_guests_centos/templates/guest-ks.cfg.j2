@@ -185,6 +185,14 @@ grep -q -e '^\s*PROMPT' /etc/sysconfig/init ||\
 sed -i 's/PROMPT=yes/PROMPT=no/g' /etc/sysconfig/init
 echo "Interactive startup disabled"
 
+## Disable the root shell
+#sed -i 's|^root:\(.*\):/bin/bash$|root:\1:/sbin/nologin|g' /etc/passwd
+#echo "Disabled the root shell"
+
+## Disable root access via any console
+echo > /etc/securetty
+echo "Disabled root access via any console"
+
 ## Disallow root SSH access
 sed -i 's/^#\?PermitRootLogin[ \t]\+yes.*$/PermitRootLogin no/g'\
  /etc/ssh/sshd_config
