@@ -4,32 +4,172 @@
 # Commits changes to the target Ansible inventory.
 #
 
-- name: Add the target inventory changes to git commit index
+- name: Create a temporary file for target repositories
   run_once: yes
   local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git add {{ target_ansible_inventory }}
+                lineinfile dest=/tmp/target_repos create=yes
+                regexp="^target_repos:$"
+                line="target_repos:"
+                state=present
+  changed_when: False
 
-- name: Add host_vars to git commit index
+- name: List hypervisor target repositories in the temporary file
   local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git add host_vars/{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}
+                lineinfile dest=/tmp/target_repos
+                regexp="^ - '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}'$"
+                line=" - '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}'"
+                state=present
+  changed_when: False
 
-- name: Check if there are any pending changes
+- name: List guest target repositories in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/target_repos
+                regexp="^ - '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}'$"
+                line=" - '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}'"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  changed_when: False
+
+- name: Load the list of target repositories from the temporary file
+  run_once: yes
+  local_action: include_vars /tmp/target_repos
+  changed_when: False
+
+- name: Delete the target repositories temporary file
+  run_once: yes
+  local_action: file dest=/tmp/target_repos state=absent
+  changed_when: False
+
+- name: Create a temporary file for target inventories
   run_once: yes
   local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git status
-  register: status_result
-  changed_when: "'new file:' in status_result.stdout or 'modified:' in status_result.stdout" 
+                lineinfile dest=/tmp/target_inventories create=yes
+                regexp="^target_inventories:$"
+                line="target_inventories:"
+                state=present
+  changed_when: False
 
-- name: Commit target Ansible repository changes
+- name: List hypervisor target inventories in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/target_inventories
+                regexp="^ - \{ cd: '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}', file: '{{ target_ansible_inventory }}' \}$"
+                line=" - { cd: '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}', file: '{{ target_ansible_inventory }}' }"
+                state=present
+  changed_when: False
+
+- name: List guest target inventories in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/target_inventories
+                regexp="^ - \{ cd: '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}', file: '{{ hostvars[item].target_ansible_inventory }}' \}$"
+                line=" - { cd: '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}', file: '{{ hostvars[item].target_ansible_inventory }}' }"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  changed_when: False
+
+- name: Load the list of target inventories from the temporary file
+  run_once: yes
+  local_action: include_vars /tmp/target_inventories
+  changed_when: False
+
+- name: Delete the target inventories temporary file
+  run_once: yes
+  local_action: file dest=/tmp/target_inventories state=absent
+  changed_when: False
+
+- name: Check if the target inventories have changed
   run_once: yes
   local_action: >
-                command chdir='{{ target_ansible_parent }}/{{ target_ansible_repo_name }}'
-                git commit -m "bootstrap handed over {{ play_hosts | join(' ') }}"
-  when: status_result|changed
+                command chdir="{{ item.cd | mandatory }}"
+                git status --porcelain {{ item.file | mandatory }}
+  with_items: target_inventories
+  register: inventories
+  changed_when: inventories is defined and "{{ item.file }}" in inventories.stdout
 
-- name: Remove the hosts from the bootstrap inventory
-  local_action: command sed -i '/^{{ inventory_hostname }}/d' bootstrap
+- name: Add target inventory changes to git commit index
+  run_once: yes
+  local_action: >
+                command chdir="{{ item.item.cd | mandatory }}"
+                git add {{ item.item.file | mandatory }}
+  when: item|changed
+  with_items: inventories.results
 
+- name: Create a temporary file for managed nodes
+  run_once: yes
+  local_action: >
+                lineinfile dest=/tmp/managed_nodes create=yes
+                regexp="^managed_nodes:$"
+                line="managed_nodes:"
+                state=present
+  changed_when: False
+
+- name: List managed hypervisors in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/managed_nodes
+                regexp="^ - \{ cd: '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}', host: '{{ hostvars[inventory_hostname].hostname | mandatory }}' \}$"
+                line=" - { cd: '{{ target_ansible_parent }}/{{ target_ansible_repo_name }}', host: '{{ hostvars[inventory_hostname].hostname | mandatory }}' }"
+                state=present
+  changed_when: False
+
+- name: List managed guests in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/managed_nodes
+                regexp="^ - \{ cd: '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}', host: '{{ item }}' \}$"
+                line=" - { cd: '{{ hostvars[item].target_ansible_parent }}/{{ hostvars[item].target_ansible_repo_name }}', host: '{{ item }}' }"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  changed_when: False
+
+- name: Load the list of managed nodes from the temporary file
+  run_once: yes
+  local_action: include_vars /tmp/managed_nodes
+  changed_when: False
+
+- name: Delete the managed nodes temporary file
+  run_once: yes
+  local_action: file dest=/tmp/managed_nodes state=absent
+  changed_when: False
+
+- name: Check if the managed node host_vars have changed
+  run_once: yes
+  local_action: command chdir="{{ item.cd | mandatory }}"
+                git status --porcelain host_vars/{{ item.host | mandatory }}
+  with_items: managed_nodes
+  register: managed_host_vars
+  changed_when: managed_host_vars is defined and "{{ item.host }}" in managed_host_vars.stdout
+
+- name: Add managed node host_vars changes to git commit index
+  run_once: yes
+  local_action: >
+                command chdir="{{ item.item.cd | mandatory }}"
+                git add host_vars/{{ item.item.host | mandatory }}
+  when: item|changed
+  with_items: managed_host_vars.results
+
+- name: Check if the target repository was changed
+  run_once: yes
+  local_action: >
+                shell chdir="{{ item }}"
+                git status --porcelain | grep '^[AM]' | cut -c4-
+  register: repo_status
+  with_items: target_repos
+  changed_when: repo_status is defined and repo_status.stdout.strip() != ""
+
+- name: Commit target repository changes
+  run_once: yes
+  local_action: >
+                command chdir='{{ item.item }}'
+                git commit -m "bootstrap handover
+                {{ item.stdout_lines | join(' ')
+                | regex_replace('host_vars/', '') }}"
+  when: item|changed
+  with_items: repo_status.results
+
+#
+# Only cleanly transferred managed nodes will be removed automatically.
+# When reinstalling existing nodes so that previously existing target
+# host_vars are retained, the bootstrap inventory must be updated manually. 
+#
+- name: Remove managed nodes from the bootstrap inventory
+  local_action: command sed -i '/^{{ item.item }}/d' bootstrap
+  when: item|changed
+  with_items: managed_host_vars.results

@@ -4,30 +4,106 @@
 # Adds freshly provisioned managed servers to the target inventory.
 #
 
+- name: Create a temporary file for target repositories
+  run_once: yes
+  local_action: >
+                lineinfile dest=/tmp/target_repos create=yes
+                regexp="^target_repos:$"
+                line="target_repos:"
+                state=present
+  changed_when: False
+
+- name: List hypervisor target repositories in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/target_repos
+                regexp="parent: '{{ target_ansible_parent }}', name: '{{ target_ansible_repo_name }}'"
+                line=" - { parent: '{{ target_ansible_parent | mandatory }}', name: '{{ target_ansible_repo_name | mandatory }}', url: '{{ target_ansible_repo_url | mandatory }}' }"
+                state=present
+  changed_when: False
+
+- name: List guest target repositories in the temporary file
+  local_action: >
+                lineinfile dest=/tmp/target_repos
+                regexp="parent: '{{ hostvars[item].target_ansible_parent }}', name: '{{ hostvars[item].target_ansible_repo_name }}'"
+                line=" - { parent: '{{ hostvars[item].target_ansible_parent | mandatory }}', name: '{{ hostvars[item].target_ansible_repo_name | mandatory }}', url: '{{ hostvars[item].target_ansible_repo_url | mandatory }}' }"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  changed_when: False
+
+- name: Load the list of target repositories from the temporary file
+  run_once: yes
+  local_action: include_vars /tmp/target_repos
+  changed_when: False
+
+- name: Delete the target repositories temporary file
+  run_once: yes
+  local_action: file dest=/tmp/target_repos state=absent
+  changed_when: False
+
 - name: Checkout the target Ansible repository
   run_once: yes
   local_action: >
-                command chdir="{{ target_ansible_parent | mandatory }}"
-                git clone {{ target_ansible_repo_url | mandatory }} {{ target_ansible_repo_name | mandatory }}
-                creates="{{ target_ansible_repo_name }}"
+                command chdir="{{ item.parent | mandatory }}"
+                git clone {{ item.url | mandatory }} {{ item.name | mandatory }}
+                creates="{{ item.name }}"
+  with_items: target_repos
+
+- name: Compare the target repository status with upstream
+  run_once: yes
+  local_action: >
+                command chdir="{{ item.parent }}/{{ item.name }}"
+                git rev-list HEAD@{upstream}..HEAD
+  with_items: target_repos
+  register: repo_status
+  changed_when: False
 
 - name: Check that there are no pending commits
   run_once: yes
-  local_action: >
-                command chdir="{{ target_ansible_parent }}/{{ target_ansible_repo_name }}"
-                git status
-  register: status_result
-  changed_when: False 
-  failed_when: "'Your branch is ahead of' in status_result.stdout"
+  fail: >
+        msg="The target repository {{ item.item.name }} is ahead of upstream
+        by the following commit(s): {{ item.stdout_lines | join(' ') }}"
+  when: item.stdout.strip() != ""
+  with_items: repo_status.results
 
-- name: Add hosts under the target inventory group
+- name: Ensure hypervisor target inventory group exists
   local_action: >
-                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/{{ target_ansible_inventory }}"
-                regexp="^{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}" line="{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}"
-                insertafter="^\[{{ target_ansible_group | mandatory }}\]"
+                lineinfile
+                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/{{ target_ansible_inventory }}"
+                regexp="^\[{{ target_ansible_group | mandatory }}\]"
+                line="[{{ target_ansible_group }}]"
                 state=present
 
-- name: Add host_vars
+- name: Ensure hypervisor appears under the target inventory group
   local_action: >
-                template backup=yes src=host_vars.j2
-                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname | default(inventory_hostname) }}"
+                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/{{ target_ansible_inventory }}"
+                regexp="^{{ hostname | mandatory }}" line="{{ hostname }}"
+                insertafter="^\[{{ target_ansible_group }}\]"
+                state=present
+
+- name: Add new hypervisor host_vars (retain existing)
+  local_action: >
+                template force=no backup=yes src=libvirt_host_centos_host_vars.j2
+                dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostname }}"
+
+- name: Ensure guest target inventory group exists
+  local_action: >
+                lineinfile force=no
+                dest="{{ hostvars[item].target_ansible_parent | mandatory }}/{{ hostvars[item].target_ansible_repo_name }}/{{ hostvars[item].target_ansible_inventory }}"
+                regexp="^\[{{ hostvars[item].target_ansible_group | mandatory }}\]"
+                line="[{{ hostvars[item].target_ansible_group }}]"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+
+- name: Ensure guest appears under the target inventory group
+  local_action: >
+                lineinfile dest="{{ hostvars[item].target_ansible_parent | mandatory }}/{{ hostvars[item].target_ansible_repo_name }}/{{ hostvars[item].target_ansible_inventory }}"
+                regexp="^{{ item }}" line="{{ item }}"
+                insertafter="^\[{{ hostvars[item].target_ansible_group | mandatory }}\]"
+                state=present
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+
+- name: Add new guest host_vars (retain existing)
+  local_action: >
+                template force=no backup=yes src=libvirt_guest_centos_host_vars.j2
+                dest="{{ hostvars[item].target_ansible_parent | mandatory }}/{{ hostvars[item].target_ansible_repo_name }}/host_vars/{{ item }}"
+  with_items: groups[libvirt_guests_group]

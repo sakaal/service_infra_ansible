@@ -9,16 +9,29 @@
 #
 # roles/libvirt_guests_centos
 #
+
 guest_description: example guest virtual machine
 guest_vg_name: guest
 guest_ram: 1536
 guest_vcpus: 2
 guest_os_variant: rhel7
+
 # Please use the CentOS and EPEL mirrors nearest to your servers.
 centos_repo_url: http://centos.mirror-server.de/7/os/x86_64/
 epel_rpm_url: http://mirror.fraunhofer.de/dl.fedoraproject.org/epel/7/x86_64/e/epel-release-7-1.noarch.rpm
+
 guest_lang: en_US.UTF-8
 #guest_keyboard: fi-latin1
 guest_keyboard: us
 #guest_timezone: --utc Europe/Helsinki
 guest_timezone: --utc America/New York
+
+#
+# roles/ansible_inventory
+#
+
+# Name of the inventory file inside the main repository
+target_ansible_inventory: staging
+
+# Name of the inventory group where to add the new guest
+target_ansible_group: libvirt_guests_host.example.com

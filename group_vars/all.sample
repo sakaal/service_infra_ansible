@@ -18,8 +18,8 @@
 # The main configuration data repository where the hosts will be moved
 # after the bootstrap stage has completed successfully
 #
-#target_ansible_repo_name: com.example.main_ansible
-#target_ansible_repo_url: "git@github.com:sakaal/{{ target_ansible_repo_name }}.git"
+#target_ansible_repo_name: "com.example.main_ansible"
+#target_ansible_repo_url: "git@github.com:sakaal/com.example.main_ansible.git"
 
 #
 # Local parent directory that contains a working copy of the main repository

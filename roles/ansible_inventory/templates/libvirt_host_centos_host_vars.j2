@@ -1,0 +1,40 @@
+# file: host_vars/{{ hostname | mandatory }}
+#
+# bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
+# bootstrap default IPv4 address: {{ ansible_default_ipv4.address }}
+# bootstrap default MAC: {{ ansible_default_ipv4.macaddress }}
+# bootstrap OS: {{ ansible_distribution }} {{ ansible_distribution_version }} {{ ansible_distribution_release }}
+# bootstrap kernel: {{ ansible_kernel }}
+# bootstrap memory: {{ ansible_memtotal_mb }} MB total
+# bootstrap swap: {{ ansible_swaptotal_mb }} MB total
+# bootstrap processor: {{ ansible_processor_cores }} cores, {{ ansible_processor_vcpus }} vCPUs
+# bootstrap virtualization: {{ ansible_virtualization_type }} {{ ansible_virtualization_role }}
+{% for dev, device in ansible_devices.iteritems() %}
+# bootstrap device: {{ dev }} {{ device.size }}
+#             host: {{ device.host }}
+#            model: {{ device.model }}
+{% for part, info in device.partitions.iteritems() %}
+#        partition: {{ part }} {{ info.size }}
+{% endfor %}{% endfor %}
+{% for mount in ansible_mounts %}
+# bootstrap mount: {{ mount.device }} {{ mount.fstype }} {{ mount.mount }} {{ mount.options }}
+{% endfor %}
+# bootstrap selinux: {{ ansible_selinux.status }}
+# bootstrap SSH host key DSA public: {{ ansible_ssh_host_key_dsa_public }}
+# bootstrap SSH host key RSA public: {{ ansible_ssh_host_key_rsa_public }}
+
+#
+# Additional single IPs and their MAC addresses
+# allocated to a Hetzner dedicated root server for use with virtualization.
+# These are collected automatically during the provision of new hypervisors
+# or can be configured manually later.
+#
+hetzner_single_ips:
+#  - { 'ip': '203.0.113.24', mac: '00:53:56:00:4A:C5' }
+
+#
+# roles/backup_client
+#
+backup_onsite_protocol: sftp
+#backup_onsite_service: u?????.your-backup.de
+#backup_onsite_account: u?????

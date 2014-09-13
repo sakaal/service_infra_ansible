@@ -151,14 +151,7 @@ Once you have the servers:
 
         ansible-playbook hypervisors.yml -i bootstrap
 
-1. After the new managed nodes are ready, they will be transferred over
-   from the bootstrap inventory to the main configuration management inventory.
-
-        ansible-playbook handovers.yml -i bootstrap
-    * Ensure that the bootstrap inventory is again empty.
-    * Manually push the target inventory changes to the main repository.
-
-The hypervisors are now ready for service operation.
+The hypervisors are now ready to be transferred to service operation.
 
 ### Provisioning guest virtual machines
 
@@ -166,9 +159,10 @@ The hypervisors are now ready for service operation.
    `bootstrap` inventory by substituting your hypervisor hostnames for
    `host.example.com`. Create one group per hypervisor.
 
-1. Add the guest virtual machine fully qualified domain names (FQDNs)
-   in the `bootstrap` inventory under the guests group
-   of the desired hypervisor.
+1. Add the guest virtual machine fully qualified domain names (FQDNs) to the
+   `bootstrap` inventory under the guests group of the desired hypervisor.
+    * These are local private guest names in the secure management domain
+      for administrative access via the hypervisor.
 
 1. For each guest, copy the `host_vars/guest.host.example.com.sample`
    to a file with a name matching the guest FQDN, and
@@ -181,7 +175,38 @@ The hypervisors are now ready for service operation.
 
         ansible-playbook guests.yml -i bootstrap
 
-1. TODO: Transfer the guests to the main CMDB.
+The guests are now ready to be transferred to service operation.
+
+### Transfer to service operation
+
+The hypervisors and their guest virtual machines
+are collectively referred to as *managed nodes*. 
+
+After the new managed nodes are ready, they will be transferred over
+from the bootstrap inventory to the main configuration management inventory.
+
+1. If you are redeploying previously existed hosts, decide
+   whether you want to keep or reset their existing configuration.
+    * To retain the same configuration,
+      keep the existing host variables files.
+    * To reset to a blank configuration,
+      remove the old host variables files manually
+      from the target repository before transfer.
+
+1. Perform the transfer:
+
+        ansible-playbook handovers.yml -i bootstrap
+    * Ensure that the bootstrap inventory is again empty.
+      You may have to do this manually, if you are redeploying
+      previously existed hosts and retaining the same configuration.
+      This allows redeploying several times, if necessary, while
+      manually adjusting the configuration.
+
+1. Review the changes to the target inventory and the host variables.
+
+1. Manually push the target inventory changes to the main repository.
+
+The managed nodes are now ready for service operation.
 
 ## Continual improvement
 

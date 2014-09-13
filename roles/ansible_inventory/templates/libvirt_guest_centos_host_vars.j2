@@ -1,0 +1,13 @@
+# file: host_vars/{{ item }}
+#
+# bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
+# bootstrap description: {{ hostvars[item].guest_description }}
+# bootstrap volume group name: {{ hostvars[item].guest_vg_name | mandatory }}
+# bootstrap OS variant: {{ hostvars[item].guest_os_variant | mandatory }}
+# bootstrap memory: {{ hostvars[item].guest_ram | mandatory }} MB
+# bootstrap processor: {{ hostvars[item].guest_vcpus }} vCPUs
+# bootstrap CentOS repository: {{ hostvars[item].centos_repo_url | mandatory }}
+# bootstrap EPEL RPM URL: {{ hostvars[item].epel_rpm_url | mandatory }}
+# bootstrap language: {{ hostvars[item].guest_lang | mandatory }}
+# bootstrap keyboard: {{ hostvars[item].guest_keyboard | mandatory }}
+# bootstrap timezone: {{ hostvars[item].guest_timezone | mandatory }}
