@@ -3,9 +3,10 @@
 
 This is a configuration management database (CMDB)
 for tracking configuration items (CIs) related to
-deployment of hardware virtualization hypervisors
-and a secure domain name system (DNS) for
-administrative access during service transition.
+deployment of hardware virtualization hypervisors,
+their guest virtual machines, and a secure domain
+name system (DNS) for administrative access during
+service transition.
 
 A hypervisor is a physical infrastructure node for
 hosting the virtual machines comprising the service.
@@ -202,7 +203,7 @@ from the bootstrap inventory to the main configuration management inventory.
       This allows redeploying several times, if necessary, while
       manually adjusting the configuration.
 
-1. Review the changes to the target inventory and the host variables.
+1. Review the changes to the target inventory and to the host variables.
 
 1. Manually push the target inventory changes to the main repository.
 
