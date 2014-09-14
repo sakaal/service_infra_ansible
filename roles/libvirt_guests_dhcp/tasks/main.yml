@@ -32,6 +32,14 @@
   changed_when: False
   failed_when: macs is defined and macs.stderr.strip() != ''
 
+- name: Wait for the guest to receive an IP address from Dnsmasq
+  wait_for: >
+            path=/var/lib/libvirt/dnsmasq/default.leases
+            search_regex=" {{ item.stdout }} "
+            timeout=30
+  when: item|success
+  with_items: macs.results
+
 - name: Look up the local IP address of each guest
   sudo: yes
   shell: >
