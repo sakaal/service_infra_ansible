@@ -32,6 +32,24 @@
 - name: Prevent entering interactive boot
   lineinfile: dest=/etc/sysconfig/init regexp="^\s*PROMPT" line="PROMPT=no" state=present
 
+- name: Require boot-time password for single user mode
+  sudo: yes
+  lineinfile: >
+              dest=/etc/grub.d/40_custom regexp="^\s*set superusers"
+              line="set superusers=\"{{ admin_username }}\"" state=present
+
+- name: Set the boot-time password
+  sudo: yes
+  lineinfile: >
+              dest=/etc/grub.d/40_custom regexp="^\s*password_pbkdf2"
+              insertafter="^\s*set superusers"
+              line="password_pbkdf2 {{ admin_username }} {{ guest_bootpw_pbkdf2 | mandatory }}"
+              state=present
+
+- name: Make the boot configuration
+  sudo: yes
+  command: grub2-mkconfig --output=/boot/grub2/grub.cfg
+
 - name: Disallow root SSH access
   lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin" line="PermitRootLogin no" state=present
   notify:

@@ -185,6 +185,15 @@ grep -q -e '^\s*PROMPT' /etc/sysconfig/init ||\
 sed -i 's/PROMPT=yes/PROMPT=no/g' /etc/sysconfig/init
 echo "Interactive startup disabled"
 
+## Require password for single user mode
+grep -q -e '^\s*set superusers' /etc/grub.d/40_custom || \
+cat >> /etc/grub.d/40_custom << EOF
+set superusers="{{ admin_username }}"
+password_pbkdf2 {{ admin_username }} {{ guest_bootpw_pbkdf2 | mandatory }}
+EOF
+grub2-mkconfig --output=/boot/grub2/grub.cfg
+echo "Required password for single user mode"
+
 ## Disable the root shell
 #sed -i 's|^root:\(.*\):/bin/bash$|root:\1:/sbin/nologin|g' /etc/passwd
 #echo "Disabled the root shell"

@@ -13,12 +13,15 @@
 #
 
 #
+# On CentOS or Fedora, to create a PBKDF2 protected password, you can use:
+# grub2-mkpasswd-pbkdf2
+#
 # Change the guest root password at first login immediately after provision
 # of the new virtual machine in a private network.
 # On CentOS, to create an SHA-512 hashed password, you can use:
 # grub-crypt --sha-512
 #
-# Set the variable guest_rootpw_sha512 in file:
+# Set the variables guest_rootpw_sha512 and guest_bootpw_pbkdf2 in file:
 # /mnt/sensitive_data/etc/ansible/vars/libvirt_guests_centos.yml
 #
 - name: Loading libvirt guest provisioning access credentials
