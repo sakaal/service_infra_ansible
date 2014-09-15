@@ -15,6 +15,13 @@
   shell: ssh-keygen -r {{ hostname | mandatory }}
   register: sshfp_result
 
+- name: Delete old DNS SSHFP records
+  when: sshfp_result|success
+  local_action: >
+                command curl -X DELETE
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
+
 - name: Make DNS SSHFP records
   when: sshfp_result|success
   local_action: >

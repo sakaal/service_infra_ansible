@@ -5,6 +5,8 @@
 # ansible-playbook -vv managed_servers.yml -ki bootstrap
 #
 - hosts: libvirt_hosts
+  vars_files:
+    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - admin_access
     - admin_tools

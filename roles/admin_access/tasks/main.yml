@@ -1,6 +1,15 @@
 # file: roles/admin_access/tasks/main.yml
-
+#
 # The administrative access role enables configuration management access.
+#
+
+#
+# On CentOS or Fedora, to create a PBKDF2 protected password, you can use:
+# grub2-mkpasswd-pbkdf2
+#
+# Set the variable host_bootpw_pbkdf2 in file:
+# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+#
 
 - name: Enable Ansible under SELinux
   yum: pkg=libselinux-python state=present
@@ -43,10 +52,12 @@
   lineinfile: >
               dest=/etc/grub.d/40_custom regexp="^\s*password_pbkdf2"
               insertafter="^\s*set superusers"
-              line="password_pbkdf2 {{ admin_username }} {{ guest_bootpw_pbkdf2 | mandatory }}"
+              line="password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 | mandatory }}"
               state=present
+  register: boot_password
 
 - name: Make the boot configuration
+  when: boot_password|changed
   sudo: yes
   command: grub2-mkconfig --output=/boot/grub2/grub.cfg
 
@@ -62,9 +73,9 @@
 
 - name: Configure SELinux to allow SSH on the administrative SSH port
   command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
+  ignore_errors: yes
 
 - name: Set SSH port
   lineinfile: dest=/etc/ssh/sshd_config regexp="^Port" line="Port {{ admin_ssh_port | mandatory }}" state=present
   notify:
    - Restart sshd
-

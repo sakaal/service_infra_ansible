@@ -130,17 +130,17 @@ Once you have the servers:
 1. Perform a minimal operating system installation using whichever approach
    is most convenient in the hosting provider's environment.
     * [Hetzner installimage CentOS](Hetzner_installimage_CentOS.md)
+
+1. Remove the old server keys from your known hosts file, if any:
+
+        ansible-playbook forget_servers.yml -i bootstrap
+    * You may need to contact the hosts manually once, to accept their new host keys.
+
 1. Set a strong root account password as appropriate.
    It will only be used when preparing the host for automated configuration.
    Keep the credentials according to the administrative access plan, just in case.
 
 ### Configuring the servers
-
-1. If you are redeploying previously existed hosts,
-   remove the old server keys from your known hosts file:
-
-        ansible-playbook forget_servers.yml -i bootstrap
-    * You may need to contact the hosts manually once, to accept their new host keys.
 
 1. Prepare the hosts for automated configuration:
 
