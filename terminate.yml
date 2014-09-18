@@ -5,6 +5,8 @@
 # ansible-playbook -vvv terminate.yml -i decommission
 #
 - hosts: libvirt_hosts
+  vars_files:
+    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - libvirt_guests_terminate
 

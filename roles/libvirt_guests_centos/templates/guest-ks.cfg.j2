@@ -11,7 +11,7 @@ rootpw --iscrypted {{ guest_rootpw_sha512 | mandatory }}
 authconfig --enableshadow --passalgo=sha512
 
 # Create the admin SSH account
-user --name={{ hostvars[item].admin_username | mandatory }} --gecos="{{ admin_fullname }}" --groups=wheel --shell=/bin/bash
+user --name={{ admin_username | mandatory }} --gecos="{{ admin_fullname }}" --groups=wheel --shell=/bin/bash
 
 cmdline
 skipx
@@ -43,7 +43,7 @@ logvol swap --fstype="swap" --size=4096 --maxsize=4096 --name=lv_{{ hostvars[ite
 #
 network --device=eth0 --bootproto=dhcp --onboot=on --hostname={{ item }}
 
-firewall --enable --service=ssh --port {{ hostvars[item].admin_ssh_port | mandatory }}:tcp
+firewall --enable --service=ssh --port {{ admin_ssh_port | mandatory }}:tcp
 services --enabled=sshd,ntpd,acpid
 selinux --enforcing
 
@@ -151,7 +151,7 @@ cd /home/{{ admin_username | mandatory }}
 mkdir --mode=700 .ssh
 ssh-keygen -q -N "" -t rsa -f .ssh/id_rsa -C "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
 cat >> .ssh/authorized_keys << "PUBLIC"
-{% for authorized_key in hostvars[item].admin_authorized_keys %}
+{% for authorized_key in admin_authorized_keys %}
 {{ authorized_key }}
 {% endfor %}
 PUBLIC
@@ -213,10 +213,10 @@ sed -i 's/^PasswordAuthentication[ \t]\+yes.*$/PasswordAuthentication no/g'\
 echo "SSH password authentication disabled"
 
 ## Configure SELinux to allow SSH on the administrative SSH port
-semanage port -a -t ssh_port_t -p tcp {{ hostvars[item].admin_ssh_port }}
+semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port }}
 
 ## Set SSH port
-sed -i 's/^#\?Port[ \t]\+22/Port {{ hostvars[item].admin_ssh_port }}/g'\
+sed -i 's/^#\?Port[ \t]\+22/Port {{ admin_ssh_port }}/g'\
  /etc/ssh/sshd_config
 echo "SSH daemon set to a non-standard port"
 

@@ -2,18 +2,10 @@
 
 # Removes previously known host keys before reinstalling the same servers.
 
-- name: Locally remove SSH known host keys by bootstrap inventory name (address)
+- name: Locally remove SSH known host keys
   local_action: "command ssh-keygen -R {{ item }}"
-  with_items: groups['managed_servers']
-
-- name: Locally remove SSH known host keys by bootstrap configured hostname
-  local_action: "command ssh-keygen -R {{ hostvars[item].hostname | mandatory }}"
-  with_items: groups['managed_servers']
-
-- name: Locally remove SSH known host key by bootstrap inventory name (address) and management port
-  local_action: "command ssh-keygen -R [{{ item }}]:{{ admin_ssh_port | mandatory }}"
-  with_items: groups['managed_servers']
-
-- name: Locally remove SSH known host key by bootstrap configured hostname and management port
-  local_action: "command ssh-keygen -R [{{ hostvars[item].hostname }}]:{{ admin_ssh_port }}"
-  with_items: groups['managed_servers']
+  with_items:
+  - "{{ inventory_hostname }}"
+  - "{{ hostvars[inventory_hostname].hostname | mandatory }}"
+  - "[{{ inventory_hostname }}]:{{ admin_ssh_port | mandatory }}"
+  - "[{{ hostvars[inventory_hostname].hostname }}]:{{ admin_ssh_port }}"

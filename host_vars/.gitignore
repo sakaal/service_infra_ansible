@@ -1,5 +1,5 @@
 # Ignore everything in the host_vars directory.
-# Each host is removed from the temporary bootstrap inventory
+# Host provisioning variables are temporary and will be removed
 # as soon as they have been configured for the main inventory.
 *
 # Except:

@@ -5,7 +5,11 @@
 #
 # ansible-playbook -vvv forget_servers.yml -i bootstrap
 #
-- hosts: localhost
+- hosts: libvirt_hosts
+  vars_files:
+    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+  gather_facts: no
+  serial: 1
   connection: local
   roles:
     - admin_forget

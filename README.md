@@ -52,13 +52,15 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
     * Basic know-how of DNS Security Extensions (DNSSEC)
     * Intermediate know-how of Linux virtualization
 1. Service Infrastructure configuration repository (this CMDB)
-1. Administrative Client System (ACS) ready for use
+1. [Administrative Client System (ACS)](https://github.com/sakaal/admin_client)
+   ready for use
 1. Account with the hosting provider (requires credit card)
     * Hetzner Webservice API access
 1. Account with the managed DNS provider (requires credit card)
     * DynECT API access
 1. A domain name with DNSSEC support for management purposes
-1. Main configuration repository for the service operation stage
+1. [Main configuration repository](https://github.com/sakaal/com.example.main_ansible)
+   for the service operation stage (`com.example.main_ansible`)
 1. Root access credentials and the IP addresses of one or more dedicated servers
 
 ### Registering a management domain name
@@ -77,16 +79,32 @@ The playbooks are run on an
 that has access to the service infrastructure nodes and external services
 via a secure private channel over the Internet.
 
+Substitute your service management domain name for `example.com` (and
+`com.example` in reverse order).
+
+1. Check out the infrastructure configuration repository (playbooks):
+
     git clone git@github.com:sakaal/service_infra_ansible.git
+
+1. Check out the
+   [main configuration repository](https://github.com/sakaal/com.example.main_ansible)
+   (inventories): 
+
+    git clone git@github.com:sakaal/com.example.main_ansible.git
+    * If you are deploying a new repository, follow the instructions
+      found in the example repository to use it as a template to copy.
+    * You must have initialized the repository
+      and added a remote repository to follow
+      before you can transfer managed nodes to the main inventory. 
+
+1. Open the sensitive data volume:
+
+        sudo open_sensitive_data
 
 1. Examine until you understand the configuration files.
    Make working copies of the sample files as appropriate for your environment.
 
 1. Observe instructions found in the configuration files.
-
-1. Open the sensitive data volume:
-
-        sudo open_sensitive_data
 
 ### Deploying the DNS zones
 
@@ -97,7 +115,8 @@ If you haven't already created a security enabled DNS zone:
 
 1. Deploy the zone using:
 
-        ansible-playbook -v dns.yml -i zones
+        ansible-playbook -v service_infra_ansible/dns.yml -i com.example.main_ansible/zones
+
 1. Add the Delegation Signer (DS) record from the DNS management console
    to your domain registration.
 
@@ -124,7 +143,7 @@ Once you have the servers:
    a name matching the inventory entry, and edit it to set
    at least the `dns_zone` and `hostname`:
 
-        cd host_vars/
+        cd service_infra_ansible/host_vars/
         cp 203.0.113.1.sample 203.0.113.1
 
 1. Perform a minimal operating system installation using whichever approach
@@ -133,7 +152,7 @@ Once you have the servers:
 
 1. Remove the old server keys from your known hosts file, if any:
 
-        ansible-playbook forget_servers.yml -i bootstrap
+        ansible-playbook service_infra_ansible/forget_servers.yml -i com.example.main_ansible/bootstrap
     * You may need to contact the hosts manually once, to accept their new host keys.
 
 1. Set a strong root account password as appropriate.
@@ -144,13 +163,13 @@ Once you have the servers:
 
 1. Prepare the hosts for automated configuration:
 
-        ansible-playbook managed_servers.yml -ki bootstrap
+        ansible-playbook service_infra_ansible/managed_servers.yml -ki com.example.main_ansible/bootstrap
     * You may need to provide the root password manually on the initial run.
     * You may need to accept the target host key fingerprint at first connect.
 
 1. Configure the hosts as virtualization hypervisors:
 
-        ansible-playbook hypervisors.yml -i bootstrap
+        ansible-playbook service_infra_ansible/hypervisors.yml -i com.example.main_ansible/bootstrap
 
 The hypervisors are now ready to be transferred to service operation.
 
@@ -169,12 +188,12 @@ The hypervisors are now ready to be transferred to service operation.
    to a file with a name matching the guest FQDN, and
    edit the file to set the guest provisioning parameters:
 
-        cd host_vars/
+        cd service_infra_ansible/host_vars/
         cp guest.host.example.com.sample guest.host.example.com
 
 1. Provision the guest virtual machines:
 
-        ansible-playbook guests.yml -i bootstrap
+        ansible-playbook service_infra_ansible/guests.yml -i com.example.main_ansible/bootstrap
 
 The guests are now ready to be transferred to service operation.
 
@@ -192,20 +211,20 @@ from the bootstrap inventory to the main configuration management inventory.
       keep the existing host variables files.
     * To reset to a blank configuration,
       remove the old host variables files manually
-      from the target repository before transfer.
+      from the main configuration repository before transfer.
 
 1. Perform the transfer:
 
-        ansible-playbook handovers.yml -i bootstrap
+        ansible-playbook service_infra_ansible/handovers.yml -i com.example.main_ansible/bootstrap
     * Ensure that the bootstrap inventory is again empty.
       You may have to do this manually, if you are redeploying
       previously existed hosts and retaining the same configuration.
       This allows redeploying several times, if necessary, while
       manually adjusting the configuration.
 
-1. Review the changes to the target inventory and to the host variables.
+1. Review the changes to the target inventories and to the host variables.
 
-1. Manually push the target inventory changes to the main repository.
+1. Manually push the changes to the main repository.
 
 The managed nodes are now ready for service operation.
 

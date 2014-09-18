@@ -5,6 +5,8 @@
 # to the production inventory (Service Operation).
 #
 - hosts: libvirt_hosts
+  vars_files:
+    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - ansible_inventory
     - hetzner_single_ips

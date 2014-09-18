@@ -21,14 +21,11 @@
 # On CentOS, to create an SHA-512 hashed password, you can use:
 # grub-crypt --sha-512
 #
-# Set the variables guest_rootpw_sha512 and guest_bootpw_pbkdf2 in file:
-# /mnt/sensitive_data/etc/ansible/vars/libvirt_guests_centos.yml
+# Set the following variables in file:
+# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
 #
-- name: Loading libvirt guest provisioning access credentials
-  sudo: yes
-  run_once: yes
-  no_log: True
-  include_vars: /mnt/sensitive_data/etc/ansible/vars/libvirt_guests_centos.yml
+#guest_bootpw_pbkdf2:
+#guest_rootpw_sha512:
 
 - name: Ensure user home ~/bin directory exists
   file: state=directory path=~/bin mode=0750

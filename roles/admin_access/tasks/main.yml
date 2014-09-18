@@ -4,12 +4,26 @@
 #
 
 #
+# Set all the following variables in file:
+# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+#
+
+#
+# Set the admin_username separate from the root user account
+# and use a randomly chosen high admin_ssh_port.
+# Keep these private to service administration.
+#
+#admin_username:
+#admin_fullname: 
+#admin_email:
+#admin_ssh_port: 
+#admin_authorized_keys:
+
+#
 # On CentOS or Fedora, to create a PBKDF2 protected password, you can use:
 # grub2-mkpasswd-pbkdf2
 #
-# Set the variable host_bootpw_pbkdf2 in file:
-# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
-#
+#host_bootpw_pbkdf2:
 
 - name: Enable Ansible under SELinux
   yum: pkg=libselinux-python state=present

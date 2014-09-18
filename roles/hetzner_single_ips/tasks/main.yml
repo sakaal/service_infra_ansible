@@ -90,14 +90,14 @@
 
 - name: Declare the hetzner_single_ips variable in target repository host_vars
   local_action: >
-                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+                lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 regexp="^hetzner_single_ips:"
                 line="hetzner_single_ips:"
                 state=present
 
 - name: Add the Hetzner single IPs and their corresponding MAC addresses
   local_action: >
-                lineinfile dest="{{ target_ansible_parent | mandatory }}/{{ target_ansible_repo_name }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+                lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 insertafter="hetzner_single_ips"
                 regexp="^  - { ip: '{{ item.ip.ip }}'"
                 line="  - { ip: '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"

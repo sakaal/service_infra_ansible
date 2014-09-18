@@ -4,6 +4,8 @@
 #
 
 - hosts: libvirt_hosts
+  vars_files:
+    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - dynect_dns_record
     - hetzner_reverse_dns

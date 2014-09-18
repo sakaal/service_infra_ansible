@@ -28,22 +28,30 @@
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes
 
+- name: Check if SSH known hosts file exists
+  stat: path="~/.ssh/known_hosts"
+  register: known_hosts
+
 - name: Remove FQDNs from SSH known hosts
   command: ssh-keygen -R {{ item }}
   with_items: groups['ex_{{ libvirt_guests_group }}']
+  when: known_hosts.stat.exists
   ignore_errors: yes
 
 - name: Remove FQDNs (admin port) from SSH known hosts
   command: ssh-keygen -R "[{{ item }}]:{{ admin_ssh_port }}"
   with_items: groups['ex_{{ libvirt_guests_group }}']
+  when: known_hosts.stat.exists
   ignore_errors: yes
 
 - name: Remove simple hostnames from SSH known hosts
   command: ssh-keygen -R {{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}
   with_items: groups['ex_{{ libvirt_guests_group }}']
+  when: known_hosts.stat.exists
   ignore_errors: yes
 
 - name: Remove simple hostnames (admin port) from SSH known hosts
   command: ssh-keygen -R "[{{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}]:{{ admin_ssh_port }}"
   with_items: groups['ex_{{ libvirt_guests_group }}']
+  when: known_hosts.stat.exists
   ignore_errors: yes
