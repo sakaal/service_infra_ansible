@@ -84,13 +84,13 @@ Substitute your service management domain name for `example.com` (and
 
 1. Check out the infrastructure configuration repository (playbooks):
 
-    git clone git@github.com:sakaal/service_infra_ansible.git
+        git clone git@github.com:sakaal/service_infra_ansible.git
 
 1. Check out the
    [main configuration repository](https://github.com/sakaal/com.example.main_ansible)
    (inventories): 
 
-    git clone git@github.com:sakaal/com.example.main_ansible.git
+        git clone git@github.com:sakaal/com.example.main_ansible.git
     * If you are deploying a new repository, follow the instructions
       found in the example repository to use it as a template to copy.
     * You must have initialized the repository
