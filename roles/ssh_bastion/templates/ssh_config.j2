@@ -1,0 +1,24 @@
+# file: /mnt/sensitive_data/etc/ssh/ssh_config
+
+#
+# SSH bastion host configuration
+#
+
+Host *
+    ControlMaster          auto
+    ControlPath            ~/.ssh/mux-%r@%h:%p
+    ControlPersist         20m
+    TCPKeepAlive           yes
+    ServerAliveInterval    60
+    BatchMode yes
+    PasswordAuthentication no
+    VerifyHostKeyDNS yes
+
+#
+# Each hypervisor serves as an SSH proxy for its guests
+#
+{% for address in groups['libvirt_hosts'] %}
+
+Host *.{{ hostvars[address].hostname }}
+    ProxyCommand ssh -A -q {{ admin_username | mandatory }}@{{ hostvars[address].hostname | mandatory }} -p{{ admin_ssh_port | mandatory }} nc %h %p
+{% endfor %}

@@ -1,0 +1,9 @@
+# file: roles/ssh_bastion/tasks/main.yml
+
+- name: SSH bastion host configuration
+  sudo: yes
+  run_once: yes
+  local_action: >
+                template src=ssh_config.j2
+                dest=/mnt/sensitive_data/etc/ssh/ssh_config
+                owner=root group=wheel mode=660

@@ -4,9 +4,11 @@
 #
 
 - hosts: libvirt_hosts
+  serial: 1
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
+    - { role: ssh_bastion, tags: access }
     - { role: dynect_dns_record, tags: dns }
     - { role: hetzner_reverse_dns, tags: dns }
     - network_hostname
