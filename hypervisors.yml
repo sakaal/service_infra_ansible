@@ -7,8 +7,8 @@
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
-    - dynect_dns_record
-    - hetzner_reverse_dns
+    - { role: dynect_dns_record, tags: dns }
+    - { role: hetzner_reverse_dns, tags: dns }
     - network_hostname
     - hetzner_bridged_networking
     - linux_kvm

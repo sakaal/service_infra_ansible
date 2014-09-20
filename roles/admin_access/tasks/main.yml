@@ -52,6 +52,9 @@
       line: '%wheel ALL=(ALL) NOPASSWD:ALL'
     - regexp: '^Defaults\s+secure_path'
       line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
+# Enable sudo without teletype terminal
+    - regexp: '^Defaults\s+!?requiretty'
+      line: 'Defaults    !requiretty'
 
 - name: Prevent entering interactive boot
   lineinfile: dest=/etc/sysconfig/init regexp="^\s*PROMPT" line="PROMPT=no" state=present

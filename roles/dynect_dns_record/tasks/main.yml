@@ -18,7 +18,7 @@
 - name: Delete old DNS SSHFP records
   when: sshfp_result|success
   local_action: >
-                command curl -X DELETE
+                command curl -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
 
@@ -43,7 +43,10 @@
 - name: Publish DNS zones
   when: dynect_session_result|success
   run_once: true
-  local_action: "command curl -v -v -X PUT -H 'Content-Type: application/json' -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}' {{ dynect_api_url }}/Zone/{{ item }} -d '{\"publish\":true}'"
+  local_action: >
+                command curl -X PUT -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/Zone/{{ item }} -d '{"publish":true}'
   with_lines: cat /tmp/publish_zones
 
 - name: Remove the temporary file of DNS zones

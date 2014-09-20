@@ -28,6 +28,14 @@
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes
 
+- name: Delete DNS SSHFP records
+  local_action: >
+                command curl -X DELETE -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ item }}/
+  with_items: groups['ex_{{ libvirt_guests_group }}']
+  ignore_errors: yes
+
 - name: Check if SSH known hosts file exists
   stat: path="~/.ssh/known_hosts"
   register: known_hosts

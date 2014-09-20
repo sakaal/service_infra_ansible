@@ -178,6 +178,14 @@ sed -i 's/^%wheel[ \t]\+ALL=(ALL).*$/%wheel ALL=(ALL) NOPASSWD:ALL/g'\
  /etc/sudoers
 echo "Administrative sudo without password enabled"
 
+sed -i 's|^Defaults[ \t]\+secure_path.*$|Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin|g'\
+ /etc/sudoers
+echo "Set the sudo secure path"
+
+sed -i 's/^Defaults[ \t]\+requiretty[ \t]*$/Defaults    !requiretty/g'\
+ /etc/sudoers
+echo "Enabled sudo without teletype terminal"
+
 ## Disable interactive startup
 grep -q -e '^\s*PROMPT' /etc/sysconfig/init ||\
  ( echo "# disable interactive startup"; echo "PROMPT=no"; )\
@@ -224,5 +232,85 @@ echo "SSH daemon set to a non-standard port"
 # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Security_Guide/
 
 yum -y update
+
+##### Begin DNS SSHFP records management #####
+
+echo "Updating DNS SSHFP records via the DynECT API"
+
+#
+# Ensure that SSH host keys exist. They're otherwise generated at first boot.
+#
+ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
+ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
+ssh-keygen -f /etc/ssh/ssh_host_ecdsa_key -N '' -t ecdsa -b 521
+
+DATA_FILE=$(mktemp --tmpdir dynect_sshfp.XXX)
+
+#
+# Establish DynECT API session
+#
+DYNECT_API_URL="{{ dynect_api_url | mandatory }}"
+DYNECT_CUSTOMER="{{ dynect_customer | mandatory }}"
+DYNECT_API_USER="{{ dynect_api_user | mandatory }}"
+DYNECT_API_PASSWORD="{{ dynect_api_password | mandatory }}"
+DYNECT_ZONE={{ dns_zone | mandatory }}
+cat > "$DATA_FILE" << EOF
+{
+"customer_name": "$DYNECT_CUSTOMER",
+"user_name": "$DYNECT_API_USER",
+"password": "$DYNECT_API_PASSWORD"
+}
+EOF
+OUTPUT=$(curl -s -X POST -H 'Content-Type: application/json'\
+ $DYNECT_API_URL/Session/ -d @$DATA_FILE)
+AUTH_TOKEN=$(echo $OUTPUT |\
+ sed -e 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/g')
+
+#
+# Delete old DNS SSHFP records (if any)
+#
+curl -s -o /dev/null -w "%{http_code} %{url_effective} DELETE\\n"\
+ -X DELETE -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$(hostname)/
+
+#
+# Make the new DNS SSHFP records
+#
+while read record
+do
+ALGORITHM=$(echo $record |\
+ sed -e 's/^[^ ]\+ IN SSHFP \([^ ]*\) .*$/\1/g')
+FPTYPE=$(echo $record |\
+ sed -e 's/^[^ ]\+ IN SSHFP [[:digit:]] \([^ ]*\) .*$/\1/g')
+FINGERPRINT=$(echo $record |\
+ sed -e 's/^[^ ]\+ IN SSHFP [[:digit:]] [[:digit:]] \([^ ]*\)$/\1/g')
+cat > "$DATA_FILE" << EOF
+{"rdata":{
+"algorithm":"$ALGORITHM",
+"fptype":"$FPTYPE",
+"fingerprint":"$FINGERPRINT"
+}}
+EOF
+curl -s -o /dev/null\
+ -w "%{http_code} %{url_effective} $ALGORITHM $FPTYPE $FINGERPRINT\\n"\
+ -X POST -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$(hostname)/ -d @$DATA_FILE
+done <<< "$(ssh-keygen -r $(hostname))"
+
+# Publish DNS zones
+curl -s -o /dev/null -w "%{http_code} %{url_effective} PUBLISH\\n"\
+ -X PUT -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/Zone/$DYNECT_ZONE -d '{"publish":true}'
+
+rm -f $DATA_FILE
+
+# End the DynECT session
+curl -s -o /dev/null -w "%{http_code} %{url_effective} END\\n"\
+ -X DELETE -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/Session/
+
+##### End DNS SSHFP records management #####
+
+
 
 %end
