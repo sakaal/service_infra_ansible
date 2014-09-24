@@ -36,19 +36,10 @@
                 }}'
   with_items: sshfp_records.stdout_lines
 
-- name: List the DNS zones in a temporary file
-  local_action: lineinfile dest=/tmp/publish_zones create=yes
-                line="{{ dns_zone | mandatory }}" state=present
-
 - name: Publish DNS zones
   when: dynect_session_result|success
   run_once: true
   local_action: >
                 command curl -s -X PUT -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/Zone/{{ item }} -d '{"publish":true}'
-  with_lines: cat /tmp/publish_zones
-
-- name: Remove the temporary file of DNS zones
-  run_once: true
-  local_action: file path=/tmp/publish_zones state=absent
+                {{ dynect_api_url }}/Zone/{{ dns_zone }} -d '{"publish":true}'
