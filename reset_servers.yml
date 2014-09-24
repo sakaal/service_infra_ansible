@@ -76,6 +76,7 @@
 - name: MANAGE DNS
   hosts: reset_servers
   gather_facts: no
+  serial: 1
   vars_files:
   - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
