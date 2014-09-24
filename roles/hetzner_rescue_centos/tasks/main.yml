@@ -1,0 +1,65 @@
+---
+# file: roles/hetzner_rescue_centos/tasks/main.yml
+
+#
+# Installs CentOS-70-64-minimal via the Hetzner rescue system
+# - Calculates the storage partition plan
+#
+
+- name: Wait for the server to boot in the rescue system
+  local_action: wait_for host={{ inventory_hostname }} port=22
+                search_regex=OpenSSH delay=20
+
+#
+# Storage partitioning
+#
+# Reserve most free space for a LVM storage pool that will be set up later.
+#
+# The Hetzner rescue system supports only MSDOS partition tables,
+# so maximum size for a single partition is 2T.
+#
+# Calculate the system volume group size so that
+# the remaining space is within the above limit.
+#
+
+- name: Obtain the SSH host key and disk size from the Hetzner rescue system
+  no_log: True
+  local_action: command sshpass -p'{{ ansible_ssh_pass }}'
+                ssh -o StrictHostKeyChecking=no
+                root@{{ inventory_hostname }}
+                sfdisk -s 2>/dev/null /dev/[hsv]d? | sort | head -n1
+  register: disk_bytes
+  failed_when: disk_bytes.rc != 0 or disk_bytes.stdout < 83886080
+
+- name: Disk <= 2 TiB
+  when: disk_bytes.stdout|int <= 2231369728
+  set_fact:
+    vg_sys_size: 80G
+    vg_pool_size: all
+
+- name: Disk > 2 TiB
+  when: disk_bytes.stdout|int > 2231369728
+  set_fact:
+    vg_sys_size: "{{ ((( disk_bytes.stdout|int - 2147483648 ) / 1048576) + 1)|round|int }}G"
+    vg_pool_size: all 
+
+- name: Set the Ansible SSH user to root
+  set_fact:
+    ansible_ssh_user: "root"
+
+- name: Upload autosetup configuration file
+  template: src=autosetup.j2 dest=/autosetup
+
+#
+# Installing the operating system image. This step can take minutes to complete.
+#
+
+- name: Hetzner Online AG - installimage
+  command: /root/.oldroot/nfs/install/installimage
+  register: installimage
+
+- name: Restart the server after installation
+  command: reboot
+  async: 0
+  poll: 0
+  ignore_errors: true

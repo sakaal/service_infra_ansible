@@ -1,3 +1,4 @@
+---
 # file: terminate.yml
 #
 # Decommission hosts that are no longer required.
@@ -9,4 +10,3 @@
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - libvirt_guests_terminate
-

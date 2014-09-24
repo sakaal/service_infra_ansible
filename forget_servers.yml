@@ -1,7 +1,8 @@
+---
 # file: forget_servers.yml
 #
 # Removes old host keys previously known to Ansible configuration management.
-# Run this before reinstalling servers, to forget their old host keys.
+# Run this before manually reinstalling servers, to forget their old host keys.
 #
 # ansible-playbook -vvv forget_servers.yml -i bootstrap
 #

@@ -1,15 +1,14 @@
+---
 # file: roles/hetzner_reverse_dns/tasks/main.yml
 
 - name: Update Hetzner server names
   no_log: True
-  local_action: >
-                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -su '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/server/{{ inventory_hostname }}
                 -d 'server_name={{ hostvars[inventory_hostname].hostname | mandatory }}'
 
 - name: Update Hetzner reverse DNS records
   no_log: True
-  local_action: >
-                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -su '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/rdns/{{ inventory_hostname }}
                 -d 'ptr={{ hostvars[inventory_hostname].hostname | mandatory }}'

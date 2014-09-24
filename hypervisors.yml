@@ -1,17 +1,28 @@
+---
 # file: hypervisors.yml
 #
 # Prepares hypervisors for hosting virtual guest machines.
 #
 
-- hosts: libvirt_hosts
-  serial: 1
+- name: START
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug: msg="{{ ansible_date_time.iso8601 }}"
+
+- name: HYPERVISORS
+  hosts: libvirt_hosts
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+    - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   roles:
     - { role: ssh_bastion, tags: access }
-    - { role: dynect_dns_record, tags: dns }
-    - { role: hetzner_reverse_dns, tags: dns }
-    - network_hostname
     - hetzner_bridged_networking
     - linux_kvm
     - libvirt_pools
+
+- name: FINISH
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug: msg="{{ ansible_date_time.iso8601 }}"

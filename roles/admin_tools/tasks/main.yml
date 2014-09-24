@@ -1,62 +1,22 @@
+---
 # file: roles/admin_tools/tasks/main.yml
 
-#
-# Installs tools to support automated administration tasks.
-#
+- name: Tools to support automated administration tasks
+  yum: name={{ item }} state=latest
+  with_items:
+  - python-setuptools
+  - gnupg
+  - screen
+  - nano
+  - sysstat
+  - procps
+  - iptraf
+  - tcpdump
+  - strace
+  - bind-utils
+  - net-tools
+  - mtr
 
-- name: python-setuptools
-  sudo: yes
-  yum: pkg=python-setuptools state=present
-
-- name: gnupg
-  sudo: yes
-  yum: pkg=gnupg state=present
-
-- name: screen
-  sudo: yes
-  yum: pkg=screen state=present
-
-- name: nano
-  sudo: yes
-  yum: pkg=nano state=present
-
-- name: sysstat
-  sudo: yes
-  yum: pkg=sysstat state=present
-
-- name: procps
-  sudo: yes
-  yum: pkg=procps state=present
-
-- name: iptraf
-  sudo: yes
-  yum: pkg=iptraf state=present
-
-- name: tcpdump
-  sudo: yes
-  yum: pkg=tcpdump state=present
-
-- name: strace
-  sudo: yes
-  yum: pkg=strace state=present
-
-- name: bind-utils
-  sudo: yes
-  yum: pkg=bind-utils state=present
-
-- name: net-tools
-  sudo: yes
-  yum: pkg=net-tools state=present
-
-- name: mtr
-  sudo: yes
-  yum: pkg=mtr state=present
-
-#- name: munin-node
-#  sudo: yes
-#  yum: pkg=munin-node state=present
-
+#  - munin-node
 # Fully Automated Nagios (FAN)
-
 # Cacti
-

@@ -1,13 +1,8 @@
+---
 # file: roles/dynect_session/handlers/main.yml
 
 - name: End DynECT API session
-  sudo: yes
-  no_log: True
-  local_action: "command {{ item }}"
-  with_items:
-    - >
-      curl -X DELETE
-      -H 'Content-Type: application/json'
-      -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
-      {{ dynect_api_url }}/Session/
-    - rm -f /etc/ansible/facts.d/dynect_session.fact
+  local_action: >
+                command curl -s -X DELETE -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
+                {{ dynect_api_url }}/Session/

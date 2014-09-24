@@ -1,3 +1,4 @@
+---
 # file: roles/dynect_dns_record/tasks/main.yml
 
 #
@@ -6,46 +7,45 @@
 - name: Make DNS A records
   when: dynect_session_result|success
   local_action: >
-                command curl -X POST -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                command curl -s -X POST -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/ARecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}.
                 -d '{"rdata":{"address":"{{ inventory_hostname }}"}}'
 
-- name: Collect SSH server key fingerprints for SSHFP records
-  shell: ssh-keygen -r {{ hostname | mandatory }}
-  register: sshfp_result
+#
+# roles/hetzner_rescue_centos sets the sshfp_records
+#
 
 - name: Delete old DNS SSHFP records
-  when: sshfp_result|success
+  when: sshfp_records is defined and sshfp_records|success
   local_action: >
-                command curl -X DELETE -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                command curl -s -X DELETE -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
 
 - name: Make DNS SSHFP records
-  when: sshfp_result|success
+  when: sshfp_records is defined and sshfp_records|success
   local_action: >
-                command curl -X POST -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                command curl -s -X POST -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
                 -d '{"rdata":{
                 "algorithm":"{{ item | regex_replace('^[^ ]+ IN SSHFP ([123]) [12] .*$', '\\1') }}",
                 "fptype":"{{ item | regex_replace('^[^ ]+ IN SSHFP [123] ([12]) .*$', '\\1') }}",
                 "fingerprint":"{{ item | regex_replace('^[^ ]+ IN SSHFP [123] [12] (.*)$', '\\1') }}"
                 }}'
-  with_items: sshfp_result.stdout_lines
+  with_items: sshfp_records.stdout_lines
 
 - name: List the DNS zones in a temporary file
-  local_action: >
-                lineinfile dest=/tmp/publish_zones create=yes
+  local_action: lineinfile dest=/tmp/publish_zones create=yes
                 line="{{ dns_zone | mandatory }}" state=present
 
 - name: Publish DNS zones
   when: dynect_session_result|success
   run_once: true
   local_action: >
-                command curl -X PUT -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ ansible_local.dynect_session.data.token }}'
+                command curl -s -X PUT -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/Zone/{{ item }} -d '{"publish":true}'
   with_lines: cat /tmp/publish_zones
 

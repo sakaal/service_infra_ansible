@@ -1,3 +1,4 @@
+---
 # file: roles/dynect_session/tasks/main.yml
 
 # Starts a DynECT DNS management API session.
@@ -8,21 +9,10 @@
   no_log: True
   local_action: include_vars /mnt/sensitive_data/etc/ansible/vars/dynect.yml
 
-- name: Ensure Ansible local facts directory exists
-  sudo: yes
-  run_once: yes
-  local_action: file state=directory path=/etc/ansible/facts.d owner=root group=root mode=0755
-
-- name: Delete old DynECT API session
-  sudo: yes
-  run_once: yes
-  local_action: file state=absent path=/etc/ansible/facts.d/dynect_session.fact
-
 - name: Establish DynECT API session
   no_log: True
-  run_once: yes
   local_action: >
-                command curl -X POST -H 'Content-Type: application/json'
+                command curl -s -X POST -H 'Content-Type: application/json'
                 {{ dynect_api_url }}/Session/
                 -d '{
                 "customer_name": "{{ dynect_customer | mandatory }}",
@@ -32,22 +22,9 @@
   register: dynect_session_result
   notify: End DynECT API session
 
-- name: Store the DynECT API session as Ansible local facts
-  sudo: yes
-  when: "dynect_session_result|success and '\"status\": \"success\"' in dynect_session_result.stdout"
+- name: Store the DynECT API session as a fact
+  when: dynect_session_result|success and
+        'success' == (dynect_session_result.stdout|from_json).status
   no_log: True
-  run_once: yes
-  local_action: >
-                template src=dynect_session.fact.j2
-                dest=/etc/ansible/facts.d/dynect_session.fact
-                owner=root group=root mode=0644
-
-#
-# Makes the DynECT session token locally available as
-# "{{ ansible_local.dynect_session.data.token }}"
-#
-- name: Set up local facts for the DynECT session
-  sudo: yes
-  no_log: True
-  run_once: yes
-  local_action: setup filter=ansible_local
+  set_fact:
+    dynect_session_token: "{{ (dynect_session_result.stdout|from_json).data.token | mandatory }}"

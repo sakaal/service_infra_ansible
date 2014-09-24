@@ -1,3 +1,4 @@
+---
 # file: roles/hetzner_bridged_networking/tasks/main.yml
 
 #
@@ -30,9 +31,9 @@
 - name: Ensure bridged networking is configured
   sudo: yes
   command: ip link show br0
-  ignore_errors: yes
   register: br0_configured
   changed_when: br0_configured.rc != 0
+  failed_when: False
   notify:
    - Restart network
 

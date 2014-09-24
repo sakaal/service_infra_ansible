@@ -97,6 +97,11 @@ Substitute your service management domain name for `example.com` (and
       and added a remote repository to follow
       before you can transfer managed nodes to the main inventory. 
 
+1. If any of the repositories may have changed since you checked them out,
+   get the latest version: 
+
+        git pull --rebase
+
 1. Open the sensitive data volume:
 
         sudo open_sensitive_data
@@ -104,7 +109,7 @@ Substitute your service management domain name for `example.com` (and
 1. Examine until you understand the configuration files.
    Make working copies of the sample files as appropriate for your environment.
 
-1. Observe instructions found in the configuration files.
+1. Observe the instructions found in the configuration files.
 
 ### Deploying the DNS zones
 
@@ -122,14 +127,12 @@ If you haven't already created a security enabled DNS zone:
 
 ### Obtaining the servers
 
-* If you are deploying new servers, obtain one or more dedicated servers
-  from the hosting provider to your account.
-    * This may involve some of your account details
-      being passed to RIPE for IP address registration.
-    * Preparing the servers may take some time depending on the hosting provider.
-      Some hosting providers process orders only during their office hours.
-* If you are re-installing existing servers, bring them to their initial state
-  according to your hosting provider's method.
+If you are deploying new servers, obtain one or more dedicated servers
+from the hosting provider to your account.
+ * This may involve some of your account details
+   being passed to RIPE for IP address registration.
+ * Preparing the servers may take some time depending on the hosting provider.
+   Some hosting providers process orders only during their office hours.
 
 Once you have the servers:
 
@@ -146,28 +149,19 @@ Once you have the servers:
         cd service_infra_ansible/host_vars/
         cp 203.0.113.1.sample 203.0.113.1
 
-1. Perform a minimal operating system installation using whichever approach
-   is most convenient in the hosting provider's environment.
-    * [Hetzner installimage CentOS](Hetzner_installimage_CentOS.md)
-
-1. Remove the old server keys from your known hosts file, if any:
-
-        ansible-playbook service_infra_ansible/forget_servers.yml -i com.example.main_ansible/bootstrap
-    * You may need to contact the hosts manually once, to accept their new host keys.
-
-1. Set a strong root account password as appropriate.
-   It will only be used when preparing the host for automated configuration.
-   Keep the credentials according to the administrative access plan, just in case.
-
 ### Configuring the servers
 
-1. Prepare the hosts for automated configuration:
+1. Having added the addresses to the `reset_servers` group,
+   prepare the hosts for automated configuration (15 min):
 
-        ansible-playbook service_infra_ansible/managed_servers.yml -ki com.example.main_ansible/bootstrap
-    * You may need to provide the root password manually on the initial run.
-    * You may need to accept the target host key fingerprint at first connect.
+        ansible-playbook service_infra_ansible/reset_servers.yml -i com.example.main_ansible/bootstrap
 
-1. Configure the hosts as virtualization hypervisors:
+1. Set strong root account passwords as appropriate, if you need them.
+   The automatically created random passwords were only used when preparing
+   the hosts for automated configuration. Keep access credentials according
+   to the administrative access plan, just in case if you like.
+
+1. Configure the hosts as virtualization hypervisors (10 min):
 
         ansible-playbook service_infra_ansible/hypervisors.yml -i com.example.main_ansible/bootstrap
 
@@ -216,7 +210,8 @@ from the bootstrap inventory to the main configuration management inventory.
 1. Perform the transfer:
 
         ansible-playbook service_infra_ansible/handovers.yml -i com.example.main_ansible/bootstrap
-    * Ensure that the bootstrap inventory is again empty.
+    * Ensure that the bootstrap inventory no longer contains
+      any hosts that were transferred to the main inventory.
       You may have to do this manually, if you are redeploying
       previously existed hosts and retaining the same configuration.
       This allows redeploying several times, if necessary, while

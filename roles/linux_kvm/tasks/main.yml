@@ -1,73 +1,40 @@
+---
 # file: roles/linux_kvm/tasks/main.yml
 
-- name: Virtualization package group
+- name: Virtualization packages
   sudo: yes
-  yum: name="@Virtualization" state=present
-
-- name: Virtualization Client package group
-  sudo: yes
-  yum: name="@Virtualization Client" state=present
-
-- name: Virtualization Platform package group
-  sudo: yes
-  yum: name="@Virtualization Platform" state=present
-
-- name: Virtualization Tools package group
-  sudo: yes
-  yum: name="@Virtualization Tools" state=present
-
-- name: Ensure kvm is present
-  sudo: yes
-  yum: name=kvm state=present
+  yum: name="{{ item }}" state=present
+  with_items:
+  - "@Virtualization"
+  - "@Virtualization Client"
+  - "@Virtualization Platform"
+  - "@Virtualization Tools"
+  - kvm
+  - libvirt
+  - libvirt-python
+  - virt-manager
+  - virt-viewer
+  - libguestfs-tools
+  - avahi-dnsconfd
+  - xorg-x11-xauth
 
 - name: Verify Linux KVM kernel modules
   sudo: yes
-  command: lsmod
+  shell: lsmod | grep kvm
   register: kernel_modules
-  failed_when: "'kvm' not in kernel_modules.stdout"
   changed_when: False
-
-- name: Ensure libvirt is present
-  sudo: yes
-  yum: name=libvirt state=present
-
-- name: Ensure libvirt-python is present
-  sudo: yes
-  yum: name=libvirt-python state=present
-
-- name: Ensure virt-manager is present
-  sudo: yes
-  yum: name=virt-manager state=present
-
-- name: Ensure virt-viewer is present
-  sudo: yes
-  yum: name=virt-viewer state=present
-
-- name: Ensure libguestfs-tools is present
-  sudo: yes
-  yum: name=libguestfs-tools state=present
-
-- name: Ensure avahi-dnsconfd is present
-  sudo: yes
-  yum: name=avahi-dnsconfd state=present
-
-- name: Ensure xorg-x11-xauth is present
-  sudo: yes
-  yum: name=xorg-x11-xauth state=present
+  failed_when: not 'kvm' in kernel_modules.stdout
 
 - name: Allow libvirt management access
   sudo: yes
-  template: src=50-libvirt.pkla.j2 dest="/etc/polkit-1/localauthority/50-local.d/50-libvirt.pkla" owner=root group=root mode=0644
+  template: src=50-libvirt.pkla.j2
+            dest="/etc/polkit-1/localauthority/50-local.d/50-libvirt.pkla"
+            owner=root group=root mode=0644
 
-- name: Enable the messagebus service
+- name: Enable services
   sudo: yes
-  service: name=messagebus state=started enabled=yes
-
-- name: Enable the avahi-daemon service
-  sudo: yes
-  service: name=avahi-daemon state=started enabled=yes
-
-- name: Enable the libvirtd service
-  sudo: yes
-  service: name=libvirtd state=started enabled=yes
-   
+  service: name={{ item }} state=started enabled=yes
+  with_items:
+  - dbus
+  - avahi-daemon
+  - libvirtd

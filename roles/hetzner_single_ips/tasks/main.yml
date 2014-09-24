@@ -1,3 +1,4 @@
+---
 # file: roles/hetzner_single_ips/tasks/main.yml
 
 #
@@ -13,24 +14,18 @@
 #
 
 - name: Query a list of server single IPs
-  local_action: >
-                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -su '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
   register: hetzner_ips_result
   changed_when: False
 
-- name: Store the server IPs as Ansible local facts
-  sudo: yes
-  when: "hetzner_ips_result|success and '\"server_ip\":\"{{ inventory_hostname }}\"' in hetzner_ips_result.stdout"
-  local_action: >
-                template src=hetzner_ips.fact.j2
-                dest=/etc/ansible/facts.d/hetzner_ips_{{ inventory_hostname }}.fact
-                owner=root group=root mode=0644
+- name: Obtain the server IPs
+  when: hetzner_ips_result|success and inventory_hostname ==
+        (hetzner_ips_result.stdout|from_json)[0].ip.server_ip
+  set_fact: hetzner_ips="{{ hetzner_ips_result.stdout|from_json }}"
 
 #
-# Makes the Hetzner server single IPs locally available as
-# ansible_local.hetzner_ips_{{ inventory_hostname }}
-# with the following data structure:
+# Makes the hetzner_ips available with the following data structure:
 #
 # [
 #     {
@@ -49,51 +44,36 @@
 #     ...
 # ]
 #
-- name: Load Ansible local facts
-  sudo: yes
-  run_once: yes
-  local_action: setup filter=ansible_local
 
 #
 # mac_requested.changed will be true, if any MAC is requested (not skipped)
 #
 - name: Request a separate MAC for every single IP that is still missing one
-  local_action: >
-                command curl -X PUT -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -X PUT -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/ip/{{ item.ip.ip }}/mac
-  with_items: ansible_local['hetzner_ips_{{ inventory_hostname }}']
+  with_items: hetzner_ips
   when: (item.ip.ip != item.ip.server_ip) and (item.ip.separate_mac == None)
   changed_when: true
   register: mac_requested
 
 - name: Query the list of single IPs again to collect the MACs
   when: mac_requested|changed
-  local_action: >
-                command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
   register: hetzner_ips_result
   changed_when: False
 
-- name: Store the server IPs and MACs as Ansible local facts
-  when: "mac_requested|changed and hetzner_ips_result|success and '\"server_ip\":\"{{ inventory_hostname }}\"' in hetzner_ips_result.stdout"
+- name: Obtain the server IPs and MACs
+  when: mac_requested|changed and hetzner_ips_result|success and
+        inventory_hostname == (hetzner_ips_result.stdout|from_json)[0].ip.server_ip
   sudo: yes
-  local_action: >
-                template src=hetzner_ips.fact.j2
-                dest=/etc/ansible/facts.d/hetzner_ips_{{ inventory_hostname }}.fact
-                owner=root group=root mode=0644
-
-- name: Reload the Ansible local facts
-  run_once: yes
-  when: mac_requested|changed
-  sudo: yes
-  local_action: setup filter=ansible_local
+  set_fact: hetzner_ips=hetzner_ips_result.stdout|from_json
 
 - name: Declare the hetzner_single_ips variable in target repository host_vars
   local_action: >
                 lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 regexp="^hetzner_single_ips:"
                 line="hetzner_single_ips:"
-                state=present
 
 - name: Add the Hetzner single IPs and their corresponding MAC addresses
   local_action: >
@@ -101,6 +81,5 @@
                 insertafter="hetzner_single_ips"
                 regexp="^  - { ip: '{{ item.ip.ip }}'"
                 line="  - { ip: '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"
-                state=present
-  with_items: ansible_local['hetzner_ips_{{ inventory_hostname }}']
+  with_items: hetzner_ips
   when: item.ip.separate_mac != None

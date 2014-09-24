@@ -1,3 +1,4 @@
+---
 # file: handovers.yml
 #
 # Transfers hosts that are ready
@@ -7,6 +8,7 @@
 - hosts: libvirt_hosts
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+    - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   roles:
     - ansible_inventory
     - hetzner_single_ips

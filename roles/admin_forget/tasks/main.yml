@@ -1,3 +1,4 @@
+---
 # file: roles/admin_forget/tasks/main.yml
 
 # Removes previously known host keys before reinstalling the same servers.

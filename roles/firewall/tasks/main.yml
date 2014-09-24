@@ -1,45 +1,43 @@
+---
 # file: roles/firewall/tasks/main.yml
 
-- name: Enable iptables
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
-  sudo: yes
-  service: name=iptables enabled=yes
-
-- name: Open firewall ports (iptables)
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
-  sudo: yes
-  template: src=iptables.j2 dest=/etc/sysconfig/iptables owner=root group=root mode=0600
-  notify:
-  - Restart iptables
-
 - name: Install firewalld
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
   sudo: yes
-  yum: pkg=firewalld state=present
+  yum: name=firewalld state=present
 
-- name: Deactivate firewalld
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+- name: Deactivate firewall
   sudo: yes
   service: name=firewalld state=stopped enabled=no
 
-- name: Open firewalld ports
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+- name: Check if the administrative firewall zone exists
   sudo: yes
-  command: firewall-offline-cmd --zone={{ firewalld_zone | mandatory }} --add-port={{ item.port }}/{{ item.protocol }}
-  with_items: firewall_allow
+  command: firewall-offline-cmd --zone={{ firewall_zone | mandatory }} --get-target
+  register: firewall_exists
+  changed_when: firewall_exists.rc != 0 and 'INVALID_ZONE' in firewall_exists.stdout
+  failed_when: False
 
-- name: Check the firewalld zone
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+- name: Create the administrative firewall zone
+  when: firewall_exists|changed
+  sudo: yes
+  command: firewall-offline-cmd --new-zone="{{ firewall_zone | mandatory }}"
+
+- name: Check if the administrative firewall zone is default
   sudo: yes
   command: firewall-offline-cmd --get-default-zone
-  register: current_firewall_zone
+  register: firewall_default
+  changed_when: not "{{ firewall_zone | mandatory }}" in firewall_default.stdout
+  failed_when: False
 
-- name: Set the firewalld zone
-  when: not current_firewall_zone|skipped and "{{ firewalld_zone | mandatory }}" not in current_firewall_zone.stdout
+- name: Set the administrative firewall zone as default
+  when: firewall_default|changed
   sudo: yes
-  command: firewall-offline-cmd --set-default-zone={{ firewalld_zone | mandatory }}
+  command: firewall-offline-cmd --set-default-zone={{ firewall_zone | mandatory }}
 
-- name: Activate firewalld
-  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+- name: Open firewall ports
+  sudo: yes
+  command: firewall-offline-cmd --zone={{ firewall_zone | mandatory }} --add-port={{ item.port }}/{{ item.protocol }}
+  with_items: firewall_allow
+
+- name: Activate the firewall
   sudo: yes
   service: name=firewalld state=started enabled=yes
