@@ -1,34 +1,35 @@
+---
 # file: roles/libvirt_pools/tasks/main.yml
 
 #
-# Assumes that the volume group name for a LVM-based storage pool
-# to use with libvirt is 'vg_pool'.  Create this volume group
-# during the operatin system installation.
+# Defines an LVM-based storage pool to use with libvirt.
+# The volume group is created during the operating system installation
+# by the role: hetzner_rescue_centos
 #
 
 - name: Check available logical storage pools
   sudo: yes
   command: virsh pool-list --all --type logical
   register: pools_result
-  changed_when: "'vg_pool' not in pools_result.stdout"
+  changed_when: not "{{ vg_pool_name | mandatory }}" in pools_result.stdout
 
 - name: Storage pool based on LVM volume group
   sudo: yes
-  command: virsh pool-define-as vg_pool logical --target /dev/vg_pool --source-format lvm2
+  command: virsh pool-define-as {{ vg_pool_name }} logical --target /dev/{{ vg_pool_name }} --source-format lvm2
   when: pools_result|changed
 
 - name: Check inactive logical storage pools
   sudo: yes
   command: virsh pool-list --inactive --type logical
   register: inactive_result
-  changed_when: "'vg_pool' in inactive_result.stdout"
+  changed_when: ("{{ vg_pool_name }}" in inactive_result.stdout)
 
 - name: Enable logical storage pools autostart
   sudo: yes
-  command: virsh pool-autostart vg_pool
+  command: virsh pool-autostart {{ vg_pool_name }}
   when: inactive_result|changed
 
 - name: Activate logical storage pools
   sudo: yes
-  command: virsh pool-start vg_pool
+  command: virsh pool-start {{ vg_pool_name }}
   when: inactive_result|changed

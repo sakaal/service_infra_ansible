@@ -7,6 +7,7 @@
 # roles/libvirt_guests_centos
 #
 libvirt_guests_group: libvirt_guests_{{ hostvars[inventory_hostname].hostname | mandatory }}
+vg_pool_name: vg_pool
 
 #
 # Name of the inventory file inside the main repository

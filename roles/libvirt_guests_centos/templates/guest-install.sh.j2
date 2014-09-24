@@ -11,7 +11,7 @@ sudo virsh -q dominfo "{{ item }}" >/dev/null 2>&1 && {
 #
 # The logical volume group that serves as a libvirt storage pool.
 #
-VG=vg_pool
+VG={{ vg_pool_name | mandatory }}
 LV=lv_{{ item }}_sys
 KS=guest_{{ item }}-ks.cfg
 

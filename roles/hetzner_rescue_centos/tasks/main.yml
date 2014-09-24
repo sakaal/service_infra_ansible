@@ -28,19 +28,19 @@
                 ssh -o StrictHostKeyChecking=no
                 root@{{ inventory_hostname }}
                 sfdisk -s 2>/dev/null /dev/[hsv]d? | sort | head -n1
-  register: disk_bytes
-  failed_when: disk_bytes.rc != 0 or disk_bytes.stdout < 83886080
+  register: disk_KiB
+  failed_when: disk_KiB.rc != 0 or (disk_KiB.stdout|int < (vg_sys_GiB * 1024 * 1024))
 
 - name: Disk <= 2 TiB
-  when: disk_bytes.stdout|int <= 2231369728
+  when: disk_KiB.stdout|int <= ((2048 + vg_sys_GiB) * 1024 * 1024)
   set_fact:
-    vg_sys_size: 80G
+    vg_sys_size: "{{ vg_sys_GiB }}G"
     vg_pool_size: all
 
 - name: Disk > 2 TiB
-  when: disk_bytes.stdout|int > 2231369728
+  when: disk_KiB.stdout|int > ((2048 + vg_sys_GiB) * 1024 * 1024)
   set_fact:
-    vg_sys_size: "{{ ((( disk_bytes.stdout|int - 2147483648 ) / 1048576) + 1)|round|int }}G"
+    vg_sys_size: "{{ ((( disk_KiB.stdout|int - 2147483648 ) / 1048576) + 1)|round|int }}G"
     vg_pool_size: all 
 
 - name: Set the Ansible SSH user to root

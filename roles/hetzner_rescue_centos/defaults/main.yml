@@ -1,0 +1,7 @@
+---
+# file: roles/hetzner_rescue_centos/defaults/main.yml
+
+#
+# System volume group size
+#
+vg_sys_GiB: 80
