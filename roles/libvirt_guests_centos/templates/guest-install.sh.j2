@@ -31,6 +31,6 @@ virt-install --connect=qemu:///system \
 --arch=x86_64 \
 --os-type=linux \
 --os-variant={{ hostvars[item].guest_os_variant | mandatory }} \
---location={{ hostvars[item].centos_repo_url | mandatory }} \
+--location={{ centos_repo_url | mandatory }} \
 --graphics=spice \
 --noautoconsole

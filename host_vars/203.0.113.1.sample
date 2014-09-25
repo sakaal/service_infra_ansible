@@ -16,3 +16,10 @@ dns_soa_ttl: 300
 # also the zone default host may have another fully qualified domain name.
 #
 hostname: host.example.com
+
+#
+# Please use the CentOS and EPEL mirrors nearest to your server.
+#
+centos_repo_url: http://centos.mirror-server.de/7/os/x86_64/
+epel_rpm_url:    http://mirror.fraunhofer.de/dl.fedoraproject.org/epel/7/x86_64/e/epel-release-7-2.noarch.rpm
+epel_rpm_sha256: b96dda365bbab41b187b8f0cc657b6240f000e52404134d831d8432c443c9526

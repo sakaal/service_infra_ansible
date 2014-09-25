@@ -41,14 +41,14 @@ logvol swap --fstype="swap" --size=4096 --maxsize=4096 --name=lv_{{ hostvars[ite
 #
 # Networks
 #
-network --device=eth0 --bootproto=dhcp --onboot=on --hostname={{ item }}
+network --device=eth0 --bootproto=dhcp --onboot=on --hostname={{ item }} --noipv6
 
 firewall --enable --service=ssh --port {{ admin_ssh_port | mandatory }}:tcp
 services --enabled=sshd,ntpd,acpid
 selinux --enforcing
 
-url --url {{ hostvars[item].centos_repo_url | mandatory }}
-repo --name="CentOS" --baseurl={{ hostvars[item].centos_repo_url }} --cost=100
+url --url {{ centos_repo_url | mandatory }}
+repo --name="CentOS" --baseurl={{ centos_repo_url }} --cost=100
 
 %packages --nobase --excludedocs
 @core
@@ -144,7 +144,7 @@ echo "{{ item }} kickstart configured" >> /etc/motd
 date -u +"%FT%TZ %G-W%V-%u %A %y-%j" >> /etc/motd
 
 echo "Installing the Extra Packages for Enterprise Linux (EPEL) repository."
-rpm -Uvh {{ hostvars[item].epel_rpm_url | mandatory }}
+rpm -Uvh {{ epel_rpm_url | mandatory }}
 
 # Authorize SSH keys
 cd /home/{{ admin_username | mandatory }}
@@ -221,12 +221,36 @@ sed -i 's/^PasswordAuthentication[ \t]\+yes.*$/PasswordAuthentication no/g'\
 echo "SSH password authentication disabled"
 
 ## Configure SELinux to allow SSH on the administrative SSH port
-semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port }}
+semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
 
 ## Set SSH port
 sed -i 's/^#\?Port[ \t]\+22/Port {{ admin_ssh_port }}/g'\
  /etc/ssh/sshd_config
 echo "SSH daemon set to a non-standard port"
+
+## Configure the administrative firewall zone
+
+# Deactivate the firewall
+systemctl stop firewalld
+
+# Create the administrative firewall zone
+firewall-offline-cmd --new-zone={{ firewall_zone | mandatory }}
+
+# Set the administrative firewall zone as default
+firewall-offline-cmd --set-default-zone={{ firewall_zone }}
+
+# Open firewall ports
+firewall-offline-cmd --zone={{ firewall_zone }} --add-service=ssh
+firewall-offline-cmd --zone={{ firewall_zone }} --add-port={{ admin_ssh_port }}/tcp
+
+# Bind the default interface to the default zone
+grep -q -e '^\s*ZONE' /etc/sysconfig/network-scripts/ifcfg-eth0 ||\
+ ( echo "ZONE={{ firewall_zone }}"; ) >> /etc/sysconfig/network-scripts/ifcfg-eth0
+sed -i 's/^\s*ZONE=.*$/ZONE={{ firewall_zone }}/g' /etc/sysconfig/network-scripts/ifcfg-eth0
+firewall-offline-cmd --zone={{ firewall_zone }} --add-interface=eth0
+
+# Enable the firewall
+systemctl enable firewalld
 
 # TODO: Further hardening according to:
 # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Security_Guide/

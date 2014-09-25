@@ -27,6 +27,17 @@
 #guest_bootpw_pbkdf2:
 #guest_rootpw_sha512:
 
+#
+# It's worth checking that the guest will be able to download the EPEL RPM
+# during its kickstart installation.
+#
+- name: Check that the EPEL RPM is available from the hypervisor
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  sudo: yes
+  get_url: url="{{ epel_rpm_url|mandatory }}"
+           dest=/opt/ force=yes
+           sha256sum="{{ epel_rpm_sha256|mandatory }}"
+
 - name: Ensure user home ~/bin directory exists
   file: state=directory path=~/bin mode=0750
 
