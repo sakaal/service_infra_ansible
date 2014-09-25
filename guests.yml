@@ -3,13 +3,34 @@
 #
 # Installs virtual guest machines on the hypervisors. Usually run as:
 #
-# ansible-playbook -vv guests.yml -i bootstrap
+# ansible-playbook -vv guests.yml -i ../com.example.main_ansible/bootstrap
 #
 
-- hosts: libvirt_hosts
+- name: START
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug: msg="{{ ansible_date_time.iso8601 }}"
+
+- name: GUESTS
+  hosts: libvirt_hosts
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   roles:
     - libvirt_guests_centos
     - libvirt_guests_dhcp
 
+#
+# ~ 30 s from start
+#
+
+- name: FINISH
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug: msg="{{ ansible_date_time.iso8601 }}"
+  - debug: msg="Guest installation will complete in about 8 minutes."
+
+#
+# The unattended installation will complete at ~ 8 minutes from start.
+#
