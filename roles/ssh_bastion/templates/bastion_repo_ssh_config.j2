@@ -1,0 +1,6 @@
+#
+# Bastion configuration repository access
+#
+Host {{ bastion_inventory_repo_hostnames|join(' ') }}
+    IdentityFile /home/{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}
+    PasswordAuthentication no

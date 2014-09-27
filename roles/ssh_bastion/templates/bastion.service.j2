@@ -1,0 +1,9 @@
+[Unit]
+Description=Update the bastion host configuration
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/su - {{ admin_username | mandatory }} -c bastion.sh
+
+[Install]
+WantedBy=multi-user.target

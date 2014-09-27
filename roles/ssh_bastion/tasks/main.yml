@@ -1,9 +1,80 @@
 # file: roles/ssh_bastion/tasks/main.yml
 
-- name: SSH bastion host configuration
+#
+# Bastion host self-configuration
+#
+
+- name: Deploy the bastion configuration repository read-only access key
+  copy: src="{{ bastion_deployment_key_dir }}/{{ bastion_deployment_key_filename }}"
+        dest="~{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}"
+        mode=600
+
+- file: dest="~{{ admin_username }}/.ssh/known_hosts" state=touch mode=600
+
+- name: Remove previously known bastion configuration repository host keys
+  when: bastion_inventory_repo_hostnames is defined
+  with_items: bastion_inventory_repo_hostnames|mandatory
+  command: ssh-keygen -R {{ item }}
+
+- name: Ensure that the SSH known hosts file exists
+  file: dest="~{{ admin_username }}/.ssh/known_hosts" state=touch mode=600
+
+- name: Remove the redundant known hosts backup file
+  file: dest="~{{ admin_username }}/.ssh/known_hosts.old" state=absent
+
+- name: Comma-separated list of bastion configuration repository known hostnames
+  set_fact: known_hostnames="{{ bastion_inventory_repo_hostnames|join(',') }}"
+
+- name: Add the currently known bastion configuration repository host key
+  lineinfile: dest="~{{ admin_username }}/.ssh/known_hosts"
+              line="{{ known_hostnames | mandatory }} {{ bastion_inventory_repo_host_key | mandatory }}"
+
+- name: SSH config for bastion configuration repository access
+  template: src=bastion_repo_ssh_config.j2
+            dest="~{{ admin_username }}/.ssh/config" mode=600
+
+- name: Bastion host self-configuration inventory
+  git: repo="{{ bastion_inventory_repo_service | mandatory }}/{{ bastion_inventory_repo_name | mandatory }}"
+       dest="/home/{{ admin_username }}/{{ bastion_inventory_repo_name }}"
+       recursive=no
+
+- name: Bastion host self-configuration playbooks
+  git: repo="{{ bastion_playbook_repo | mandatory }}"
+       dest="/home/{{ admin_username }}/bastion_ansible"
+       recursive=no
+
+- name: Make sure ~/bin/ exists
+  file: state=directory dest="/home/{{ admin_username }}/bin"
+
+- name: Bastion host self-configuration script
+  template: src=bastion.sh.j2 dest="/home/{{ admin_username }}/bin/bastion.sh"
+            mode=770
+
+- name: Bastion host self-configuration service unit file
+  sudo: yes
+  template: src=bastion.service.j2 dest=/etc/systemd/system/bastion.service
+            mode=755 owner=root group=root
+
+- name: Bastion host self-configuration timer unit file
+  sudo: yes
+  template: src=bastion.timer.j2 dest=/etc/systemd/system/bastion.timer
+            mode=755 owner=root group=root
+
+- name: Reload new or changed systemd units
+  sudo: yes
+  command: systemctl daemon-reload
+
+- name: Enable the bastion host self-configuration timer
+  sudo: yes
+  command: systemctl enable bastion.timer
+
+- name: Start the bastion host self-configuration timer
+  sudo: yes
+  command: systemctl start bastion.timer
+
+- name: Local SSH bastion host configuration
   sudo: yes
   run_once: yes
-  local_action: >
-                template src=ssh_config.j2
+  local_action: template src=ssh_config.j2
                 dest=/mnt/sensitive_data/etc/ssh/ssh_config
                 owner=root group=wheel mode=660

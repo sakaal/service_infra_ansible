@@ -4,18 +4,20 @@
 - name: Tools to support automated administration tasks
   yum: name={{ item }} state=latest
   with_items:
-  - python-setuptools
-  - gnupg
-  - screen
-  - nano
-  - sysstat
-  - procps
-  - iptraf
-  - tcpdump
-  - strace
+  - ansible
   - bind-utils
-  - net-tools
+  - git
+  - gnupg
+  - iptraf
   - mtr
+  - nano
+  - net-tools
+  - procps
+  - python-setuptools
+  - screen
+  - strace
+  - sysstat
+  - tcpdump
 
 #  - munin-node
 # Fully Automated Nagios (FAN)

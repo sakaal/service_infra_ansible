@@ -1,0 +1,10 @@
+[Unit]
+Description=Check the bastion configuration regularly
+
+[Timer]
+OnBootSec=15min
+OnUnitActiveSec=2h
+Unit=bastion.service
+
+[Install]
+WantedBy=multi-user.target
