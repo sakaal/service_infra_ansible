@@ -50,6 +50,7 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
 1. Competencies
     * Basic know-how of the Domain Name System (DNS)
     * Basic know-how of DNS Security Extensions (DNSSEC)
+    * Basic know-how of GnuPG web of trust (OpenPGP)
     * Intermediate know-how of Linux virtualization
 1. Service Infrastructure configuration repository (this CMDB)
 1. [Bastion playbooks repository](https://github.com/sakaal/bastion_ansible)
@@ -156,9 +157,14 @@ Once you have the servers:
 
 ### Administrative access via bastion hosts
 
+Service administrators need GnuPG keys to digitally sign changes
+committed to the bastion host configuration repository.
+ * Add the administrative keys to your ACS keyring.
+
 Make sure that you have configured the bastion deployment key
 as instructed in the main repository (file `group_vars/all`).
- * Give the key read-only access to the bastion inventory repository.
+ * Give the deployment key read-only access
+   to the bastion inventory repository.
 
 ### Configuring the servers
 

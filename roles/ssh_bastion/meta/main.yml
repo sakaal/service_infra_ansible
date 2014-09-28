@@ -1,0 +1,5 @@
+---
+# file: roles/ssh_bastion/meta/main.yml
+
+dependencies:
+- { role: gnupg_keys }
