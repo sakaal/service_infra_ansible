@@ -49,7 +49,7 @@
 # The value of 6 when importing ownertrust corresponds to 5 ('ultimate') in the
 # menu of command: gpg --edit-key trust
 #
-- name: Fully trust the GPG public keys imported above
+- name: Trust the GPG public keys imported above
   with_items: gnupg_exported_keys.results
   shell: echo "{{ item.item.fp | mandatory }}:6:"
          | gpg --import-ownertrust
