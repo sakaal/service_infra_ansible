@@ -16,7 +16,7 @@
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
     - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   roles:
-    - { role: ssh_bastion, tags: access }
+    - { role: admin_bastion, tags: access }
     - hetzner_bridged_networking
     - linux_kvm
     - libvirt_pools

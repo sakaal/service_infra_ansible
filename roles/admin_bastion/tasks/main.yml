@@ -1,4 +1,4 @@
-# file: roles/ssh_bastion/tasks/main.yml
+# file: roles/admin_bastion/tasks/main.yml
 
 #
 # Bastion host self-configuration
