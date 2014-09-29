@@ -1,6 +1,10 @@
 ---
 # file: roles/firewall/tasks/main.yml
 
+#
+# Initial firewall configuration
+#
+
 - name: Dynamically managed firewall
   sudo: yes
   yum: name=firewalld state=present
@@ -11,9 +15,12 @@
 
 - name: Check if the administrative firewall zone exists
   sudo: yes
-  command: firewall-offline-cmd --zone={{ firewall_zone | mandatory }} --get-target
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone | mandatory }}
+           --get-target
   register: firewall_exists
-  changed_when: firewall_exists.rc != 0 and 'INVALID_ZONE' in firewall_exists.stdout
+  changed_when: firewall_exists.rc != 0
+                and 'INVALID_ZONE' in firewall_exists.stdout
   failed_when: False
 
 - name: Create the administrative firewall zone
@@ -31,11 +38,14 @@
 - name: Set the administrative firewall zone as default
   when: firewall_default|changed
   sudo: yes
-  command: firewall-offline-cmd --set-default-zone={{ firewall_zone | mandatory }}
+  command: firewall-offline-cmd
+           --set-default-zone={{ firewall_zone | mandatory }}
 
 - name: Open firewall ports
   sudo: yes
-  command: firewall-offline-cmd --zone={{ firewall_zone | mandatory }} --add-port={{ item.port }}/{{ item.protocol }}
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone | mandatory }}
+           --add-port={{ item.port }}/{{ item.protocol }}
   with_items: firewall_allow
 
 - name: Activate the firewall
