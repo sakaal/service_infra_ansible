@@ -7,4 +7,6 @@ fi
 
 cd /home/{{ admin_username }}/bastion_ansible
 
-ansible-playbook -v bastion.yml -i /home/{{ admin_username }}/{{ bastion_inventory_repo_name | mandatory }}/hosts
+INVENTORY="/home/{{ admin_username }}/{{ bastion_inventory_repo_name | mandatory }}/hosts"
+ansible-playbook -v update.yml -i "$INVENTORY" || { exit $?; }
+ansible-playbook -v bastion.yml -i "$INVENTORY"
