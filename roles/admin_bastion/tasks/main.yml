@@ -4,6 +4,14 @@
 # Bastion host self-configuration
 #
 
+- name: Self-configuration tools
+  with_items:
+  - ansible
+  - git
+  - gnupg
+  sudo: yes
+  yum: name={{ item }}
+
 - name: Deploy the bastion configuration repository read-only access key
   copy: src="{{ bastion_deployment_key_dir }}/{{ bastion_deployment_key_filename }}"
         dest="~{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}"
