@@ -337,6 +337,6 @@ curl -s -o /dev/null -w "%{http_code} %{url_effective} END\\n"\
 
 # Delete the automatically created kickstart file to avoid leaving
 # sensitive data on the guest.
-shred --iterations=25 --remove=wipesync --force --zero /root/anaconda-ks.cfg
+shred --iterations=25 --remove --force --zero /root/anaconda-ks.cfg
 
 %end
