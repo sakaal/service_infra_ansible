@@ -2,4 +2,4 @@
 # file: roles/admin_bastion/meta/main.yml
 
 dependencies:
-- { role: "{{ playbook_dir }}/../service_infra_ansible/roles/gnupg_keys" }
+- { role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/gnupg_keys" }

@@ -79,3 +79,7 @@
 - name: Start the bastion host self-configuration timer
   sudo: yes
   command: systemctl start bastion.timer
+
+- name: Apply the bastion configuration
+  sudo: yes
+  command: systemctl start bastion
