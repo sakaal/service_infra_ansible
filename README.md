@@ -206,6 +206,9 @@ The hypervisors are now ready to be transferred to service operation.
 
         ansible-playbook service_infra_ansible/guests.yml -i com.example.main_ansible/bootstrap
 
+1. Start the guest virtual machines manually after the installation
+   has completed. This will be automated later.
+
 The guests are now ready to be transferred to service operation.
 
 ### Transfer to service operation
