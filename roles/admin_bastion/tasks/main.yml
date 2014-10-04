@@ -14,7 +14,7 @@
 
 - name: Deploy the bastion configuration repository read-only access key
   copy: src="{{ bastion_deployment_key_dir }}/{{ bastion_deployment_key_filename }}"
-        dest="~{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}"
+        dest="/home/{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}"
         mode=600
 
 - file: dest="~{{ admin_username }}/.ssh/known_hosts" state=touch mode=600
