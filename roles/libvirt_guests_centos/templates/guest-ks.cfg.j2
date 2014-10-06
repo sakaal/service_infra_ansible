@@ -228,6 +228,9 @@ sed -i 's/^#\?Port[ \t]\+22/Port {{ admin_ssh_port }}/g'\
  /etc/ssh/sshd_config
 echo "SSH daemon set to a non-standard port"
 
+# Ensure that all network devices have an IP address before boot continues
+systemctl enable NetworkManager-wait-online.service
+
 ## Configure the administrative firewall zone
 
 # Deactivate the firewall
