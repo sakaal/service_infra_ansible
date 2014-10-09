@@ -1,4 +1,0 @@
-# file: roles/libvirt_guests_centos/meta/main.yml
-
-dependencies:
-  - { role: dynect_session }

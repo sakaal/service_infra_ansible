@@ -8,6 +8,10 @@
 #
 
 #
+# Note that CentOS 7 fails to install if guest RAM is much below a gigabyte.
+#
+
+#
 # Set the variable libvirt_guests_group for a hypervisor to provision the
 # virtual guests in that group on that hypervisor.
 #
@@ -32,7 +36,6 @@
 # during its kickstart installation.
 #
 - name: Check that the EPEL RPM is available from the hypervisor
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   sudo: yes
   get_url: url="{{ epel_rpm_url|mandatory }}"
            dest=/opt/ force=yes
@@ -45,29 +48,29 @@
   file: state=directory path=~/kickstart mode=0750
 
 - name: Check which guests already exist
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   sudo: yes
   shell: virsh -q dominfo "{{ item }}"
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   register: domains
   changed_when: domains.rc != 0 and 'Domain not found' in domains.stderr
   failed_when: False
 
 - name: Generate libvirt guest installation scripts in ~/bin/
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   template: >
             src=guest-install.sh.j2
             dest="~/bin/guest_{{ item }}-install.sh"
             mode=0740
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
 
 - name: Generate libvirt guest configuration files in ~/kickstart/
+  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   no_log: True
   template: >
             src=guest-ks.cfg.j2
             dest="~/kickstart/guest_{{ item }}-ks.cfg"
             mode=0640
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
 
 - name: Install missing guests
-  shell: "~/bin/guest_{{ item.item }}-install.sh"
-  when: item|changed
   with_items: domains.results
+  when: item|changed
+  shell: "~/bin/guest_{{ item.item }}-install.sh"
