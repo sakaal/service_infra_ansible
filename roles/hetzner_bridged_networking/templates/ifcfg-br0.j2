@@ -6,5 +6,6 @@ IPADDR={{ ansible_default_ipv4.address | mandatory }}
 NETMASK={{ ansible_default_ipv4.netmask | mandatory }}
 SCOPE="peer {{ ansible_default_ipv4.gateway | mandatory }}"
 ONBOOT=yes
+NM_CONTROLLED=no
 DELAY=0
 ZONE={{ firewall_zone | mandatory }}
