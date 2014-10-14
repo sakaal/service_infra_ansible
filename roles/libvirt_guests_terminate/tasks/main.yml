@@ -30,12 +30,20 @@
   ignore_errors: yes
 
 - name: Delete DNS SSHFP records
+  when: dynect_session_result|success
   local_action: >
                 command curl -s -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ item }}/
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes
+
+- name: Publish DNS zones
+  when: dynect_session_result|success
+  local_action: >
+                command curl -s -X PUT -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
+                {{ dynect_api_url }}/Zone/{{ dns_zone }} -d '{"publish":true}'
 
 - name: Check if SSH known hosts file exists
   stat: path="~/.ssh/known_hosts"
