@@ -131,6 +131,10 @@ If you haven't already created a security enabled DNS zone:
 1. Add the Delegation Signer (DS) record from the DNS management console
    to your domain registration.
 
+1. Use a DNSSEC analyzer, for example
+   [Verisign Labs](http://dnssec-debugger.verisignlabs.com/), to make sure
+   that the DNS Security Extensions have been enabled without issues.
+
 ### Obtaining the servers
 
 If you are deploying new servers, obtain one or more dedicated servers
