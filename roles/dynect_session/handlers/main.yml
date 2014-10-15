@@ -6,6 +6,4 @@
                 command curl -s -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/Session/
-  register: dynect_session_result
   changed_when: False
-  failed_when: (dynect_session_result.stdout|from_json).status != 'success'
