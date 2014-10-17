@@ -4,7 +4,7 @@
 # Removes old host keys previously known to Ansible configuration management.
 # Run this before manually reinstalling servers, to forget their old host keys.
 #
-# ansible-playbook -vv forget_servers.yml -i ../com.example.main_ansible/bootstrap
+# ansible-playbook -vv forget_servers.yml -i ../com.example_main_ansible/bootstrap
 #
 - hosts: libvirt_hosts
   vars_files:

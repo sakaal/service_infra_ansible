@@ -61,8 +61,8 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
 1. Account with the managed DNS provider (requires credit card)
     * DynECT API access
 1. A domain name with DNSSEC support for management purposes
-1. Private [main configuration repository](https://github.com/sakaal/com.example.main_ansible)
-   for the service operation stage (`com.example.main_ansible`)
+1. Private [main configuration repository](https://github.com/sakaal/com.example_main_ansible)
+   for the service operation stage (`com.example_main_ansible`)
 1. Private [bastion inventory repository](https://github.com/sakaal/com.example_bastion_ansible)
    for controlling administrative access (`com.example_bastion_ansible`)
     * Your ACS (or NAT) publicly visible IP addresses
@@ -93,10 +93,10 @@ Substitute your service management domain name for `example.com` (and
         git clone git@github.com:sakaal/service_infra_ansible.git
 
 1. Check out the
-   [main configuration repository](https://github.com/sakaal/com.example.main_ansible)
+   [main configuration repository](https://github.com/sakaal/com.example_main_ansible)
    (inventories): 
 
-        git clone git@github.com:sakaal/com.example.main_ansible.git
+        git clone git@github.com:sakaal/com.example_main_ansible.git
     * If you are deploying a new repository, follow the instructions
       found in the example repository to use it as a template to copy.
     * You must have initialized the repository
@@ -126,7 +126,7 @@ If you haven't already created a security enabled DNS zone:
 
 1. Deploy the zone using:
 
-        ansible-playbook -v service_infra_ansible/dns.yml -i com.example.main_ansible/zones
+        ansible-playbook -v service_infra_ansible/dns.yml -i com.example_main_ansible/zones
 
 1. Add the Delegation Signer (DS) record from the DNS management console
    to your domain registration.
@@ -175,7 +175,7 @@ as instructed in the main repository (file `group_vars/all`).
 1. Having added the addresses to the `reset_servers` group,
    prepare the hosts for automated configuration (15 min):
 
-        ansible-playbook service_infra_ansible/reset_servers.yml -i com.example.main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/reset_servers.yml -i com.example_main_ansible/bootstrap
 
 1. Set strong root account passwords as appropriate, if you need them.
    The automatically created random passwords were only used when preparing
@@ -184,7 +184,7 @@ as instructed in the main repository (file `group_vars/all`).
 
 1. Configure the hosts as virtualization hypervisors (10 min):
 
-        ansible-playbook service_infra_ansible/hypervisors.yml -i com.example.main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/hypervisors.yml -i com.example_main_ansible/bootstrap
 
 The hypervisors are now ready to be transferred to service operation.
 
@@ -208,7 +208,7 @@ The hypervisors are now ready to be transferred to service operation.
 
 1. Provision the guest virtual machines:
 
-        ansible-playbook service_infra_ansible/guests.yml -i com.example.main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/guests.yml -i com.example_main_ansible/bootstrap
 
 1. Start the guest virtual machines manually after the installation
    has completed. This will be automated later.
@@ -233,7 +233,7 @@ from the bootstrap inventory to the main configuration management inventory.
 
 1. Perform the transfer:
 
-        ansible-playbook service_infra_ansible/handovers.yml -i com.example.main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/handovers.yml -i com.example_main_ansible/bootstrap
     * Ensure that the bootstrap inventory no longer contains
       any hosts that were transferred to the main inventory.
       You may have to do this manually, if you are redeploying

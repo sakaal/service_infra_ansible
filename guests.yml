@@ -3,7 +3,7 @@
 #
 # Installs virtual guest machines on the hypervisors. Usually run as:
 #
-# ansible-playbook -vv guests.yml -i ../com.example.main_ansible/bootstrap
+# ansible-playbook -vv guests.yml -i ../com.example_main_ansible/bootstrap
 #
 
 - name: START
