@@ -61,6 +61,7 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
 1. Account with the managed DNS provider (requires credit card)
     * DynECT API access
 1. A domain name with DNSSEC support for management purposes
+1. Another domain name to be publicly associated with your service instance
 1. Private [main configuration repository](https://github.com/sakaal/com.example_main_ansible)
    for the service operation stage (`com.example_main_ansible`)
 1. Private [bastion inventory repository](https://github.com/sakaal/com.example_bastion_ansible)
@@ -69,7 +70,9 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
       added under `admin_access_sources`.
 1. Root access credentials and the IP addresses of one or more dedicated servers
 
-### Registering a management domain name
+### Domain name registration
+
+#### Registering a management domain name
 
 When registering a management domain, make sure that your registrar
 offers DNSSEC support for the specific TLD that you are planning to use.
@@ -78,6 +81,20 @@ Using a randomly generated name for the management domain may improve
 privacy by making it more difficult to associate with the public
 service instance name.
 
+In these instructions, `example.com` refers to the management domain name.
+
+#### Registering a public domain name
+
+The public name of the service instance should be different
+from the management domain name.
+
+When registering a domain name to be publicly associated with your service
+instance, choosing a registrar that supports DNSSEC for the specific TLD
+that you are planning to use is recommended (but not mandatory). This domain
+name is a part of your brand.
+
+In these instructions, `public.test` refers to the public name.
+
 ## Deployment procedure
 
 The playbooks are run on an
@@ -85,8 +102,11 @@ The playbooks are run on an
 that has access to the service infrastructure nodes and external services
 via a secure private channel over the Internet.
 
-Substitute your service management domain name for `example.com` (and
-`com.example` in reverse order).
+Substitute your service management domain name for `example.com`
+(and `com.example` in reverse-DNS notation).
+
+Substitute your public service domain name for `public.test`
+(and `test.public` in reverse-DNS notation).
 
 1. Check out the infrastructure configuration repository (playbooks):
 
@@ -119,17 +139,17 @@ Substitute your service management domain name for `example.com` (and
 
 ### Deploying the DNS zones
 
-If you haven't already created a security enabled DNS zone:
+If you haven't already created the security enabled DNS zones:
 
 1. Add the management DNS zone default A record IP address
    to the `zones` inventory.
 
-1. Deploy the zone using:
+1. Deploy the zones using:
 
         ansible-playbook -v service_infra_ansible/dns.yml -i com.example_main_ansible/zones
 
-1. Add the Delegation Signer (DS) record from the DNS management console
-   to your domain registration.
+1. Add the Delegation Signer (DS) records from the DNS management console
+   to your domain registrations.
 
 1. Use a DNSSEC analyzer, for example
    [Verisign Labs](http://dnssec-debugger.verisignlabs.com/), to make sure

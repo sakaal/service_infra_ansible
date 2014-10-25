@@ -6,7 +6,17 @@
 # ansible-playbook -vvv dns.yml -i zones
 #
 
-- hosts: localhost
+- name: MANAGED DNS
+  hosts: localhost
   connection: local
   roles:
   - dynect_zones
+
+- name: MANUAL STEPS
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name: DNSSEC instructions
+    debug: msg="Remember to add the Delegation Signer (DS) records
+                from the DNS management console to your domain registrations."
