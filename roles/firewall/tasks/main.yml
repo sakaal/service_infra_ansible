@@ -7,7 +7,7 @@
 
 - name: Dynamically managed firewall
   sudo: yes
-  yum: name=firewalld state=present
+  yum: name=firewalld
 
 - name: Deactivate the firewall
   sudo: yes

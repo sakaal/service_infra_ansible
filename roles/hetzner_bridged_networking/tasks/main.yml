@@ -41,6 +41,10 @@
   sudo: yes
   lineinfile: dest=/etc/sysctl.conf regexp="^#?net\.ipv4\.ip_forward" line="net.ipv4.ip_forward=1" state=present
 
+- name: Change the virbr0 interface to the internal firewall zone
+  sudo: yes
+  command: firewall-cmd --permanent --zone=internal --change-interface=virbr0
+
 - name: Ensure IPv4 forwarding is enabled
   command: cat /proc/sys/net/ipv4/ip_forward
   register: ipv4_forward
