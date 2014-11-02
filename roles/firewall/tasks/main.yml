@@ -41,6 +41,12 @@
   command: firewall-offline-cmd
            --set-default-zone={{ firewall_zone | mandatory }}
 
+- name: Add the default interface to the administrative firewall zone
+  sudo: yes
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone | mandatory }}
+           --change-interface="{{ ansible_default_ipv4.interface }}"
+
 - name: Open firewall ports
   sudo: yes
   command: firewall-offline-cmd
