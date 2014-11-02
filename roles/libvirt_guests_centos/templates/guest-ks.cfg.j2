@@ -260,9 +260,11 @@ systemctl enable firewalld
 
 yum -y update
 
-##### Begin DNS SSHFP records management #####
+##### Begin DNS SSHFP and A records management #####
 
-echo "Updating DNS SSHFP records via the DynECT API"
+echo "Updating DNS SSHFP and A records via the DynECT API"
+
+INTERNAL_IP=`ip -4 addr | grep -oP '(?<=inet\s)(192\.168\.122\.\d+)'`
 
 #
 # Ensure that SSH host keys exist. They're otherwise generated at first boot.
@@ -294,11 +296,30 @@ AUTH_TOKEN=$(echo $OUTPUT |\
  sed -e 's/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/g')
 
 #
+# Delete old DNS A records (if any)
+#
+curl -s -o /dev/null -w "%{http_code} %{url_effective} DELETE\\n"\
+ -X DELETE -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/ARecord/$DYNECT_ZONE/$HOSTNAME/
+
+#
+# Make a DNS A record
+#
+cat > "$DATA_FILE" << EOF
+{"rdata":{
+"address":"$INTERNAL_IP"
+}}
+EOF
+curl -s -o /dev/null -w "%{http_code} %{url_effective} POST\\n"\
+ -X POST -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
+ $DYNECT_API_URL/ARecord/$DYNECT_ZONE/$HOSTNAME/ -d @$DATA_FILE
+
+#
 # Delete old DNS SSHFP records (if any)
 #
 curl -s -o /dev/null -w "%{http_code} %{url_effective} DELETE\\n"\
  -X DELETE -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
- $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$(hostname)/
+ $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$HOSTNAME/
 
 #
 # Make the new DNS SSHFP records
@@ -321,8 +342,8 @@ EOF
 curl -s -o /dev/null\
  -w "%{http_code} %{url_effective} $ALGORITHM $FPTYPE $FINGERPRINT\\n"\
  -X POST -H 'Content-Type: application/json' -H "Auth-Token: $AUTH_TOKEN"\
- $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$(hostname)/ -d @$DATA_FILE
-done <<< "$(ssh-keygen -r $(hostname))"
+ $DYNECT_API_URL/SSHFPRecord/$DYNECT_ZONE/$HOSTNAME/ -d @$DATA_FILE
+done <<< "$(ssh-keygen -r $HOSTNAME)"
 
 # Publish DNS zones
 curl -s -o /dev/null -w "%{http_code} %{url_effective} PUBLISH\\n"\
