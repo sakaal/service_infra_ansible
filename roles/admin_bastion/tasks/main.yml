@@ -1,3 +1,4 @@
+---
 # file: roles/admin_bastion/tasks/main.yml
 
 #
@@ -17,29 +18,9 @@
         dest="/home/{{ admin_username }}/.ssh/{{ bastion_deployment_key_filename }}"
         mode=600
 
-- file: dest="~{{ admin_username }}/.ssh/known_hosts" state=touch mode=600
-
-- name: Remove previously known bastion configuration repository host keys
-  when: bastion_inventory_repo_hostnames is defined
-  with_items: bastion_inventory_repo_hostnames|mandatory
-  command: ssh-keygen -R {{ item }}
-
-- name: Ensure that the SSH known hosts file exists
-  file: dest="~{{ admin_username }}/.ssh/known_hosts" state=touch mode=600
-
-- name: Remove the redundant known hosts backup file
-  file: dest="~{{ admin_username }}/.ssh/known_hosts.old" state=absent
-
-- name: Comma-separated list of bastion configuration repository known hostnames
-  set_fact: known_hostnames="{{ bastion_inventory_repo_hostnames|join(',') }}"
-
-- name: Add the currently known bastion configuration repository host key
-  lineinfile: dest="~{{ admin_username }}/.ssh/known_hosts"
-              line="{{ known_hostnames | mandatory }} {{ bastion_inventory_repo_host_key | mandatory }}"
-
 - name: SSH config for bastion configuration repository access
   template: src=bastion_repo_ssh_config.j2
-            dest="~{{ admin_username }}/.ssh/config" mode=600
+            dest="/home/{{ admin_username }}/.ssh/config" mode=600
 
 - name: Bastion host self-configuration inventory
   git: repo="{{ bastion_inventory_repo_service | mandatory }}/{{ bastion_inventory_repo_name | mandatory }}"
