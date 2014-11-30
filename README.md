@@ -54,7 +54,7 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
     * Intermediate know-how of Linux virtualization
 1. Service Infrastructure configuration repository (this CMDB)
 1. [Bastion playbooks repository](https://github.com/sakaal/bastion_ansible)
-1. [Administrative Client System (ACS)](https://github.com/sakaal/admin_client)
+1. [Administrative Client System (ACS)](https://github.com/sakaal/admin_client_ansible)
    ready for use
 1. Account with the hosting provider (requires credit card)
     * Hetzner Webservice API access
@@ -98,7 +98,7 @@ In these instructions, `public.test` refers to the public name.
 ## Deployment procedure
 
 The playbooks are run on an
-[Administrative Client System (ACS)](https://github.com/sakaal/admin_client)
+[Administrative Client System (ACS)](https://github.com/sakaal/admin_client_ansible)
 that has access to the service infrastructure nodes and external services
 via a secure private channel over the Internet.
 
