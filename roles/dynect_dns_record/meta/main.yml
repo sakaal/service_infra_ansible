@@ -1,4 +1,6 @@
+---
 # file: roles/dynect_dns_record/meta/main.yml
 
 dependencies:
-  - { role: dynect_session }
+- role: "../../service_commons_ansible/roles/dynect_session"
+

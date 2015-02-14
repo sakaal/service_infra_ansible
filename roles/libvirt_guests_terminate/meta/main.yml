@@ -1,4 +1,5 @@
+---
 # file: roles/libvirt_guests_terminate/meta/main.yml
 
 dependencies:
-  - { role: dynect_session }
+- role: "../../service_commons_ansible/roles/dynect_session"

@@ -1,4 +1,5 @@
-# file: roles/admin_bastion/tasks/main.yml
+---
+# file: roles/ssh_bastion/tasks/main.yml
 
 - name: Local SSH bastion host configuration
   sudo: yes

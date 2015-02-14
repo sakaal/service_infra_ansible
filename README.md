@@ -52,6 +52,7 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
     * Basic know-how of DNS Security Extensions (DNSSEC)
     * Basic know-how of GnuPG web of trust (OpenPGP)
     * Intermediate know-how of Linux virtualization
+1. [Service Commons configuration repository](https://github.com/sakaal/service_commons_ansible)
 1. Service Infrastructure configuration repository (this CMDB)
 1. [Bastion playbooks repository](https://github.com/sakaal/bastion_ansible)
 1. [Administrative Client System (ACS)](https://github.com/sakaal/admin_client_ansible)
@@ -108,8 +109,10 @@ Substitute your service management domain name for `example.com`
 Substitute your public service domain name for `public.test`
 (and `test.public` in reverse-DNS notation).
 
-1. Check out the infrastructure configuration repository (playbooks):
+1. Check out the commons and infrastructure configuration repositories
+   (playbooks):
 
+        git clone git@github.com:sakaal/service_commons_ansible.git
         git clone git@github.com:sakaal/service_infra_ansible.git
 
 1. Check out the

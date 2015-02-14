@@ -1,6 +1,0 @@
----
-# file: roles/admin_bastion/meta/main.yml
-
-dependencies:
-- role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/gnupg_keys"
-- role: ssh_known_hosts

@@ -17,7 +17,7 @@
   vars_files:
     - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
     - /mnt/sensitive_data/etc/ansible/vars/dynect.yml
-    - "{{ playbook_dir }}/roles/dynect_session/vars/main.yml"
+    - "../service_commons_ansible/roles/dynect_session/vars/main.yml"
   roles:
     - libvirt_guests_centos
     - libvirt_guests_dhcp
