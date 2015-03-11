@@ -41,6 +41,13 @@
            dest=/opt/ force=yes
            sha256sum="{{ epel_rpm_sha256|mandatory }}"
 
+- name: Check that the CentOS repository is available from the hypervisor
+  sudo: yes
+  get_url: url="{{ centos_repo_url|mandatory }}/{{
+                   centos_repo_key_file|mandatory }}"
+           dest="/opt/{{ centos_repo_key_file }}" force=yes
+           sha256sum="{{ centos_repo_key_sha256|mandatory }}"
+
 - name: Ensure user home ~/bin directory exists
   file: state=directory path=~/bin mode=0750
 
