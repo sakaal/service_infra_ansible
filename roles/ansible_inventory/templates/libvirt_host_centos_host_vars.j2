@@ -1,3 +1,4 @@
+---
 # file: host_vars/{{ hostname | mandatory }}
 #
 # bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
@@ -31,3 +32,21 @@
 #
 hetzner_single_ips:
 #  - { 'ip': '203.0.113.24', mac: '00:53:56:00:4A:C5' }
+
+#
+# Attach network interfaces
+#
+# The roles in the service_platform_ansible repository are smart enough
+# to assume that any extra IP addresses given to a host must have been
+# intended for public access.  Simply attaching the interface is sufficient
+# to start using the IP address that comes with it.
+#
+# roles/libvirt_interfaces
+#
+libvirt_interfaces:
+
+#- domain: guest.host.example.com     # www.public.test
+#  mac:    00:53:56:00:4A:C5
+#  type:   bridge
+#  source: br0
+#  model:  virtio

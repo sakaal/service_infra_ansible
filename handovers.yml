@@ -13,4 +13,3 @@
     - ansible_inventory
     - hetzner_single_ips
     - ansible_inventory_commit
-
