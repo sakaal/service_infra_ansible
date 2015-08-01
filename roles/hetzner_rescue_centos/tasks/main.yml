@@ -8,7 +8,7 @@
 
 - name: Wait for the server to boot in the rescue system
   local_action: wait_for host={{ inventory_hostname }} port=22
-                search_regex=OpenSSH delay=20
+                state=started delay=20
 
 #
 # Storage partitioning
@@ -58,8 +58,11 @@
   command: /root/.oldroot/nfs/install/installimage
   register: installimage
 
+#
+# Reboot https://github.com/ansible/ansible/issues/10616
+#
 - name: Restart the server after installation
-  command: reboot
-  async: 0
+  shell: sleep 2 && shutdown -r now "Ansible triggered"
+  async: 1
   poll: 0
   ignore_errors: true
