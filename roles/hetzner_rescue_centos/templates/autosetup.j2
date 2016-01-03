@@ -14,9 +14,9 @@ PART /boot ext2      512M
 PART lvm   vg_sys    {{ vg_sys_size | mandatory }}
 PART lvm   {{ vg_pool_name | mandatory }} {{ vg_pool_size | mandatory }}
 
-LV vg_sys  lv_sys_root   /        ext4   8G
+LV vg_sys  lv_sys_root   /        ext4   4G
 LV vg_sys  lv_sys_swap   swap     swap  16G
 LV vg_sys  lv_sys_tmp    /tmp     ext4   5G
 LV vg_sys  lv_sys_home   /home    ext4  10G
-LV vg_sys  lv_sys_var    /var     ext4   4G
+LV vg_sys  lv_sys_var    /var     ext4   6G
 LV vg_sys  lv_sys_vartmp /var/tmp ext4   5G
