@@ -16,6 +16,8 @@
 # virtual guests in that group on that hypervisor.
 #
 
+---
+
 #
 # On CentOS or Fedora, to create a PBKDF2 protected password, you can use:
 # grub2-mkpasswd-pbkdf2
@@ -36,13 +38,13 @@
 # during its kickstart installation.
 #
 - name: Check that the EPEL RPM is available from the hypervisor
-  sudo: yes
+  become: yes
   get_url: url="{{ epel_rpm_url|mandatory }}"
            dest=/opt/ force=yes
            sha256sum="{{ epel_rpm_sha256|mandatory }}"
 
 - name: Check that the CentOS repository is available from the hypervisor
-  sudo: yes
+  become: yes
   get_url: url="{{ centos_repo_url|mandatory }}/{{
                    centos_repo_key_file|mandatory }}"
            dest="/opt/{{ centos_repo_key_file }}" force=yes
@@ -56,7 +58,7 @@
 
 - name: Check which guests already exist
   with_items: groups['{{ libvirt_guests_group | mandatory }}']
-  sudo: yes
+  become: yes
   shell: virsh -q dominfo "{{ item }}"
   register: domains
   changed_when: domains.rc != 0 and 'Domain not found' in domains.stderr

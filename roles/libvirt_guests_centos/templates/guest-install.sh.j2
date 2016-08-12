@@ -22,7 +22,7 @@ virt-install --connect=qemu:///system \
 --extra-args="ks=file:/$KS console=tty0 console=xvc0,115200n8" \
 --name={{ item }} \
 --description="{{ hostvars[item].guest_description | mandatory }}" \
---disk path=/dev/$VG/$LV,size=12,bus=virtio,sparse=false,cache=writethrough \
+--disk path=/dev/$VG/$LV,size=12,bus=virtio,sparse=false,cache=directsync \
 --ram={{ hostvars[item].guest_ram | mandatory }} \
 --vcpus={{ hostvars[item].guest_vcpus | mandatory }} \
 --check-cpu \
