@@ -1,4 +1,3 @@
----
 # file: forget_servers.yml
 #
 # Removes old host keys previously known to Ansible configuration management.
@@ -6,9 +5,9 @@
 #
 # ansible-playbook -vv forget_servers.yml -i ../com.example_main_ansible/bootstrap
 #
+---
+
 - hosts: libvirt_hosts
-  vars_files:
-    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   gather_facts: no
   serial: 1
   connection: local

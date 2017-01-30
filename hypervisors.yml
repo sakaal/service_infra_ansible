@@ -12,9 +12,6 @@
 
 - name: HYPERVISORS
   hosts: libvirt_hosts
-  vars_files:
-    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
-    - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   pre_tasks:
     - include: "../service_commons_ansible/tasks/group_distros.yml"
   roles:

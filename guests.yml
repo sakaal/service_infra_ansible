@@ -1,10 +1,10 @@
----
 # file: guests.yml
 #
 # Installs virtual guest machines on the hypervisors. Usually run as:
 #
 # ansible-playbook -vv guests.yml -i ../com.example_main_ansible/bootstrap
 #
+---
 
 - name: START
   hosts: localhost
@@ -15,8 +15,6 @@
 - name: GUESTS
   hosts: libvirt_hosts
   vars_files:
-    - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
-    - /mnt/sensitive_data/etc/ansible/vars/dynect.yml
     - "../service_commons_ansible/roles/dynect_session/vars/main.yml"
   roles:
     - libvirt_guests_centos

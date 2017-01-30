@@ -28,7 +28,7 @@
 # grub-crypt --sha-512
 #
 # Set the following variables in file:
-# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+# com.example_ansible_main/group_vars/all/admin_access.yml
 #
 #guest_bootpw_pbkdf2:
 #guest_rootpw_sha512:

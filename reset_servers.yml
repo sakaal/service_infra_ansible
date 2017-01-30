@@ -16,9 +16,6 @@
 - name: ACTIVATE THE HETZNER RESCUE SYSTEM
   hosts: reset_servers
   gather_facts: no
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
-  - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   roles:
   - hetzner_rescue_activate
   tags: reinstall
@@ -34,8 +31,6 @@
 - name: UNATTENDED INSTALLATION
   hosts: reset_servers
   gather_facts: no
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   vars:
     ansible_ssh_port: 22
   roles:
@@ -45,8 +40,6 @@
 - name: Manage local SSH known host keys
   hosts: reset_servers
   gather_facts: no
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   serial: 1
   roles:
   - admin_forget
@@ -65,8 +58,6 @@
 - name: HOST SECURITY
   hosts: reset_servers
   gather_facts: no
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   vars:
     ansible_ssh_port: 22
   roles:
@@ -77,9 +68,6 @@
   hosts: reset_servers
   gather_facts: no
   serial: 1
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
-  - /mnt/sensitive_data/etc/ansible/vars/hetzner.yml
   roles:
   - dynect_dns_record
   - hetzner_reverse_dns
@@ -97,8 +85,6 @@
 
 - name: ADMINISTRATIVE ACCESS
   hosts: reset_servers
-  vars_files:
-  - /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
   vars:
     ansible_ssh_port: 22
   roles:

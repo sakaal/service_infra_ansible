@@ -1,12 +1,12 @@
----
 # file: roles/admin_access/tasks/main.yml
 #
 # The administrative access role enables configuration management access.
 #
+---
 
 #
 # Set all the following variables in file:
-# /mnt/sensitive_data/etc/ansible/vars/admin_access.yml
+# com.example_main_ansible/group_vars/all/admin_access.yml
 #
 
 #
