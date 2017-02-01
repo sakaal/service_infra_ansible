@@ -1,4 +1,3 @@
----
 # file: host_vars/{{ item }}
 #
 # bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
@@ -12,3 +11,4 @@
 # bootstrap language: {{ hostvars[item].guest_lang | mandatory }}
 # bootstrap keyboard: {{ hostvars[item].guest_keyboard | mandatory }}
 # bootstrap timezone: {{ hostvars[item].guest_timezone | mandatory }}
+---
