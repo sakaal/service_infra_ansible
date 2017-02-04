@@ -144,7 +144,7 @@ echo "{{ item }} kickstart configured" >> /etc/motd
 date -u +"%FT%TZ %G-W%V-%u %A %y-%j" >> /etc/motd
 
 echo "Installing the Extra Packages for Enterprise Linux (EPEL) repository."
-rpm -Uvh {{ epel_rpm_url | mandatory }}
+yum -y install epel-release
 
 # Authorize SSH keys
 cd /home/{{ admin_username | mandatory }}

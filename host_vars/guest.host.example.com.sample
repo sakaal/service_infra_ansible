@@ -1,10 +1,10 @@
 # file: host_vars/guest.host.example.com
-
 #
 # The guest subdomains are assumed to be a local naming policy on the
 # hypervisor host. Guest names are not registered in DNS, but only
 # configured for local name resolution on the hypervisor.
 #
+---
 
 #
 # roles/libvirt_guests_centos

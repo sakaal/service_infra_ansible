@@ -1,5 +1,4 @@
 # file: roles/libvirt_guests_dhcp/tasks/main.yml
-
 #
 # Configures static DHCP for the libvirt guests' local management network
 # on the hypervisor. Lets libvirt assign the MACs and IPs first and then
@@ -15,6 +14,7 @@
 #       Ansible playbooks targeting the guests can be run from (or via) the
 #       hypervisor.
 #
+---
 
 #
 # Returns the MAC of the guest's first default network interface.
@@ -22,53 +22,47 @@
 # It's only available locally on the hypervisor.
 #
 - name: Look up the default network interface MAC of each guest
-  sudo: yes
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
+  become: yes
   shell: >
          virsh domiflist {{ item }} |
          grep --max-count=1 "[ ]\+network[ ]\+default[ ]\+" |
          tr -s ' ' | cut -d ' ' -f 5
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
   register: macs
   changed_when: False
   failed_when: macs is defined and macs.stderr.strip() != ''
 
-- name: Wait for the guest to receive an IP address from Dnsmasq
-  wait_for: >
-            path=/var/lib/libvirt/dnsmasq/default.leases
-            search_regex=" {{ item.stdout }} "
-            timeout=30
-  when: item|success
-  with_items: macs.results
-
 - name: Look up the local IP address of each guest
-  sudo: yes
-  shell: >
-         cat /var/lib/libvirt/dnsmasq/default.leases |
-         grep --max-count=1 " {{ item.stdout }} " | cut -d ' ' -f 3
+  with_items: "{{ macs.results }}"
   when: item|success
-  with_items: macs.results
+  become: yes
+  shell: >
+         virsh domifaddr "{{ item.item }}" |
+         grep --max-count=1 " {{ item.stdout }} " |
+         tr -s ' ' | cut -d ' ' -f 5 | cut -d '/' -f 1
   register: macs_and_ips
   changed_when: False
-  failed_when: macs_and_ips is defined and macs_and_ips.stderr.strip() != ''
+  failed_when: macs_and_ips is defined and
+               macs_and_ips.stderr.strip() != ''
 
 - name: Configure static local IP addresses in the libvirt default network
-  sudo: yes
+  with_items: "{{ macs_and_ips.results }}"
+  when: item|success
+  become: yes
   lineinfile: >
               dest="/etc/libvirt/qemu/networks/default.xml"
               insertafter='[ \t]+<range[ \t]+start="192\.168\.122\.'
-              regexp='^[ \t]+<host[ \t]+.*name="{{ item.item.item }}"'
-              line='      <host mac="{{ item.item.stdout }}" name="{{ item.item.item }}" ip="{{ item.stdout }}" />'
+              regexp="^[ \t]+<host[ \t]+.*name='{{ item.item.item }}'"
+              line="      <host mac='{{ item.item.stdout }}' name='{{ item.item.item }}' ip='{{ item.stdout }}' />"
               state=present
-  when: item|success
-  with_items: macs_and_ips.results
 
 - name: Configure static local IP addresses in /etc/hosts
-  sudo: yes
+  with_items: "{{ macs_and_ips.results }}"
+  when: item|success
+  become: yes
   lineinfile: >
               dest="/etc/hosts"
               insertafter='^[ \t]*{{ inventory_hostname }}[ \t]+.*{{ hostvars[inventory_hostname].hostname }}'
               regexp='^[^ \t]*[ \t]+{{ item.item.item }}[ \t]+'
               line='{{ item.stdout }} {{ item.item.item }} {{ item.item.item | regex_replace("^([^\.]*)\..*$", "\\1") }}'
               state=present
-  when: item|success
-  with_items: macs_and_ips.results
