@@ -16,7 +16,7 @@
   local_action: command sshpass -p'{{ ansible_ssh_pass }}'
                 ssh -o StrictHostKeyChecking=no
                 root@{{ inventory_hostname }}
-                ssh-keygen -r {{ hostname | mandatory }}
+                ssh-keygen -r {{ hostname }}
   register: sshfp_records
   failed_when: sshfp_records.rc != 0
 

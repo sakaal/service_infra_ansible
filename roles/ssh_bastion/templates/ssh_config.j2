@@ -19,5 +19,5 @@ Host *
 {% for address in groups['libvirt_hosts'] %}
 
 Host *.{{ hostvars[address].hostname }}
-    ProxyCommand ssh -A -q {{ admin_username | mandatory }}@{{ hostvars[address].hostname | mandatory }} -p{{ admin_ssh_port | mandatory }} nc %h %p
+    ProxyCommand ssh -A -q {{ admin_username }}@{{ hostvars[address].hostname }} -p{{ admin_ssh_port }} nc %h %p
 {% endfor %}

@@ -7,7 +7,7 @@
               dest="/etc/hosts"
               regexp='^[^ \t]*[ \t]+{{ item }}[ \t]+'
               state=absent
-  with_items: groups['ex_{{ libvirt_guests_group | mandatory }}']
+  with_items: groups['ex_{{ libvirt_guests_group }}']
 
 - name: Remove static local IP addresses from the libvirt default network
   become: yes
@@ -34,7 +34,7 @@
   local_action: >
                 command curl -s -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ item }}/
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ item }}/
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes
 

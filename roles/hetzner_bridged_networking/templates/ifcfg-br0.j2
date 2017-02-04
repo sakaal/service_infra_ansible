@@ -2,10 +2,10 @@
 DEVICE=br0
 TYPE="Bridge"
 BOOTPROTO=static
-IPADDR={{ ansible_default_ipv4.address | mandatory }}
-NETMASK={{ ansible_default_ipv4.netmask | mandatory }}
-SCOPE="peer {{ ansible_default_ipv4.gateway | mandatory }}"
+IPADDR={{ ansible_default_ipv4.address }}
+NETMASK={{ ansible_default_ipv4.netmask }}
+SCOPE="peer {{ ansible_default_ipv4.gateway }}"
 ONBOOT=yes
 NM_CONTROLLED=no
 DELAY=0
-ZONE={{ firewall_zone | mandatory }}
+ZONE={{ firewall_zone }}

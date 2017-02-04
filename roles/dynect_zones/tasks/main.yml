@@ -26,11 +26,11 @@
         "{{ available_zones.json.data }}"
   local_action: >
                 uri method=POST url="{{ dynect_api_url }}/Zone/{{
-                hostvars[item].dns_zone | mandatory }}/"
+                hostvars[item].dns_zone }}/"
                 HEADER_Content-Type="application/json"
                 HEADER_Auth-Token="{{ dynect_session_token }}"
                 body='{
-                "rname": "{{ hostvars[item].dns_soa_rname | mandatory }}",
+                "rname": "{{ hostvars[item].dns_soa_rname }}",
                 "serial_style": "day",
                 "ttl": "{{ hostvars[item].dns_soa_ttl | default(60) }}"
                 }'
@@ -39,7 +39,7 @@
   with_items: groups['zone_defaults']
   local_action: >
                 uri url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item].dns_zone | mandatory }}/{{
+                hostvars[item].dns_zone }}/{{
                 hostvars[item].dns_zone }}/"
                 HEADER_Content-Type="application/json"
                 HEADER_Auth-Token="{{ dynect_session_token }}"
@@ -50,7 +50,7 @@
   when: item|success and item.json.data
   local_action: >
                 uri method=DELETE url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item.item].dns_zone | mandatory }}/{{
+                hostvars[item.item].dns_zone }}/{{
                 hostvars[item.item].dns_zone }}/"
                 HEADER_Content-Type="application/json"
                 HEADER_Auth-Token="{{ dynect_session_token }}"
@@ -62,7 +62,7 @@
   with_items: groups['zone_defaults']
   local_action: >
                 uri method=POST url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item].dns_zone | mandatory }}/{{
+                hostvars[item].dns_zone }}/{{
                 hostvars[item].dns_zone }}/"
                 HEADER_Content-Type="application/json"
                 HEADER_Auth-Token="{{ dynect_session_token }}"
@@ -79,7 +79,7 @@
                 command curl -v -v -X PUT
                 -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone | mandatory }}
+                {{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}
                 -d '{"publish":true}'
 
 #
@@ -91,7 +91,7 @@
                 command curl -X POST
                 -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone | mandatory }}
+                {{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone }}
                 -d '{
                 "keys":[{
                   "type":"ZSK",
@@ -102,6 +102,6 @@
                   "algorithm":"RSA/SHA-1",
                   "bits":"2048"
                 }],
-                "contact_nickname":"{{ dynect_dnssec_contact_nickname | mandatory }}",
+                "contact_nickname":"{{ dynect_dnssec_contact_nickname }}",
                 "notify_events":"{{ dynect_dnssec_notify_events | default('create,expire,warning') }}"
                 }'

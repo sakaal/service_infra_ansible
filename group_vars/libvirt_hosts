@@ -6,7 +6,7 @@
 #
 # roles/libvirt_guests_centos
 #
-libvirt_guests_group: libvirt_guests_{{ hostvars[inventory_hostname].hostname | mandatory }}
+libvirt_guests_group: libvirt_guests_{{ hostvars[inventory_hostname].hostname }}
 vg_pool_name: vg_pool
 
 #

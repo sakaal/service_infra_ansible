@@ -9,7 +9,7 @@
   local_action: >
                 command curl -s -X POST -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/ARecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}.
+                {{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname }}.
                 -d '{"rdata":{"address":"{{ inventory_hostname }}"}}'
 
 #
@@ -21,14 +21,14 @@
   local_action: >
                 command curl -s -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ hostname }}/
 
 - name: Make DNS SSHFP records
   when: sshfp_records is defined and sshfp_records|success
   local_action: >
                 command curl -s -X POST -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone | mandatory }}/{{ hostname | mandatory }}/
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ hostname }}/
                 -d '{"rdata":{
                 "algorithm":"{{ item | regex_replace('^[^ ]+ IN SSHFP ([123]) [12] .*$', '\\1') }}",
                 "fptype":"{{ item | regex_replace('^[^ ]+ IN SSHFP [123] ([12]) .*$', '\\1') }}",

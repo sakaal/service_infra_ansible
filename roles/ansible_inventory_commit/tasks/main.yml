@@ -27,7 +27,7 @@
                 regexp="^ - \{ file: '{{ hostvars[item].target_ansible_inventory }}' \}$"
                 line=" - { file: '{{ hostvars[item].target_ansible_inventory }}' }"
                 state=present
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  with_items: groups['{{ libvirt_guests_group }}']
   changed_when: False
 
 - name: Load the list of target inventories from the temporary file
@@ -44,7 +44,7 @@
   run_once: yes
   local_action: >
                 command chdir="{{ inventory_dir }}"
-                git status --porcelain {{ item.file | mandatory }}
+                git status --porcelain {{ item.file }}
   with_items: target_inventories
   register: inventories
   changed_when: inventories is defined and "{{ item.file }}" in inventories.stdout
@@ -53,7 +53,7 @@
   run_once: yes
   local_action: >
                 command chdir="{{ inventory_dir }}"
-                git add {{ item.item.file | mandatory }}
+                git add {{ item.item.file }}
   when: item|changed
   with_items: inventories.results
 
@@ -69,8 +69,8 @@
 - name: List managed hypervisors in the temporary file
   local_action: >
                 lineinfile dest=/tmp/managed_nodes
-                regexp="^ - \{ host: '{{ hostvars[inventory_hostname].hostname | mandatory }}' \}$"
-                line=" - { host: '{{ hostvars[inventory_hostname].hostname | mandatory }}' }"
+                regexp="^ - \{ host: '{{ hostvars[inventory_hostname].hostname }}' \}$"
+                line=" - { host: '{{ hostvars[inventory_hostname].hostname }}' }"
                 state=present
   changed_when: False
 
@@ -80,7 +80,7 @@
                 regexp="^ - \{ host: '{{ item }}' \}$"
                 line=" - { host: '{{ item }}' }"
                 state=present
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  with_items: groups['{{ libvirt_guests_group }}']
   changed_when: False
 
 - name: Load the list of managed nodes from the temporary file
@@ -96,7 +96,7 @@
 - name: Check if the managed node host_vars have changed
   run_once: yes
   local_action: command chdir="{{ inventory_dir }}"
-                git status --porcelain host_vars/{{ item.host | mandatory }}
+                git status --porcelain host_vars/{{ item.host }}
   with_items: managed_nodes
   register: managed_host_vars
   changed_when: managed_host_vars is defined and "{{ item.host }}" in managed_host_vars.stdout
@@ -105,7 +105,7 @@
   run_once: yes
   local_action: >
                 command chdir="{{ inventory_dir }}"
-                git add host_vars/{{ item.item.host | mandatory }}
+                git add host_vars/{{ item.item.host }}
   when: item|changed
   with_items: managed_host_vars.results
 

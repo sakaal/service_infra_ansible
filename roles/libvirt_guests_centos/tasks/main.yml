@@ -35,10 +35,10 @@
 
 - name: Check that the CentOS repository is available from the hypervisor
   become: yes
-  get_url: url="{{ centos_repo_url|mandatory }}/{{
-                   centos_repo_key_file|mandatory }}"
+  get_url: url="{{ centos_repo_url }}/{{
+                   centos_repo_key_file }}"
            dest="/opt/{{ centos_repo_key_file }}" force=yes
-           sha256sum="{{ centos_repo_key_sha256|mandatory }}"
+           sha256sum="{{ centos_repo_key_sha256 }}"
 
 - name: Ensure user home ~/bin directory exists
   file: state=directory path=~/bin mode=0750
@@ -47,7 +47,7 @@
   file: state=directory path=~/kickstart mode=0750
 
 - name: Check which guests already exist
-  with_items: "{{ groups[ libvirt_guests_group | mandatory ] }}"
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
   become: yes
   shell: virsh -q dominfo "{{ item }}"
   register: domains
@@ -55,13 +55,13 @@
   failed_when: False
 
 - name: Generate libvirt guest installation scripts in ~/bin/
-  with_items: "{{ groups[ libvirt_guests_group | mandatory ] }}"
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
   template: src="guest-install.sh.j2"
             dest="~/bin/guest_{{ item }}-install.sh"
             mode=0740
 
 - name: Generate libvirt guest configuration files in ~/kickstart/
-  with_items: "{{ groups[ libvirt_guests_group | mandatory ] }}"
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
 #  no_log: True
   template: src="guest-ks.cfg.j2"
             dest="~/kickstart/guest_{{ item }}-ks.cfg"

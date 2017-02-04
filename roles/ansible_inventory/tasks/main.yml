@@ -23,14 +23,14 @@
   local_action: >
                 lineinfile
                 dest="{{ inventory_dir }}/{{ target_ansible_inventory }}"
-                regexp="^\[{{ target_ansible_group | mandatory }}\]"
+                regexp="^\[{{ target_ansible_group }}\]"
                 line="[{{ target_ansible_group }}]"
                 state=present
 
 - name: Ensure hypervisor appears under the target inventory group
   local_action: >
                 lineinfile dest="{{ inventory_dir }}/{{ target_ansible_inventory }}"
-                regexp="^{{ hostname | mandatory }}" line="{{ hostname }}"
+                regexp="^{{ hostname }}" line="{{ hostname }}"
                 insertafter="^\[{{ target_ansible_group }}\]"
                 state=present
 
@@ -47,18 +47,18 @@
   local_action: >
                 lineinfile force=no
                 dest="{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
-                regexp="^\[{{ hostvars[item].target_ansible_group | mandatory }}\]"
+                regexp="^\[{{ hostvars[item].target_ansible_group }}\]"
                 line="[{{ hostvars[item].target_ansible_group }}]"
                 state=present
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  with_items: groups['{{ libvirt_guests_group }}']
 
 - name: Ensure guest appears under the target inventory group
   local_action: >
                 lineinfile dest="{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
                 regexp="^{{ item }}" line="{{ item }}"
-                insertafter="^\[{{ hostvars[item].target_ansible_group | mandatory }}\]"
+                insertafter="^\[{{ hostvars[item].target_ansible_group }}\]"
                 state=present
-  with_items: groups['{{ libvirt_guests_group | mandatory }}']
+  with_items: groups['{{ libvirt_guests_group }}']
 
 - name: Add new guest host_vars (retain existing)
   local_action: >

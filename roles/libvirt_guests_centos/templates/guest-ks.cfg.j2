@@ -7,11 +7,11 @@
 # Do not use the same password elsewhere.
 # Change it at first boot inside a private network.
 #
-rootpw --iscrypted {{ guest_rootpw_sha512 | mandatory }}
+rootpw --iscrypted {{ guest_rootpw_sha512 }}
 authconfig --enableshadow --passalgo=sha512
 
 # Create the admin SSH account
-user --name={{ admin_username | mandatory }} --gecos="{{ admin_fullname }}" --groups=wheel --shell=/bin/bash
+user --name={{ admin_username }} --gecos="{{ admin_fullname }}" --groups=wheel --shell=/bin/bash
 
 cmdline
 skipx
@@ -20,7 +20,7 @@ reboot
 firstboot --disable
 
 lang {{ hostvars[item].guest_lang | default('en_US.UTF-8') }}
-keyboard {{ hostvars[item].guest_keyboard | mandatory }}
+keyboard {{ hostvars[item].guest_keyboard }}
 timezone {{ hostvars[item].guest_timezone | default('--utc') }}
 
 ignoredisk --only-use=vda
@@ -33,7 +33,7 @@ bootloader --location=mbr --driveorder=vda
 #
 part /boot --fstype="ext4" --size=512 --maxsize=512 --ondisk=vda
 part pv.1 --size=11264 --grow --ondisk=vda
-volgroup vg_{{ hostvars[item].guest_vg_name | mandatory }} pv.1
+volgroup vg_{{ hostvars[item].guest_vg_name }} pv.1
 logvol / --fstype="ext4" --size=4096 --maxsize=8192 --name=lv_{{ hostvars[item].guest_vg_name }}_root --vgname=vg_{{ hostvars[item].guest_vg_name }}
 logvol /var --fstype="ext4" --size=3072 --maxsize=4096 --name=lv_{{ hostvars[item].guest_vg_name }}_var --vgname=vg_{{ hostvars[item].guest_vg_name }}
 logvol swap --fstype="swap" --size=4096 --maxsize=4096 --name=lv_{{ hostvars[item].guest_vg_name }}_swap --vgname=vg_{{ hostvars[item].guest_vg_name }}
@@ -43,11 +43,11 @@ logvol swap --fstype="swap" --size=4096 --maxsize=4096 --name=lv_{{ hostvars[ite
 #
 network --device=eth0 --bootproto=dhcp --onboot=on --hostname={{ item }} --noipv6
 
-firewall --enable --service=ssh --port {{ admin_ssh_port | mandatory }}:tcp
+firewall --enable --service=ssh --port {{ admin_ssh_port }}:tcp
 services --enabled=sshd,ntpd,acpid
 selinux --enforcing
 
-url --url {{ centos_repo_url | mandatory }}
+url --url {{ centos_repo_url }}
 repo --name="CentOS" --baseurl={{ centos_repo_url }} --cost=100
 
 %packages --nobase --excludedocs
@@ -147,7 +147,7 @@ echo "Installing the Extra Packages for Enterprise Linux (EPEL) repository."
 yum -y install epel-release
 
 # Authorize SSH keys
-cd /home/{{ admin_username | mandatory }}
+cd /home/{{ admin_username }}
 mkdir --mode=700 .ssh
 ssh-keygen -q -N "" -t rsa -f .ssh/id_rsa -C "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
 cat >> .ssh/authorized_keys << "PUBLIC"
@@ -162,8 +162,8 @@ restorecon -R .ssh/
 # Configure Git
 cat >> .gitconfig << "GITCONFIG"
 [user]
-        name = {{ admin_fullname | mandatory }}
-        email = {{ admin_email | mandatory }}
+        name = {{ admin_fullname }}
+        email = {{ admin_email }}
 [push]
         default = simple
 GITCONFIG
@@ -197,7 +197,7 @@ echo "Interactive startup disabled"
 grep -q -e '^\s*set superusers' /etc/grub.d/40_custom || \
 cat >> /etc/grub.d/40_custom << EOF
 set superusers="{{ admin_username }}"
-password_pbkdf2 {{ admin_username }} {{ guest_bootpw_pbkdf2 | mandatory }}
+password_pbkdf2 {{ admin_username }} {{ guest_bootpw_pbkdf2 }}
 EOF
 grub2-mkconfig --output=/boot/grub2/grub.cfg
 echo "Required password for single user mode"
@@ -221,7 +221,7 @@ sed -i 's/^PasswordAuthentication[ \t]\+yes.*$/PasswordAuthentication no/g'\
 echo "SSH password authentication disabled"
 
 ## Configure SELinux to allow SSH on the administrative SSH port
-semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
+semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port }}
 
 ## Set SSH port
 sed -i 's/^#\?Port[ \t]\+22/Port {{ admin_ssh_port }}/g'\
@@ -237,7 +237,7 @@ systemctl enable NetworkManager-wait-online.service
 systemctl stop firewalld
 
 # Create the administrative firewall zone
-firewall-offline-cmd --new-zone={{ firewall_zone | mandatory }}
+firewall-offline-cmd --new-zone={{ firewall_zone }}
 
 # Set the administrative firewall zone as default
 firewall-offline-cmd --set-default-zone={{ firewall_zone }}
@@ -278,11 +278,11 @@ DATA_FILE=$(mktemp --tmpdir dynect_sshfp.XXX)
 #
 # Establish DynECT API session
 #
-DYNECT_API_URL="{{ dynect_api_url | mandatory }}"
-DYNECT_CUSTOMER="{{ dynect_customer | mandatory }}"
-DYNECT_API_USER="{{ dynect_api_user | mandatory }}"
-DYNECT_API_PASSWORD="{{ dynect_api_password | mandatory }}"
-DYNECT_ZONE={{ dns_zone | mandatory }}
+DYNECT_API_URL="{{ dynect_api_url }}"
+DYNECT_CUSTOMER="{{ dynect_customer }}"
+DYNECT_API_USER="{{ dynect_api_user }}"
+DYNECT_API_PASSWORD="{{ dynect_api_password }}"
+DYNECT_ZONE={{ dns_zone }}
 cat > "$DATA_FILE" << EOF
 {
 "customer_name": "$DYNECT_CUSTOMER",

@@ -1,4 +1,4 @@
-HOSTNAME {{ hostname | mandatory }} 
+HOSTNAME {{ hostname }} 
 
 IMAGE images/CentOS-71-64-minimal.tar.gz
 
@@ -11,8 +11,8 @@ SWRAIDLEVEL 1
 BOOTLOADER grub
 
 PART /boot ext2      512M
-PART lvm   vg_sys    {{ vg_sys_size | mandatory }}
-PART lvm   {{ vg_pool_name | mandatory }} {{ vg_pool_size | mandatory }}
+PART lvm   vg_sys    {{ vg_sys_size }}
+PART lvm   {{ vg_pool_name }} {{ vg_pool_size }}
 
 LV vg_sys  lv_sys_root   /        ext4   4G
 LV vg_sys  lv_sys_swap   swap     swap  16G

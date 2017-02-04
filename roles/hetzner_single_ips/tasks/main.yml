@@ -13,7 +13,7 @@
 ---
 
 - name: Query a list of server single IPs
-  local_action: command curl -su '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -su '{{ hetzner_api_user }}:{{ hetzner_api_password }}'
                 {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
   register: hetzner_ips_result
   changed_when: False
@@ -50,14 +50,14 @@
 - name: Request a separate MAC for every single IP that is still missing one
   with_items: "{{ hetzner_ips }}"
   when: (item.ip.ip != item.ip.server_ip) and (item.ip.separate_mac == None)
-  local_action: command curl -X PUT -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -X PUT -u '{{ hetzner_api_user }}:{{ hetzner_api_password }}'
                 {{ hetzner_api_url }}/ip/{{ item.ip.ip }}/mac
   changed_when: true
   register: mac_requested
 
 - name: Query the list of single IPs again to collect the MACs
   when: mac_requested|changed
-  local_action: command curl -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
+  local_action: command curl -u '{{ hetzner_api_user }}:{{ hetzner_api_password }}'
                 {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
   register: hetzner_ips_result
   changed_when: False
@@ -81,4 +81,8 @@
                 lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 insertafter="hetzner_single_ips"
                 regexp="^  - { ip: '{{ item.ip.ip }}'"
+<<<<<<< 81a6fac5c884004a576446703ccf79baf45c596d
                 line="  - { ip: '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"
+=======
+                line="  - { ip: '{{ item.ip.ip }}', mac: '{{ item.ip.separate_mac }}' }"
+>>>>>>> Syntax updates

@@ -10,7 +10,7 @@
   become: yes
   command: virsh pool-list --all --type logical
   register: pools_result
-  changed_when: not "{{ vg_pool_name | mandatory }}" in pools_result.stdout
+  changed_when: not "{{ vg_pool_name }}" in pools_result.stdout
 
 - name: Storage pool based on LVM volume group
   become: yes

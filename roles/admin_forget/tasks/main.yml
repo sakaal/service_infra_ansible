@@ -7,6 +7,6 @@
   local_action: "command ssh-keygen -R {{ item }}"
   with_items:
   - "{{ inventory_hostname }}"
-  - "{{ hostvars[inventory_hostname].hostname | mandatory }}"
-  - "[{{ inventory_hostname }}]:{{ admin_ssh_port | mandatory }}"
+  - "{{ hostvars[inventory_hostname].hostname }}"
+  - "[{{ inventory_hostname }}]:{{ admin_ssh_port }}"
   - "[{{ hostvars[inventory_hostname].hostname }}]:{{ admin_ssh_port }}"

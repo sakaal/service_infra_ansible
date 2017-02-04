@@ -2,12 +2,12 @@
 #
 # bootstrap handover timestamp: {{ ansible_date_time.iso8601 }}
 # bootstrap description: {{ hostvars[item].guest_description }}
-# bootstrap volume group name: {{ hostvars[item].guest_vg_name | mandatory }}
-# bootstrap OS variant: {{ hostvars[item].guest_os_variant | mandatory }}
-# bootstrap memory: {{ hostvars[item].guest_ram | mandatory }} MB
+# bootstrap volume group name: {{ hostvars[item].guest_vg_name }}
+# bootstrap OS variant: {{ hostvars[item].guest_os_variant }}
+# bootstrap memory: {{ hostvars[item].guest_ram }} MB
 # bootstrap processor: {{ hostvars[item].guest_vcpus }} vCPUs
-# bootstrap CentOS repository: {{ centos_repo_url | mandatory }}
-# bootstrap language: {{ hostvars[item].guest_lang | mandatory }}
-# bootstrap keyboard: {{ hostvars[item].guest_keyboard | mandatory }}
-# bootstrap timezone: {{ hostvars[item].guest_timezone | mandatory }}
+# bootstrap CentOS repository: {{ centos_repo_url }}
+# bootstrap language: {{ hostvars[item].guest_lang }}
+# bootstrap keyboard: {{ hostvars[item].guest_keyboard }}
+# bootstrap timezone: {{ hostvars[item].guest_timezone }}
 ---

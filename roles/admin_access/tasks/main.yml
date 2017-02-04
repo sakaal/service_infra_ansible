@@ -32,18 +32,18 @@
 #
 
 - name: Create the admin SSH account
-  user: name={{ admin_username | mandatory }} comment="{{ admin_fullname }}"
+  user: name={{ admin_username }} comment="{{ admin_fullname }}"
         append=yes groups=wheel shell=/bin/bash generate_ssh_key=yes
         ssh_key_comment={{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}
         state=present
 
 - name: Authorize SSH keys
   template: src=authorized_keys.j2
-            dest=/home/{{ admin_username | mandatory }}/.ssh/authorized_keys
+            dest=/home/{{ admin_username }}/.ssh/authorized_keys
             owner={{ admin_username }} group={{ admin_username }} mode=0600
 
 - name: Configure Git
-  template: src=gitconfig.j2 dest=/home/{{ admin_username | mandatory }}/.gitconfig
+  template: src=gitconfig.j2 dest=/home/{{ admin_username }}/.gitconfig
             owner={{ admin_username }} group={{ admin_username }} mode=0664
 
 - name: Configure sudoers
@@ -71,7 +71,7 @@
   become: yes
   lineinfile: dest=/etc/grub.d/40_custom regexp="^\s*password_pbkdf2"
               insertafter="^\s*set superusers"
-              line="password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 | mandatory }}"
+              line="password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 }}"
               state=present
   register: boot_password
 
@@ -93,11 +93,11 @@
  - Restart sshd
 
 - name: Configure SELinux to allow SSH on the administrative SSH port
-  command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
+  command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port }}
   ignore_errors: yes
 
 - name: Set SSH port
   lineinfile: dest=/etc/ssh/sshd_config regexp="^Port"
-              line="Port {{ admin_ssh_port | mandatory }}" state=present
+              line="Port {{ admin_ssh_port }}" state=present
   notify:
   - Restart sshd
