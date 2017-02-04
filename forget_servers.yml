@@ -12,4 +12,4 @@
   serial: 1
   connection: local
   roles:
-    - admin_forget
+  - admin_forget

@@ -1,8 +1,8 @@
 # file: roles/ansible_inventory/tasks/main.yml
-
 #
 # Adds freshly provisioned managed servers to the target inventory.
 #
+---
 
 - name: Compare the target repository status with upstream
   run_once: yes

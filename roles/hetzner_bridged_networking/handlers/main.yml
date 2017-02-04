@@ -1,5 +1,6 @@
 # file: roles/hetzner_bridged_networking/handlers/main.yml
+---
 
 - name: Restart network
-  sudo: yes
+  become: yes
   service: name=network state=restarted

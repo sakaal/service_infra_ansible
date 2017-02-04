@@ -1,11 +1,10 @@
----
 # file: reset_servers.yml
-
 #
 # Prepares dedicated servers for Ansible configuration management.
 #
 # WARNING: DESTROYS ALL DATA ON THE TARGETED HYPERVISORS AND THEIR GUESTS. 
 #
+---
 
 - name: START
   hosts: localhost

@@ -1,48 +1,54 @@
----
 # file: roles/hetzner_bridged_networking/tasks/main.yml
-
 #
 # Hetzner CentOS bridged networking for additional IP addresses (virtualization)  
 # See: http://wiki.hetzner.de/index.php/Netzkonfiguration_CentOS/en#Bridged
 #
+---
 
 - name: Ensure bridge-utils is present
-  sudo: yes
+  become: yes
   yum: name=bridge-utils state=present
 
 - name: Configure network bridge br0
-  sudo: yes
   when: ansible_os_family == "RedHat"
-  template: src=ifcfg-br0.j2 dest=/etc/sysconfig/network-scripts/ifcfg-br0 owner=root group=root mode=0644
+  become: yes
+  template: src=ifcfg-br0.j2
+            dest=/etc/sysconfig/network-scripts/ifcfg-br0
+            owner=root group=root mode=0644
 
 - name: Configure network interface eth0
-  sudo: yes
   when: ansible_os_family == "RedHat" and ansible_eth0.ipv4 is defined
-  template: src=ifcfg-eth0.j2 dest=/etc/sysconfig/network-scripts/ifcfg-eth0 owner=root group=root mode=0644
+  become: yes
+  template: src=ifcfg-eth0.j2 
+                dest=/etc/sysconfig/network-scripts/ifcfg-eth0
+                owner=root group=root mode=0644
 
 - name: Move the default route to the bridge br0
-  sudo: yes
+  become: yes
   command: chdir="/etc/sysconfig/network-scripts/" creates="route-br0" mv route-eth0 route-br0
 
 - name: Fix the default route comments on bridge br0
-  sudo: yes
+  become: yes
   lineinfile: dest=/etc/sysconfig/network-scripts/route-br0 regexp="^#\s*routing\s+for" line="# routing for br0"
 
 - name: Ensure bridged networking is configured
-  sudo: yes
+  become: yes
   command: ip link show br0
   register: br0_configured
   changed_when: br0_configured.rc != 0
   failed_when: False
   notify:
-   - Restart network
+  - Restart network
 
-- name: Enable IPv4 forwarding in /etc/sysctl.conf
-  sudo: yes
-  lineinfile: dest=/etc/sysctl.conf regexp="^#?net\.ipv4\.ip_forward" line="net.ipv4.ip_forward=1" state=present
+- name: Enable IPv4 forwarding
+  become: yes
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
 
 - name: Change the virbr0 interface to the internal firewall zone
-  sudo: yes
+  become: yes
   command: firewall-cmd --permanent --zone=internal --change-interface=virbr0
 
 - name: Ensure IPv4 forwarding is enabled
@@ -50,4 +56,4 @@
   register: ipv4_forward
   changed_when: "'0' in ipv4_forward.stdout"
   notify:
-   - Restart network
+  - Restart network

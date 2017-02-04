@@ -1,6 +1,4 @@
----
 # file: roles/hetzner_single_ips/tasks/main.yml
-
 #
 # Collects additional single IPs allocated to a Hetzner dedicated root server
 # for use with virtualization. Makes sure every IP has a separate MAC assigned.
@@ -12,6 +10,7 @@
 #
 # This role will add the single IPs and their MAC addresses to the said file.
 #
+---
 
 - name: Query a list of server single IPs
   local_action: command curl -su '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
@@ -49,10 +48,10 @@
 # mac_requested.changed will be true, if any MAC is requested (not skipped)
 #
 - name: Request a separate MAC for every single IP that is still missing one
+  with_items: "{{ hetzner_ips }}"
+  when: (item.ip.ip != item.ip.server_ip) and (item.ip.separate_mac == None)
   local_action: command curl -X PUT -u '{{ hetzner_api_user | mandatory }}:{{ hetzner_api_password | mandatory }}'
                 {{ hetzner_api_url }}/ip/{{ item.ip.ip }}/mac
-  with_items: hetzner_ips
-  when: (item.ip.ip != item.ip.server_ip) and (item.ip.separate_mac == None)
   changed_when: true
   register: mac_requested
 
@@ -66,7 +65,7 @@
 - name: Obtain the server IPs and MACs
   when: mac_requested|changed and hetzner_ips_result|success and
         inventory_hostname == (hetzner_ips_result.stdout|from_json)[0].ip.server_ip
-  sudo: yes
+  become: yes
   set_fact: hetzner_ips=hetzner_ips_result.stdout|from_json
 
 - name: Declare the hetzner_single_ips variable in target repository host_vars
@@ -76,10 +75,10 @@
                 line="hetzner_single_ips:"
 
 - name: Add the Hetzner single IPs and their corresponding MAC addresses
+  when: item.ip.separate_mac != None
+  with_items: "{{ hetzner_ips }}"
   local_action: >
                 lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 insertafter="hetzner_single_ips"
                 regexp="^  - { ip: '{{ item.ip.ip }}'"
                 line="  - { ip: '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"
-  with_items: hetzner_ips
-  when: item.ip.separate_mac != None

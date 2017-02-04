@@ -1,9 +1,8 @@
----
 # file: roles/linux_kvm/tasks/main.yml
+---
 
 - name: Virtualization packages
-  sudo: yes
-  yum: name="{{ item }}" state=present
+  become: yes
   with_items:
   - "@Virtualization"
   - "@Virtualization Client"
@@ -17,24 +16,25 @@
   - libguestfs-tools
   - avahi-dnsconfd
   - xorg-x11-xauth
+  yum: name="{{ item }}" state=present
 
 - name: Verify Linux KVM kernel modules
-  sudo: yes
+  become: yes
   shell: lsmod | grep kvm
   register: kernel_modules
   changed_when: False
   failed_when: not 'kvm' in kernel_modules.stdout
 
 - name: Allow libvirt management access
-  sudo: yes
+  become: yes
   template: src=50-libvirt.pkla.j2
             dest="/etc/polkit-1/localauthority/50-local.d/50-libvirt.pkla"
             owner=root group=root mode=0644
 
 - name: Enable services
-  sudo: yes
-  service: name={{ item }} state=started enabled=yes
   with_items:
   - dbus
   - avahi-daemon
   - libvirtd
+  become: yes
+  service: name="{{ item }}" state=started enabled=yes

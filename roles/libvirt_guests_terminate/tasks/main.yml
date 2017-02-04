@@ -1,8 +1,8 @@
----
 # file: roles/libvirt_guests_terminate/tasks/main.yml
+---
 
 - name: Remove static local IP addresses from /etc/hosts
-  sudo: yes
+  become: yes
   lineinfile: >
               dest="/etc/hosts"
               regexp='^[^ \t]*[ \t]+{{ item }}[ \t]+'
@@ -10,7 +10,7 @@
   with_items: groups['ex_{{ libvirt_guests_group | mandatory }}']
 
 - name: Remove static local IP addresses from the libvirt default network
-  sudo: yes
+  become: yes
   lineinfile: >
               dest="/etc/libvirt/qemu/networks/default.xml"
               regexp='^[ \t]+<host[ \t]+.*name="{{ item }}"'
@@ -18,13 +18,13 @@
   with_items: groups['ex_{{ libvirt_guests_group }}']
 
 - name: Destroy the guest domain
-  sudo: yes
+  become: yes
   virt: name="{{ item }}" command=destroy state=destroyed
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes
 
 - name: Undefine the guest domain
-  sudo: yes
+  become: yes
   virt: name="{{ item }}" command=undefine
   with_items: groups['ex_{{ libvirt_guests_group }}']
   ignore_errors: yes

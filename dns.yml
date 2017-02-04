@@ -1,10 +1,10 @@
----
 # file: dns.yml
 #
 # Creates security enabled DNS zones via the Managed DNS provider API.
 #
 # ansible-playbook -vvv dns.yml -i zones
 #
+---
 
 - name: MANAGED DNS
   hosts: localhost

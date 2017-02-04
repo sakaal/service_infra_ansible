@@ -1,8 +1,8 @@
----
 # file: hypervisors.yml
 #
 # Prepares hypervisors for hosting virtual guest machines.
 #
+---
 
 - name: START
   hosts: localhost
@@ -13,16 +13,16 @@
 - name: HYPERVISORS
   hosts: libvirt_hosts
   pre_tasks:
-    - include: "../service_commons_ansible/tasks/group_distros.yml"
+  - include: "../service_commons_ansible/tasks/group_distros.yml"
   roles:
-    - role: "../../service_commons_ansible/roles/admin_bastion"
-      tags: access
-    - role: ssh_bastion
-      tags: access
-    - hetzner_bridged_networking
-    - linux_kvm
-    - libvirt_pools
-    - "../../service_commons_ansible/roles/updates_auto"
+  - role: "../../service_commons_ansible/roles/admin_bastion"
+    tags: access
+  - role: ssh_bastion
+    tags: access
+  - hetzner_bridged_networking
+  - linux_kvm
+  - libvirt_pools
+  - "../../service_commons_ansible/roles/updates_auto"
 
 - name: FINISH
   hosts: localhost

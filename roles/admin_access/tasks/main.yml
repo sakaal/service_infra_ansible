@@ -47,28 +47,28 @@
             owner={{ admin_username }} group={{ admin_username }} mode=0664
 
 - name: Configure sudoers
+  with_items:
+  - regexp: '^%wheel\s+ALL='
+    line: '%wheel ALL=(ALL) NOPASSWD:ALL'
+  - regexp: '^Defaults\s+secure_path'
+    line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
+# Enable sudo without teletype terminal
+  - regexp: '^Defaults\s+!?requiretty'
+    line: 'Defaults    !requiretty'
   lineinfile: dest=/etc/sudoers state=present regexp="{{ item.regexp }}"
               line="{{ item.line }}" validate='visudo -qcf %s'
-  with_items:
-    - regexp: '^%wheel\s+ALL='
-      line: '%wheel ALL=(ALL) NOPASSWD:ALL'
-    - regexp: '^Defaults\s+secure_path'
-      line: 'Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin'
-# Enable sudo without teletype terminal
-    - regexp: '^Defaults\s+!?requiretty'
-      line: 'Defaults    !requiretty'
 
 - name: Prevent entering interactive boot
   lineinfile: dest=/etc/sysconfig/init regexp="^\s*PROMPT" line="PROMPT=no"
               state=present
 
 - name: Require boot-time password for single user mode
-  sudo: yes
+  become: yes
   lineinfile: dest=/etc/grub.d/40_custom regexp="^\s*set superusers"
               line="set superusers=\"{{ admin_username }}\"" state=present
 
 - name: Set the boot-time password
-  sudo: yes
+  become: yes
   lineinfile: dest=/etc/grub.d/40_custom regexp="^\s*password_pbkdf2"
               insertafter="^\s*set superusers"
               line="password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 | mandatory }}"
@@ -77,20 +77,20 @@
 
 - name: Make the boot configuration
   when: boot_password|changed
-  sudo: yes
+  become: yes
   command: grub2-mkconfig --output=/boot/grub2/grub.cfg
 
 - name: Disallow root SSH access
   lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin"
               line="PermitRootLogin no" state=present
   notify:
-   - Restart sshd
+  - Restart sshd
 
 - name: Disallow password authentication
   lineinfile: dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication"
               line="PasswordAuthentication no" state=present
   notify:
-   - Restart sshd
+ - Restart sshd
 
 - name: Configure SELinux to allow SSH on the administrative SSH port
   command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port | mandatory }}
@@ -100,4 +100,4 @@
   lineinfile: dest=/etc/ssh/sshd_config regexp="^Port"
               line="Port {{ admin_ssh_port | mandatory }}" state=present
   notify:
-   - Restart sshd
+  - Restart sshd
