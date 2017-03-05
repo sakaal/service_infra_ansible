@@ -81,8 +81,4 @@
                 lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
                 insertafter="hetzner_single_ips"
                 regexp="^  - { ip: '{{ item.ip.ip }}'"
-<<<<<<< 81a6fac5c884004a576446703ccf79baf45c596d
-                line="  - { ip: '{{ item.ip.ip | mandatory }}', mac: '{{ item.ip.separate_mac | mandatory }}' }"
-=======
                 line="  - { ip: '{{ item.ip.ip }}', mac: '{{ item.ip.separate_mac }}' }"
->>>>>>> Syntax updates
