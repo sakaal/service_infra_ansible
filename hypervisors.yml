@@ -20,6 +20,7 @@
   - role: ssh_bastion
     tags: access
   - hetzner_bridged_networking
+  - ntp
   - linux_kvm
   - libvirt_pools
   - "../../service_commons_ansible/roles/updates_auto"
