@@ -3,5 +3,5 @@
 # Access the default SSH port as root before the
 # target host is configured for management access.
 #
-ansible_ssh_user: root
-ansible_ssh_port: 22
+ansible_user: "root"
+ansible_port: 22

@@ -90,7 +90,7 @@
   lineinfile: dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication"
               line="PasswordAuthentication no" state=present
   notify:
- - Restart sshd
+  - Restart sshd
 
 - name: Configure SELinux to allow SSH on the administrative SSH port
   command: semanage port -a -t ssh_port_t -p tcp {{ admin_ssh_port }}

@@ -24,7 +24,7 @@
 
 - name: Obtain the SSH host key and disk size from the Hetzner rescue system
   no_log: True
-  local_action: command sshpass -p'{{ ansible_ssh_pass }}'
+  local_action: command sshpass -p'{{ ansible_password }}'
                 ssh -o StrictHostKeyChecking=no
                 root@{{ inventory_hostname }}
                 sfdisk -s 2>/dev/null /dev/[hsv]d? | sort | head -n1
@@ -45,7 +45,7 @@
 
 - name: Set the Ansible SSH user to root
   set_fact:
-    ansible_ssh_user: "root"
+    ansible_user: "root"
 
 - name: Upload autosetup configuration file
   template: src=autosetup.j2 dest=/autosetup

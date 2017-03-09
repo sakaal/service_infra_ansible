@@ -21,7 +21,7 @@
 # DynECT ZoneCreate user permission is required to create a primary zone.
 #
 - name: Create DNS zones
-  with_items: groups['zone_defaults']
+  with_items: "{{ groups['zone_defaults'] }}"
   when: hostvars[item].dns_zone not in
         "{{ available_zones.json.data }}"
   local_action: >
@@ -36,7 +36,7 @@
                 }'
 
 - name: Check if DNS zones already have default A records
-  with_items: groups['zone_defaults']
+  with_items: "{{ groups['zone_defaults'] }}"
   local_action: >
                 uri url="{{ dynect_api_url }}/ARecord/{{
                 hostvars[item].dns_zone }}/{{
@@ -46,7 +46,7 @@
   register: zone_a_record
 
 - name: Delete DNS zone default A records
-  with_items: zone_a_record.results
+  with_items: "{{ zone_a_record.results }}"
   when: item|success and item.json.data
   local_action: >
                 uri method=DELETE url="{{ dynect_api_url }}/ARecord/{{
@@ -59,7 +59,7 @@
 # DynECT ZoneAddNode user permission is required to add records. 
 #
 - name: Make DNS zone default A records
-  with_items: groups['zone_defaults']
+  with_items: "{{ groups['zone_defaults'] }}"
   local_action: >
                 uri method=POST url="{{ dynect_api_url }}/ARecord/{{
                 hostvars[item].dns_zone }}/{{
@@ -74,7 +74,7 @@
 # ZoneInitialPublish user permission is required to publish a new zone.
 #
 - name: Publish DNS zones
-  with_items: groups['zone_defaults']
+  with_items: "{{ groups['zone_defaults'] }}"
   local_action: >
                 command curl -v -v -X PUT
                 -H 'Content-Type: application/json'
@@ -86,7 +86,7 @@
 # DynECT DNSSECAdd user permission is required to enable DNSSEC.
 #
 - name: Enable DNSSEC for zones
-  with_items: groups['zone_defaults']
+  with_items: "{{ groups['zone_defaults'] }}"
   local_action: >
                 command curl -X POST
                 -H 'Content-Type: application/json'

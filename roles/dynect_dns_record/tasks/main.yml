@@ -1,5 +1,5 @@
----
 # file: roles/dynect_dns_record/tasks/main.yml
+---
 
 #
 # DynECT ZoneAddNode user permission is required to add records. 
@@ -24,6 +24,7 @@
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ hostname }}/
 
 - name: Make DNS SSHFP records
+  with_items: "{{ sshfp_records.stdout_lines }}"
   when: sshfp_records is defined and sshfp_records|success
   local_action: >
                 command curl -s -X POST -H 'Content-Type: application/json'
@@ -34,7 +35,6 @@
                 "fptype":"{{ item | regex_replace('^[^ ]+ IN SSHFP [123] ([12]) .*$', '\\1') }}",
                 "fingerprint":"{{ item | regex_replace('^[^ ]+ IN SSHFP [123] [12] (.*)$', '\\1') }}"
                 }}'
-  with_items: sshfp_records.stdout_lines
 
 - name: Publish DNS zones
   when: dynect_session_result|success

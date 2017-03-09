@@ -47,11 +47,11 @@
            --change-interface="{{ ansible_default_ipv4.interface }}"
 
 - name: Open firewall ports
+  with_items: "{{ firewall_allow }}"
   become: yes
   command: firewall-offline-cmd
            --zone={{ firewall_zone }}
            --add-port={{ item.port }}/{{ item.protocol }}
-  with_items: firewall_allow
 
 - name: Activate the firewall
   become: yes

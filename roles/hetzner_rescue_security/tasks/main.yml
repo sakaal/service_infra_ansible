@@ -1,11 +1,10 @@
----
 # file: roles/hetzner_rescue_security/tasks/main.yml
-
 #
 # Completes a CentOS-70-64-minimal installation
 # - Collects SSH server key fingerprints for DNS SSHFP records
 # - Enables SELinux
 #
+---
 
 - name: Wait for the server to restart to collect SSH keys
   local_action: wait_for host={{ inventory_hostname }} port=22
@@ -13,7 +12,7 @@
 
 - name: Collect SSH server key fingerprints for SSHFP records
   no_log: True
-  local_action: command sshpass -p'{{ ansible_ssh_pass }}'
+  local_action: command sshpass -p'{{ ansible_password }}'
                 ssh -o StrictHostKeyChecking=no
                 root@{{ inventory_hostname }}
                 ssh-keygen -r {{ hostname }}

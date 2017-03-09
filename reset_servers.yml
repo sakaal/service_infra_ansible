@@ -31,7 +31,7 @@
   hosts: reset_servers
   gather_facts: no
   vars:
-    ansible_ssh_port: 22
+    ansible_port: 22
   roles:
   - hetzner_rescue_centos
   tags: reinstall
@@ -58,7 +58,7 @@
   hosts: reset_servers
   gather_facts: no
   vars:
-    ansible_ssh_port: 22
+    ansible_port: 22
   roles:
   - hetzner_rescue_security
   tags: reinstall
@@ -85,13 +85,13 @@
 - name: ADMINISTRATIVE ACCESS
   hosts: reset_servers
   vars:
-    ansible_ssh_port: 22
+    ansible_port: 22
   roles:
   - { role: admin_access, tags: [ admin, access ] }
   - { role: admin_tools, tags: [ admin ] }
   - { role: firewall, tags: [ access ] }
   post_tasks:
-  - debug: var=ansible_ssh_pass
+  - debug: var=ansible_password
 
 #
 # ~ 12 minutes from start
