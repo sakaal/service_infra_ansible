@@ -1,4 +1,3 @@
----
 # file: roles/dynect_zones/tasks/main.yml
 #
 # Creates managed DNS zones via the DynECT API.
@@ -9,12 +8,16 @@
 #dns_soa_rname: "hostmaster@{{ dns_zone }}"
 #dns_soa_ttl: 300
 #
+---
 
 - name: Check the available DNS zones
   run_once: yes
-  local_action: uri url="{{ dynect_api_url }}/Zone/"
-                HEADER_Content-Type="application/json"
-                HEADER_Auth-Token="{{ dynect_session_token }}"
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/Zone/"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    return_content: True
   register: available_zones
 
 #
@@ -22,86 +25,93 @@
 #
 - name: Create DNS zones
   with_items: "{{ groups['zone_defaults'] }}"
-  when: hostvars[item].dns_zone not in
-        "{{ available_zones.json.data }}"
-  local_action: >
-                uri method=POST url="{{ dynect_api_url }}/Zone/{{
-                hostvars[item].dns_zone }}/"
-                HEADER_Content-Type="application/json"
-                HEADER_Auth-Token="{{ dynect_session_token }}"
-                body='{
-                "rname": "{{ hostvars[item].dns_soa_rname }}",
-                "serial_style": "day",
-                "ttl": "{{ hostvars[item].dns_soa_ttl | default(60) }}"
-                }'
+  when: hostvars[item].dns_zone not in available_zones.json.data
+  local_action:
+    module: uri
+    method: "POST"
+    url: "{{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}/"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    body_format: "json"
+    body:
+      rname: "{{ hostvars[item].dns_soa_rname }}"
+      serial_style: "day"
+      ttl: "{{ hostvars[item].dns_soa_ttl | default(60) }}"
 
 - name: Check if DNS zones already have default A records
   with_items: "{{ groups['zone_defaults'] }}"
-  local_action: >
-                uri url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item].dns_zone }}/{{
-                hostvars[item].dns_zone }}/"
-                HEADER_Content-Type="application/json"
-                HEADER_Auth-Token="{{ dynect_session_token }}"
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/ARecord/{{
+          hostvars[item].dns_zone }}/{{ hostvars[item].dns_zone }}/"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    return_content: True
   register: zone_a_record
 
 - name: Delete DNS zone default A records
   with_items: "{{ zone_a_record.results }}"
   when: item|success and item.json.data
-  local_action: >
-                uri method=DELETE url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item.item].dns_zone }}/{{
-                hostvars[item.item].dns_zone }}/"
-                HEADER_Content-Type="application/json"
-                HEADER_Auth-Token="{{ dynect_session_token }}"
+  local_action:
+    module: uri
+    method: "DELETE"
+    url: "{{ dynect_api_url }}/ARecord/{{
+          hostvars[item.item].dns_zone }}/{{ hostvars[item.item].dns_zone }}/"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
 
 #
 # DynECT ZoneAddNode user permission is required to add records. 
 #
 - name: Make DNS zone default A records
   with_items: "{{ groups['zone_defaults'] }}"
-  local_action: >
-                uri method=POST url="{{ dynect_api_url }}/ARecord/{{
-                hostvars[item].dns_zone }}/{{
-                hostvars[item].dns_zone }}/"
-                HEADER_Content-Type="application/json"
-                HEADER_Auth-Token="{{ dynect_session_token }}"
-                body='{
-                "rdata": { "address": "{{ item }}" }
-                }'
+  local_action:
+    module: uri
+    method: "POST"
+    url: "{{ dynect_api_url }}/ARecord/{{
+          hostvars[item].dns_zone }}/{{
+          hostvars[item].dns_zone }}/"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    body_format: "json"
+    body:
+      rdata:
+        address: "{{ item }}"
 
 #
 # ZoneInitialPublish user permission is required to publish a new zone.
 #
 - name: Publish DNS zones
   with_items: "{{ groups['zone_defaults'] }}"
-  local_action: >
-                command curl -v -v -X PUT
-                -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}
-                -d '{"publish":true}'
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}"
+    method: "PUT"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    body_format: "json"
+    body:
+      publish: True
 
 #
 # DynECT DNSSECAdd user permission is required to enable DNSSEC.
 #
 - name: Enable DNSSEC for zones
   with_items: "{{ groups['zone_defaults'] }}"
-  local_action: >
-                command curl -X POST
-                -H 'Content-Type: application/json'
-                -H 'Auth-Token: {{ dynect_session_token }}'
-                {{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone }}
-                -d '{
-                "keys":[{
-                  "type":"ZSK",
-                  "algorithm":"RSA/SHA-1",
-                  "bits":"1024"
-                },{
-                  "type":"KSK",
-                  "algorithm":"RSA/SHA-1",
-                  "bits":"2048"
-                }],
-                "contact_nickname":"{{ dynect_dnssec_contact_nickname }}",
-                "notify_events":"{{ dynect_dnssec_notify_events | default('create,expire,warning') }}"
-                }'
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone }}"
+    method: "POST"
+    HEADER_Content-Type: "application/json"
+    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    body_format: "json"
+    body:
+      keys:
+      - type: "ZSK"
+        algorithm: "RSA/SHA-1"
+        bits: "1024"
+      - type: "KSK"
+        algorithm: "RSA/SHA-1"
+        bits: "2048"
+      contact_nickname: "{{ dynect_dnssec_contact_nickname }}"
+      notify_events: "{{ dynect_dnssec_notify_events | default('create,expire,warning') }}"
