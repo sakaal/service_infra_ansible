@@ -11,6 +11,7 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always
 
 - name: ACTIVATE THE HETZNER RESCUE SYSTEM
   hosts: reset_servers
@@ -53,6 +54,7 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always
 
 - name: HOST SECURITY
   hosts: reset_servers
@@ -68,7 +70,8 @@
   gather_facts: no
   serial: 1
   roles:
-  - dynect_dns_record
+  - dynect_a_record
+  - dynect_sshfp_records
   - hetzner_reverse_dns
   tags: dns
 
@@ -81,6 +84,7 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always
 
 - name: ADMINISTRATIVE ACCESS
   hosts: reset_servers
@@ -110,3 +114,4 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always

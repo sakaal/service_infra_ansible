@@ -1,4 +1,4 @@
-# file:	roles/dynect_dns_record/vars/main.yml
+# file:	roles/dynect_a_record/vars/main.yml
 ---
 
 dynect_api_url: "https://api2.dynect.net/REST"

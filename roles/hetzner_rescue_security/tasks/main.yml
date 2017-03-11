@@ -1,6 +1,6 @@
 # file: roles/hetzner_rescue_security/tasks/main.yml
 #
-# Completes a CentOS-70-64-minimal installation
+# Completes a CentOS minimal installation
 # - Collects SSH server key fingerprints for DNS SSHFP records
 # - Enables SELinux
 #

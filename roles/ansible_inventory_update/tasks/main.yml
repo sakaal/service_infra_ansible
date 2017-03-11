@@ -1,10 +1,9 @@
----
 # file: roles/ansible_inventory_update/tasks/main.yml
-
 #
 # Moves freshly reset_servers to the available_servers group
 # in the bootstrap inventory to avoid unintended repetition.
 #
+---
 
 - name: Remove reset_servers
   local_action: command sed -i

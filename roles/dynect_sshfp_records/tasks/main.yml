@@ -1,0 +1,48 @@
+# file: roles/dynect_sshfp_record/tasks/main.yml
+---
+
+#
+# roles/hetzner_rescue_centos sets the sshfp_records
+#
+
+- name: Delete old DNS SSHFP records
+  when: sshfp_records is defined and sshfp_records|success
+  local_action:
+    module: uri
+    method: DELETE
+    url: "{{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ hostname }}/"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+  ignore_errors: yes
+
+- name: Make DNS SSHFP records
+  when: sshfp_records is defined and sshfp_records|success
+  with_items: "{{ sshfp_records.stdout_lines | default([]) }}"
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ hostname }}/"
+    headers:
+      Content-Type="application/json"
+      Auth-Token="{{ dynect_session_token }}"
+    body_format: json
+    body:
+      rdata:
+        algorithm : "{{ item | regex_replace('^[^ ]+ IN SSHFP ([0-9]+) [12] .*$', '\\1') }}"
+        fptype: "{{ item | regex_replace('^[^ ]+ IN SSHFP [0-9]+ ([12]) .*$', '\\1') }}"
+        fingerprint: "{{ item | regex_replace('^[^ ]+ IN SSHFP [0-9]+ [12] (.*)$', '\\1') }}"
+      ttl: "{{ sshfp_ttl | default(900) }}"
+
+- name: Publish DNS zones
+  when: dynect_session_result|success
+  local_action:
+    module: uri
+    method: PUT
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    url: "{{ dynect_api_url }}/Zone/{{ dns_zone }}"
+    body_format: json
+    body:
+      publish: true

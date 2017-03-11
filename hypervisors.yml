@@ -9,6 +9,7 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always
 
 - name: HYPERVISORS
   hosts: libvirt_hosts
@@ -20,7 +21,6 @@
   - role: ssh_bastion
     tags: access
   - hetzner_bridged_networking
-  - ntp
   - linux_kvm
   - libvirt_pools
   - "../../service_commons_ansible/roles/updates_auto"
@@ -30,3 +30,4 @@
   connection: local
   tasks:
   - debug: msg="{{ ansible_date_time.iso8601 }}"
+  tags: always

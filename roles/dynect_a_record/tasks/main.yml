@@ -1,0 +1,73 @@
+# file: roles/dynect_a_record/tasks/main.yml
+---
+
+- name: Check if DNS A records already exist
+  when: dynect_session_result|success
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname }}/"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    status_code: "200,404"
+    return_content: yes
+  register: dns_a_records
+
+- name: Retrieve the existing DNS A record
+  when: dns_a_records|success and
+        dns_a_records.json.data | length == 1
+  local_action:
+    module: uri
+    url: "{{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname
+          }}/{{ dns_a_records.json.data[0] | basename }}/"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    return_content: yes
+  register: dns_a_record
+  changed_when: "'{{ dns_a_record.json.data.rdata.address }}'
+                 != '{{ inventory_hostname }}'"
+
+#- name: Delete existing DNS A records
+#  when: dns_a_record|success
+#  local_action:
+#    module: uri
+#    method: DELETE
+#    url: "{{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname }}/"
+#    headers:
+#      Content-Type: "application/json"
+#      Auth-Token: "{{ dynect_session_token }}"
+
+- name: Replace existing DNS A records
+  when: dns_a_record|changed
+  local_action:
+    module: uri
+    method: PUT
+    url: "{{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname }}/"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    body_format: json
+    body:
+      rdata:
+        address: "{{ inventory_hostname }}"
+  changed_when: yes
+
+#
+# DynECT ZoneAddNode user permission is required to add records. 
+#
+- name: Make DNS A records
+  when: dns_a_records|success and
+        dns_a_records.json.data | length == 0
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ dynect_api_url }}/ARecord/{{ dns_zone }}/{{ hostname }}/"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    body_format: json
+    body:
+      rdata:
+        address: "{{ inventory_hostname }}"
+  changed_when: yes

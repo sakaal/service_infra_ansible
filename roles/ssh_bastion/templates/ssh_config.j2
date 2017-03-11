@@ -3,7 +3,7 @@
 # SSH bastion host configuration
 #
 
-Host *
+Host *.{{ dns_zone }}
     ControlMaster          auto
     ControlPath            ~/.ssh/mux-%r@%h:%p
     ControlPersist         20m
