@@ -2,16 +2,24 @@
 # Please refer to Hetzner Online's provided documentation
 # for the latest information.
 #
-DEVICE=eth0
+DEVICE={{ hostvars[inventory_hostname]['ansible_' + ansible_default_ipv4.interface]['device'] }}
 BOOTPROTO=none
 ONBOOT=yes
 NM_CONTROLLED=no
-HWADDR={{ ansible_eth0.macaddress }}
+HWADDR={{ hostvars[inventory_hostname]['ansible_' + ansible_default_ipv4.interface]['macaddress'] }}
 BRIDGE=br0
-#IPADDR={{ ansible_eth0.ipv4.address }}
-#NETMASK={{ ansible_eth0.ipv4.netmask }}
+#IPADDR={{ ansible_default_ipv4.address }}
+#NETMASK={{ ansible_default_ipv4.netmask }}
 #SCOPE="peer {{ ansible_default_ipv4.gateway }}"
 IPV6INIT=yes
+{% if ansible_default_ipv6 is defined %}
+{% if ansible_default_ipv6.address is defined %}
 IPV6ADDR={{ ansible_default_ipv6.address }}/{{ ansible_default_ipv6.prefix }}
+{% endif %}
+{% if ansible_default_ipv6.gateway is defined %}
 IPV6_DEFAULTGW={{ ansible_default_ipv6.gateway }}
-IPV6_DEFAULTDEV={{ ansible_default_ipv6.interface }}
+{% endif %}
+{% if ansible_default_ipv6.interface is defined %}
+IPV6_DEFAULTDEV={{ hostvars[inventory_hostname]['ansible_' + ansible_default_ipv6.interface]['device'] }}
+{% endif %}
+{% endif %}

@@ -54,10 +54,6 @@
   set_fact:
     ansible_password: "{{ hetzner_rescue.json.rescue.password }}"
 
-- name: Hetzner Rescue System activated
-  when: hetzner_rescue | changed
-  debug: var=hetzner_rescue.json.rescue
-
 - name: Hard reset
   when: hetzner_rescue | changed
   no_log: True

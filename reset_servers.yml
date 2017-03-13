@@ -91,6 +91,7 @@
   vars:
     ansible_port: 22
   roles:
+  - { role: chrony, tags: [ admin, access ] }
   - { role: admin_access, tags: [ admin, access ] }
   - { role: admin_tools, tags: [ admin ] }
   - { role: firewall, tags: [ access ] }

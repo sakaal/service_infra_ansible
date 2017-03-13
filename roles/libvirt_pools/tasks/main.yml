@@ -6,29 +6,37 @@
 #
 ---
 
-- name: Check available logical storage pools
+- name: Python libvirt packages
+  when: ansible_pkg_mgr == "yum"
+  with_items:
+  - libvirt-python
+  - python-lxml
   become: yes
-  command: virsh pool-list --all --type logical
+  yum: name="{{ item }}" state=present
+
+- name: Check available storage pools
+  become: yes
+  virt_pool:
+    command: list_pools
   register: pools_result
-  changed_when: not "{{ vg_pool_name }}" in pools_result.stdout
+  changed_when: not '{{ vg_pool_name }}' in pools_result.list_pools
 
 - name: Storage pool based on LVM volume group
-  become: yes
-  command: virsh pool-define-as {{ vg_pool_name }} logical --target /dev/{{ vg_pool_name }} --source-format lvm2
   when: pools_result|changed
-
-- name: Check inactive logical storage pools
   become: yes
-  command: virsh pool-list --inactive --type logical
-  register: inactive_result
-  changed_when: ("{{ vg_pool_name }}" in inactive_result.stdout)
+  virt_pool:
+    command: define
+    name: '{{ vg_pool_name }}'
+    xml: '{{ lookup("template", "logical.xml.j2") }}'
 
 - name: Enable logical storage pools autostart
   become: yes
-  command: virsh pool-autostart {{ vg_pool_name }}
-  when: inactive_result|changed
+  virt_pool:
+    name: '{{ vg_pool_name }}'
+    autostart: yes
 
 - name: Activate logical storage pools
   become: yes
-  command: virsh pool-start {{ vg_pool_name }}
-  when: inactive_result|changed
+  virt_pool:
+    name: '{{ vg_pool_name }}'
+    state: active

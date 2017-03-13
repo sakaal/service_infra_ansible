@@ -1,23 +1,7 @@
-# file: ~/.ssh/config
-#
-# SSH bastion host configuration
-#
-
-Host *.{{ dns_zone }}
-    ControlMaster          auto
-    ControlPath            ~/.ssh/mux-%r@%h:%p
-    ControlPersist         20m
-    TCPKeepAlive           yes
-    ServerAliveInterval    60
-    BatchMode yes
-    PasswordAuthentication no
-    VerifyHostKeyDNS yes
+# file: group_vars/libvirt_guests_{{ hostname }}
+---
 
 #
-# Each hypervisor serves as an SSH proxy for its guests
+# Each hypervisor serves as an SSH proxy for its guests.
 #
-{% for address in groups['libvirt_hosts'] %}
-
-Host *.{{ hostvars[address].hostname }}
-    ProxyCommand ssh -A -q {{ admin_username }}@{{ hostvars[address].hostname }} -p{{ admin_ssh_port }} nc %h %p
-{% endfor %}
+ansible_ssh_common_args: '-o ProxyCommand="ssh -A -W %h:%p -q {{'{{'}} admin_username }}@{{ hostname }} -p{{'{{'}} admin_ssh_port }}"'
