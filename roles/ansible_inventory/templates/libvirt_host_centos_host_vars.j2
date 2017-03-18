@@ -20,7 +20,7 @@
 # bootstrap mount: {{ mount.device }} {{ mount.fstype }} {{ mount.mount }} {{ mount.options }}
 {% endfor %}
 # bootstrap selinux: {{ ansible_selinux.status }}
-# bootstrap SSH host key DSA public: {{ ansible_ssh_host_key_dsa_public }}
+# bootstrap SSH host key ECDSA public: {{ ansible_ssh_host_key_ecdsa_public }}
 # bootstrap SSH host key RSA public: {{ ansible_ssh_host_key_rsa_public }}
 ---
 

@@ -13,15 +13,20 @@
 ---
 
 - name: Query a list of server single IPs
-  local_action: command curl -su '{{ hetzner_api_user }}:{{ hetzner_api_password }}'
-                {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
+  local_action:
+    module: uri
+    user: '{{ hetzner_api_user }}'
+    password: '{{ hetzner_api_password }}'
+    url: '{{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}'
+    return_content: yes
   register: hetzner_ips_result
   changed_when: False
 
 - name: Obtain the server IPs
   when: hetzner_ips_result|success and inventory_hostname ==
-        (hetzner_ips_result.stdout|from_json)[0].ip.server_ip
-  set_fact: hetzner_ips="{{ hetzner_ips_result.stdout|from_json }}"
+        hetzner_ips_result.json[0].ip.server_ip
+  set_fact:
+    hetzner_ips: "{{ hetzner_ips_result.json }}"
 
 #
 # Makes the hetzner_ips available with the following data structure:
@@ -57,28 +62,35 @@
 
 - name: Query the list of single IPs again to collect the MACs
   when: mac_requested|changed
-  local_action: command curl -u '{{ hetzner_api_user }}:{{ hetzner_api_password }}'
-                {{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}
+  local_action:
+    module: uri
+    user: '{{ hetzner_api_user }}'
+    password: '{{ hetzner_api_password }}'
+    url: '{{ hetzner_api_url }}/ip?server_ip={{ inventory_hostname }}'
+    return_content: yes
   register: hetzner_ips_result
   changed_when: False
 
 - name: Obtain the server IPs and MACs
   when: mac_requested|changed and hetzner_ips_result|success and
-        inventory_hostname == (hetzner_ips_result.stdout|from_json)[0].ip.server_ip
+        inventory_hostname == hetzner_ips_result.json[0].ip.server_ip
   become: yes
-  set_fact: hetzner_ips=hetzner_ips_result.stdout|from_json
+  set_fact:
+    hetzner_ips: "{{ hetzner_ips_result.json }}"
 
 - name: Declare the hetzner_single_ips variable in target repository host_vars
-  local_action: >
-                lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
-                regexp="^hetzner_single_ips:"
-                line="hetzner_single_ips:"
+  local_action:
+    module: lineinfile
+    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+    regexp: "^hetzner_single_ips:"
+    line: "hetzner_single_ips:"
 
 - name: Add the Hetzner single IPs and their corresponding MAC addresses
   when: item.ip.separate_mac != None
   with_items: "{{ hetzner_ips }}"
-  local_action: >
-                lineinfile dest="{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
-                insertafter="hetzner_single_ips"
-                regexp="^  - { ip: '{{ item.ip.ip }}'"
-                line="  - { ip: '{{ item.ip.ip }}', mac: '{{ item.ip.separate_mac }}' }"
+  local_action:
+    module: lineinfile
+    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+    insertafter: "hetzner_single_ips"
+    regexp: "^  - { ip: '{{ item.ip.ip }}'"
+    line: "  - { ip: '{{ item.ip.ip }}', mac: '{{ item.ip.separate_mac }}' }"

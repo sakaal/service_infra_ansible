@@ -24,45 +24,65 @@
 - name: Look up the default network interface MAC of each guest
   with_items: "{{ groups[ libvirt_guests_group ] }}"
   become: yes
-  shell: >
-         virsh domiflist {{ item }} |
+  shell: virsh domiflist {{ item }} |
          grep --max-count=1 "[ ]\+network[ ]\+default[ ]\+" |
          tr -s ' ' | cut -d ' ' -f 5
   register: macs
   changed_when: False
-  failed_when: macs is defined and macs.stderr.strip() != ''
+  failed_when: macs.stderr.strip() != ''
+
+- name: Wait for the guest to receive an IP address from Dnsmasq
+  with_items: "{{ macs.results }}"
+  when: item|success
+  wait_for: path=/var/lib/libvirt/dnsmasq/virbr0.status
+            search_regex="{{ item.stdout }}"
+            timeout=30
 
 - name: Look up the local IP address of each guest
   with_items: "{{ macs.results }}"
   when: item|success
   become: yes
-  shell: >
-         virsh domifaddr "{{ item.item }}" |
+  shell: virsh domifaddr "{{ item.item }}" |
          grep --max-count=1 " {{ item.stdout }} " |
          tr -s ' ' | cut -d ' ' -f 5 | cut -d '/' -f 1
   register: macs_and_ips
   changed_when: False
-  failed_when: macs_and_ips is defined and
-               macs_and_ips.stderr.strip() != ''
+  failed_when: macs_and_ips.stderr.strip() != ''
+
+- debug: var=macs_and_ips
+
+- name: Delete old static local IP addresses in the libvirt default network
+  with_items: "{{ macs_and_ips.results }}"
+  when: item|success
+  become: yes
+  shell: virsh net-update default delete ip-dhcp-host --xml "<host
+         name='{{ item.item.item }}' />"
+         --live --config
+  register: virt_guest_dhcp_update
+  changed_when: virt_guest_dhcp_update.rc == 0
+  failed_when: False
 
 - name: Configure static local IP addresses in the libvirt default network
   with_items: "{{ macs_and_ips.results }}"
   when: item|success
   become: yes
-  lineinfile: >
-              dest="/etc/libvirt/qemu/networks/default.xml"
-              insertafter='[ \t]+<range[ \t]+start="192\.168\.122\.'
-              regexp="^[ \t]+<host[ \t]+.*name='{{ item.item.item }}'"
-              line="      <host mac='{{ item.item.stdout }}' name='{{ item.item.item }}' ip='{{ item.stdout }}' />"
-              state=present
+  shell: >
+         virsh net-update default add ip-dhcp-host --xml "<host
+         mac='{{ item.item.stdout }}'
+         name='{{ item.item.item }}'
+         ip='{{ item.stdout }}' />"
+         --live --config
+  register: virt_guest_dhcp_update
+  changed_when: not 'existing' in virt_guest_dhcp_update.stderr
+  failed_when: False
 
 - name: Configure static local IP addresses in /etc/hosts
   with_items: "{{ macs_and_ips.results }}"
   when: item|success
   become: yes
-  lineinfile: >
-              dest="/etc/hosts"
-              insertafter='^[ \t]*{{ inventory_hostname }}[ \t]+.*{{ hostvars[inventory_hostname].hostname }}'
-              regexp='^[^ \t]*[ \t]+{{ item.item.item }}[ \t]+'
-              line='{{ item.stdout }} {{ item.item.item }} {{ item.item.item | regex_replace("^([^\.]*)\..*$", "\\1") }}'
-              state=present
+  lineinfile:
+    dest: "/etc/hosts"
+    regexp: "^[^ \\t]*[ \\t]+{{ item.item.item }}[ \\t]+"
+    line: "{{ item.stdout }} {{ item.item.item }} {{ item.item.item
+           | regex_replace('^([^\\.]*)\\..*$', '\\1') }}"
+    state: present

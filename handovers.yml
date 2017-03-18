@@ -8,6 +8,6 @@
 
 - hosts: libvirt_hosts
   roles:
-    - ansible_inventory
-    - hetzner_single_ips
-    - ansible_inventory_commit
+  - ansible_inventory
+  - hetzner_single_ips
+  - ansible_inventory_commit

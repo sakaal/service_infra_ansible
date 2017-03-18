@@ -18,8 +18,8 @@
            --zone={{ firewall_zone }}
            --get-target
   register: firewall_exists
-  changed_when: firewall_exists.rc != 0
-                and 'INVALID_ZONE' in firewall_exists.stdout
+  changed_when: firewall_exists.rc != 0 and
+                firewall_exists.stderr.find('INVALID_ZONE') != -1
   failed_when: False
 
 - name: Create the administrative firewall zone
