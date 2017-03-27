@@ -54,5 +54,6 @@
   - dbus
   - avahi-daemon
   - libvirtd
+  - libvirt-guests
   become: yes
   service: name="{{ item }}" state=started enabled=yes
