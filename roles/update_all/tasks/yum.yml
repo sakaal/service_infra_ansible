@@ -1,0 +1,9 @@
+# file: roles/update_all/tasks/main.yml
+---
+
+- name: Update all packages (yum) This can take several minutes
+  become: yes
+  yum:
+    name: "*"
+    state: latest
+  register: update_all_yum

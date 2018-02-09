@@ -1,0 +1,9 @@
+# file: roles/update_all/tasks/dnf.yml
+---
+
+- name: Update all packages (dnf) This can take several minutes
+  become: yes
+  dnf:
+    name: "*"
+    state: latest
+  register: update_all_dnf
