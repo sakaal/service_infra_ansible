@@ -1,6 +1,13 @@
 # file: roles/linux_kvm/tasks/main.yml
 ---
 
+- name: Verify Linux KVM kernel modules
+  become: yes
+  shell: lsmod | grep kvm
+  register: kernel_modules
+  changed_when: False
+  failed_when: kernel_modules.stdout.find('kvm') == -1
+
 - name: Virtualization packages
   when: ansible_pkg_mgr == "yum"
   become: yes
@@ -12,19 +19,19 @@
   - kvm
   - libvirt
   - libvirt-python
-  - virt-manager
   - virt-viewer
   - libguestfs-tools
   - avahi-dnsconfd
-  - xorg-x11-xauth
   yum: name="{{ item }}" state=present
 
-- name: Verify Linux KVM kernel modules
+- name: Graphical interface and fonts
+  when: ansible_pkg_mgr == "yum"
   become: yes
-  shell: lsmod | grep kvm
-  register: kernel_modules
-  changed_when: False
-  failed_when: kernel_modules.stdout.find('kvm') == -1
+  with_items:
+  - virt-manager
+  - xorg-x11-xauth
+  - dejavu-lgc-sans-fonts
+  yum: name="{{ item }}" state=present
 
 - name: Allow libvirt management access
   with_items:
