@@ -24,7 +24,7 @@
     password: "{{ hetzner_api_password }}"
     return_content: yes
   register: hetzner_rescue
-  changed_when: "{{ hetzner_rescue.json.rescue.active | bool }}"
+  changed_when: hetzner_rescue.json.rescue.active | bool
 
 - name: Deactivate the rescue system
   when: hetzner_rescue | changed
@@ -46,7 +46,7 @@
     password: "{{ hetzner_api_password }}"
     body: "os=linux&arch=64"
   register: hetzner_rescue
-  changed_when: "{{ hetzner_rescue.json.rescue.active | bool }}"
+  changed_when: hetzner_rescue.json.rescue.active | bool
 
 - name: Use the rescue root password
   when: hetzner_rescue | changed
