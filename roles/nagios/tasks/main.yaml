@@ -1,0 +1,62 @@
+# file: roles/nagios/tasks/main.yaml
+---
+
+- name: Nagios configuration check
+  assert:
+    that:
+    - nagios_nrpe_monitor_hosts is defined
+
+- name: Nagios monitor host configuration check
+  when: inventory_hostname in nagios_nrpe_monitor_hosts
+  assert:
+    that:
+    - nagios_users is defined
+    - nagios_users | length > 0
+    - nagios_nrpe_agent_hosts is defined
+
+- name: Nagios monitor users configuration check
+  with_items: "{{ nagios_users | default([]) }}"
+  no_log: True
+  assert:
+    that:
+    - item.name is defined
+    - item.password is defined
+    - item.password | length > 15
+
+- name: Nagios agent host configuration check
+  with_items: "{{ nagios_nrpe_agent_hosts | default([]) }}"
+  assert:
+    that:
+    - item.hostname is defined
+
+- name: Nagios packages (yum)
+  when: ansible_pkg_mgr == "yum"
+  with_items: "{{ nagios_packages }}"
+  become: yes
+  yum:
+    name: "{{ item }}"
+    state: present
+
+- name: Nagios packages (dnf)
+  when: ansible_pkg_mgr == "dnf"
+  with_items: "{{ nagios_packages }}"
+  become: yes
+  dnf:
+    name: "{{ item }}"
+    state: present
+
+- name: NRPE agent hosts
+  when: nagios_nrpe_monitor_hosts | default([]) | length > 0
+  include_tasks: nrpe_agent.yaml
+
+- name: NRPE monitor hosts
+  when: inventory_hostname in ( nagios_nrpe_monitor_hosts | default([]) )
+  include_tasks: nrpe_monitor.yaml
+
+- name: Default localhost SSH service
+  become: yes
+  lineinfile:
+    path: "/etc/nagios/objects/localhost.cfg"
+    regexp: '^(\s+)check_command(\s+)check_ssh.*$'
+    line: '\1check_command\2check_ssh{{ "" if admin_ssh_port == 22 else "!-p " + (admin_ssh_port|string) }}'
+    backrefs: yes

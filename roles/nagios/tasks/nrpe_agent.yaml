@@ -1,0 +1,13 @@
+# file: roles/nagios/tasks/nrpe_agent.yaml
+#
+# Nodes monitored by NRPE
+#
+---
+
+- name: NRPE allowed hosts
+  become: yes
+  lineinfile:
+    path: "/etc/nagios/nrpe.cfg"
+    regexp: "^allowed_hosts=.*$"
+    line: "allowed_hosts={{ ( [ '127.0.0.1', '::1' ] + nagios_nrpe_monitor_hosts ) | join(',') }}"
+    insertafter: "^#?allowed_hosts.*$"

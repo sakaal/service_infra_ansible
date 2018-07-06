@@ -1,0 +1,26 @@
+# file: monitoring.yaml
+---
+
+- name: START
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug:
+      msg: "{{ ansible_date_time.iso8601 }}"
+  tags: always
+
+- name: MONITORING
+  hosts: all
+  pre_tasks:
+  - include: "../service_commons_ansible/tasks/group_distros.yml"
+  roles:
+  - role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/nagios"
+    tags: monitoring
+
+- name: FINISH
+  hosts: localhost
+  connection: local
+  tasks:
+  - debug:
+      msg: "{{ ansible_date_time.iso8601 }}"
+  tags: always

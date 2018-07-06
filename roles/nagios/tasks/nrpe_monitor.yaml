@@ -1,0 +1,76 @@
+# file: roles/nagios/tasks/nrpe_monitor.yaml
+#
+# Monitors remote nodes via NRPE
+#
+---
+
+- name: Nagios contacts
+  become: yes
+  template:
+    src: contacts.cfg.j2
+    dest: "/etc/nagios/objects/contacts.cfg"
+    owner: root
+    group: nagios
+    mode: 0640
+
+- name: Agent servers directory
+  become: yes
+  file:
+    state: directory
+    path: "/etc/nagios/servers"
+    owner: root
+    group: nagios
+    mode: 0750
+
+- name: Nagios configuration for the Agent servers directory
+  become: yes
+  lineinfile:
+    path: "/etc/nagios/nagios.cfg"
+    regexp: "^#?cfg_dir=/etc/nagios/servers$"
+    line: "cfg_dir=/etc/nagios/servers"
+    insertafter: "^#?cfg_dir=.*$"
+
+- name: NRPE remote agents
+  with_items: "{{ nagios_nrpe_agent_hosts | difference( [ inventory_hostname ] ) }}"
+  become: yes
+  template:
+    src: remote.cfg.j2
+    dest: "/etc/nagios/servers/{{ item.hostname }}.cfg"
+    owner: root
+    group: nagios
+    mode: 0640
+
+- name: Nagios users
+  with_items: "{{ nagios_users }}"
+  no_log: True
+  become: yes
+  htpasswd:
+    path: "/etc/nagios/passwd"
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    state: "{{ item.state | default('present') }}"
+    owner: root
+    group: apache
+    mode: 0640
+
+- name: Default localhost HTTP service
+  become: yes
+  lineinfile:
+    path: "/etc/nagios/objects/localhost.cfg"
+    regexp: '^(\s+)check_command(\s+)check_http.*$'
+    line: '\1check_command\2check_http!-u /nagios -e 401'
+    backrefs: yes
+
+- name: Nagios service
+  become: yes
+  service:
+    name: nagios
+    state: started
+    enabled: yes
+
+- name: HTTP service
+  become: yes
+  service:
+    name: httpd
+    state: restarted
+    enabled: yes

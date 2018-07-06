@@ -1,0 +1,9 @@
+# file: roles/nagios/defaults/main.yaml
+---
+
+nagios_packages:
+- "nagios"
+- "nagios-plugins-all"
+- "nagios-plugins-nrpe"
+- "nrpe" # Nagios Remote Plugin Executor
+- "nsca" # Nagios Service Check Acceptor

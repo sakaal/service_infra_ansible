@@ -159,6 +159,10 @@ chown -R {{ admin_username }}:{{ admin_username }} .ssh
 chmod 600 .ssh/authorized_keys
 restorecon -R .ssh/
 
+# Fix systemd-login migration broken ACPI
+cp /etc/acpi/actions/power.sh /etc/acpi/actions/power.sh.orig
+echo "shutdown -h now" > /etc/acpi/actions/power.sh
+
 # Configure Git
 cat >> .gitconfig << "GITCONFIG"
 [user]
