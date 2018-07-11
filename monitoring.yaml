@@ -2,7 +2,8 @@
 ---
 
 - name: START
-  hosts: localhost
+  hosts: localhost,all
+  run_once: yes
   connection: local
   tasks:
   - debug:
@@ -12,13 +13,17 @@
 - name: MONITORING
   hosts: all
   pre_tasks:
-  - include: "../service_commons_ansible/tasks/group_distros.yml"
+  - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yml"
   roles:
   - role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/nagios"
-    tags: monitoring
+    tags: nagios
+  - when: nagvis_version is defined
+    role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/nagvis"
+    tags: nagvis
 
 - name: FINISH
-  hosts: localhost
+  hosts: localhost,all
+  run_once: yes
   connection: local
   tasks:
   - debug:
