@@ -10,3 +10,10 @@ define host {
     notification_interval        30
     notification_period          24x7
 }
+
+define service {
+    use                          generic-service
+    host_name                    {{ item.hostname }}
+    service_description          CPU Load
+    check_command                check_nrpe!check_load
+}

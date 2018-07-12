@@ -5,5 +5,12 @@ nagios_packages:
 - "nagios"
 - "nagios-plugins-all"
 - "nagios-plugins-nrpe"
-- "nrpe" # Nagios Remote Plugin Executor
 - "nsca" # Nagios Service Check Acceptor
+
+nagios_nrpe_packages:
+- "nrpe" # Nagios Remote Plugin Executor
+- "nrpe-selinux" # SELinux context for NRPE
+
+nagios_nrpe_commands:
+- token: check_load
+  command: '/usr/lib64/nagios/plugins/check_load -r -w .9,.7,.5 -c 1.0,.8,.6'

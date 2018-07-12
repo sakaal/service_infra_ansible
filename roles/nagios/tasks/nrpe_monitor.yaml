@@ -40,6 +40,16 @@
     group: nagios
     mode: 0640
 
+- name: NRPE command
+  become: yes
+  blockinfile:
+    path: /etc/nagios/objects/commands.cfg
+    block: |
+      define command {
+              command_name    check_nrpe
+              command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -t 30 -c $ARG1$ $ARG2$
+      }
+
 - name: Nagios users
   with_items: "{{ nagios_users }}"
   no_log: True
@@ -65,7 +75,7 @@
   become: yes
   service:
     name: nagios
-    state: started
+    state: restarted
     enabled: yes
 
 - name: HTTP service
