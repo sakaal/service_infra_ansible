@@ -1,5 +1,10 @@
+{# file: roles/admin_access/templates/gitconfig.j2
+#}
 [user]
         name = {{ admin_fullname }}
         email = {{ admin_email }}
+[core]
+        autocrlf = input
+        hooksPath = hooks
 [push]
 	default = simple

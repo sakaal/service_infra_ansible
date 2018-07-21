@@ -1,4 +1,4 @@
-# file: roles/admin_access/vars/main.yml
+# file: roles/admin_access/vars/main.yaml
 #
 # Access the default SSH port as root before the
 # target host is configured for management access.

@@ -1,4 +1,0 @@
-# file: roles/admin_access/handlers/main.yml
-
-- name: Restart sshd
-  service: name=sshd state=restarted

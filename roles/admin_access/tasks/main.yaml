@@ -1,4 +1,4 @@
-# file: roles/admin_access/tasks/main.yml
+# file: roles/admin_access/tasks/main.yaml
 #
 # The administrative access role enables configuration management access.
 #
@@ -32,19 +32,31 @@
 #
 
 - name: Create the admin SSH account
-  user: name={{ admin_username }} comment="{{ admin_fullname }}"
-        append=yes groups=wheel shell=/bin/bash generate_ssh_key=yes
-        ssh_key_comment={{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}
-        state=present
+  user:
+    name: "{{ admin_username }}"
+    comment: "{{ admin_fullname }}"
+    append: yes
+    groups: wheel
+    shell: /bin/bash
+    generate_ssh_key: yes
+    ssh_key_comment: "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
+    state: present
 
 - name: Authorize SSH keys
-  template: src=authorized_keys.j2
-            dest=/home/{{ admin_username }}/.ssh/authorized_keys
-            owner={{ admin_username }} group={{ admin_username }} mode=0600
+  template:
+    src: "authorized_keys.j2"
+    dest: "/home/{{ admin_username }}/.ssh/authorized_keys"
+    owner: "{{ admin_username }}"
+    group. "{{ admin_username }}"
+    mode: 0600
 
 - name: Configure Git
-  template: src=gitconfig.j2 dest=/home/{{ admin_username }}/.gitconfig
-            owner={{ admin_username }} group={{ admin_username }} mode=0664
+  template:
+    src: "gitconfig.j2"
+    dest: "/home/{{ admin_username }}/.gitconfig"
+    owner: "{{ admin_username }}"
+    group: "{{ admin_username }}"
+    mode: 0664
 
 - name: Configure sudoers
   with_items:
@@ -55,40 +67,58 @@
 # Enable sudo without teletype terminal
   - regexp: '^Defaults\s+!?requiretty'
     line: 'Defaults    !requiretty'
-  lineinfile: dest=/etc/sudoers state=present regexp="{{ item.regexp }}"
-              line="{{ item.line }}" validate='visudo -qcf %s'
+  lineinfile:
+    dest: "/etc/sudoers"
+    state: present
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    validate: 'visudo -qcf %s'
 
 - name: Prevent entering interactive boot
-  lineinfile: dest=/etc/sysconfig/init regexp="^\s*PROMPT" line="PROMPT=no"
-              state=present
+  lineinfile:
+    dest: "/etc/sysconfig/init"
+    regexp: "^\s*PROMPT"
+    line: "PROMPT=no"
+    state: present
 
 - name: Require boot-time password for single user mode
   become: yes
-  lineinfile: dest=/etc/grub.d/40_custom regexp="^\s*set superusers"
-              line="set superusers=\"{{ admin_username }}\"" state=present
+  lineinfile:
+    dest: /etc/grub.d/40_custom
+    regexp: "^\s*set superusers"
+    line: "set superusers=\"{{ admin_username }}\""
+    state: present
 
 - name: Set the boot-time password
   become: yes
-  lineinfile: dest=/etc/grub.d/40_custom regexp="^\s*password_pbkdf2"
-              insertafter="^\s*set superusers"
-              line="password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 }}"
-              state=present
+  lineinfile:
+    dest: /etc/grub.d/40_custom
+    regexp: "^\s*password_pbkdf2"
+    insertafter: "^\s*set superusers"
+    line: "password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 }}"
+    state: present
   register: boot_password
 
 - name: Make the boot configuration
-  when: boot_password|changed
+  when: boot_password is changed
   become: yes
   command: grub2-mkconfig --output=/boot/grub2/grub.cfg
 
 - name: Disallow root SSH access
-  lineinfile: dest=/etc/ssh/sshd_config regexp="^PermitRootLogin"
-              line="PermitRootLogin no" state=present
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PermitRootLogin"
+    line: "PermitRootLogin no"
+    state: present
   notify:
   - Restart sshd
 
 - name: Disallow password authentication
-  lineinfile: dest=/etc/ssh/sshd_config regexp="^PasswordAuthentication"
-              line="PasswordAuthentication no" state=present
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    regexp: "^PasswordAuthentication"
+    line: "PasswordAuthentication no"
+    state: present
   notify:
   - Restart sshd
 
@@ -97,7 +127,10 @@
   ignore_errors: yes
 
 - name: Set SSH port
-  lineinfile: dest=/etc/ssh/sshd_config regexp="^Port"
-              line="Port {{ admin_ssh_port }}" state=present
+  lineinfile:
+    dest: "/etc/ssh/sshd_config"
+    regexp: "^Port"
+    line: "Port {{ admin_ssh_port }}"
+    state: present
   notify:
   - Restart sshd
