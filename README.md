@@ -149,7 +149,7 @@ If you haven't already created the security enabled DNS zones:
 
 1. Deploy the zones using:
 
-        ansible-playbook -v service_infra_ansible/dns.yml -i com.example_main_ansible/zones
+        ansible-playbook -v service_infra_ansible/dns.yaml -i com.example_main_ansible/zones
 
 1. Add the Delegation Signer (DS) records from the DNS management console
    to your domain registrations.

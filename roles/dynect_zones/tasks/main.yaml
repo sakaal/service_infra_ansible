@@ -1,4 +1,4 @@
-# file: roles/dynect_zones/tasks/main.yml
+# file: roles/dynect_zones/tasks/main.yaml
 #
 # Creates managed DNS zones via the DynECT API.
 #

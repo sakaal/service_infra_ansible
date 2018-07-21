@@ -1,4 +1,4 @@
-# file: dns.yml
+# file: dns.yaml
 #
 # Creates security enabled DNS zones via the Managed DNS provider API.
 #

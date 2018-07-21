@@ -1,4 +1,4 @@
-# file: roles/dynect_zones/defaults/main.yml
+# file: roles/dynect_zones/defaults/main.yaml
 ---
 
 dynect_dnssec_contact_nickname: "{{ dynect_api_user }}"

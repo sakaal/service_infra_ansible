@@ -1,0 +1,5 @@
+# file: roles/dynect_zones/meta/main.yaml
+---
+
+dependencies:
+- "{{ playbook_dir | dirname }}/service_commons_ansible/roles/dynect_session"
