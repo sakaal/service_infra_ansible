@@ -1,0 +1,73 @@
+# file: roles/libvirt_guests_centos/tasks/main.yaml
+#
+# Generates libvirt virt-install scripts for CentOS guests on hypervisors
+# and runs them to install guests (unless they already exist).
+#
+# One virt-install script and kickstart file are generated for each guest
+# on each hypervisor.
+#
+
+#
+# Note that CentOS 7 fails to install if guest RAM is much below a gigabyte.
+#
+
+#
+# Set the variable libvirt_guests_group for a hypervisor to provision the
+# virtual guests in that group on that hypervisor.
+#
+
+---
+
+#
+# On CentOS or Fedora, to create a PBKDF2 protected password, you can use:
+# grub2-mkpasswd-pbkdf2
+#
+# Change the guest root password at first login immediately after provision
+# of the new virtual machine in a private network.
+# On CentOS, to create an SHA-512 hashed password, you can use:
+# grub-crypt --sha-512
+#
+# Set the following variables in file:
+# com.example_ansible_main/group_vars/all/admin_access.yaml
+#
+#guest_bootpw_pbkdf2:
+#guest_rootpw_sha512:
+
+- name: Check that the CentOS repository is available from the hypervisor
+  become: yes
+  get_url: url="{{ centos_repo_url }}/{{
+                   centos_repo_key_file }}"
+           dest="/opt/{{ centos_repo_key_file }}" force=yes
+           sha256sum="{{ centos_repo_key_sha256 }}"
+
+- name: Ensure user home ~/bin directory exists
+  file: state=directory path=~/bin mode=0750
+
+- name: Ensure user home ~/kickstart directory exists
+  file: state=directory path=~/kickstart mode=0750
+
+- name: Check which guests already exist
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
+  become: yes
+  shell: virsh -q dominfo "{{ item }}"
+  register: domains
+  changed_when: domains.rc != 0 and 'Domain not found' in domains.stderr
+  failed_when: False
+
+- name: Generate libvirt guest installation scripts in ~/bin/
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
+  template: src="guest-install.sh.j2"
+            dest="~/bin/guest_{{ item }}-install.sh"
+            mode=0740
+
+- name: Generate libvirt guest configuration files in ~/kickstart/
+  with_items: "{{ groups[ libvirt_guests_group ] }}"
+#  no_log: True
+  template: src="guest-ks.cfg.j2"
+            dest="~/kickstart/guest_{{ item }}-ks.cfg"
+            mode=0640
+
+- name: Install missing guests
+  with_items: "{{ domains.results }}"
+  when: item is changed
+  shell: "~/bin/guest_{{ item.item }}-install.sh"

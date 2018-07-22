@@ -14,7 +14,7 @@
 - name: HYPERVISORS
   hosts: libvirt_hosts
   pre_tasks:
-  - include: "../service_commons_ansible/tasks/group_distros.yml"
+  - include: "../service_commons_ansible/tasks/group_distros.yaml"
   roles:
   - role: "../../service_commons_ansible/roles/admin_bastion"
     tags: access

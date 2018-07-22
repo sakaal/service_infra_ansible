@@ -1,0 +1,15 @@
+# file: forget_servers.yaml
+#
+# Removes old host keys previously known to Ansible configuration management.
+# Run this before manually reinstalling servers, to forget their old host keys.
+#
+# ansible-playbook -vv forget_servers.yaml -i ../com.example_main_ansible/bootstrap
+#
+---
+
+- hosts: libvirt_hosts
+  gather_facts: no
+  serial: 1
+  connection: local
+  roles:
+  - admin_forget

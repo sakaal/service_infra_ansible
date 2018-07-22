@@ -13,7 +13,7 @@
 - name: MONITORING
   hosts: all
   pre_tasks:
-  - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yml"
+  - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yaml"
   roles:
   - role: "{{ playbook_dir | dirname }}/service_infra_ansible/roles/nagios"
     tags: nagios

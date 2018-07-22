@@ -1,0 +1,13 @@
+# file: handovers.yaml
+#
+# Transfers hosts that are ready
+# from the bootstrap inventory (Service Transition)
+# to the production inventory (Service Operation).
+#
+---
+
+- hosts: libvirt_hosts
+  roles:
+  - ansible_inventory
+  - hetzner_single_ips
+  - ansible_inventory_commit

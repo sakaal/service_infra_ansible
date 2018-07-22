@@ -1,0 +1,7 @@
+# file: roles/ssh_bastion/tasks/main.yaml
+---
+
+- name: SSH bastion host configuration
+  local_action: template src="libvirt_guests_group.j2"
+                dest="{{ inventory_dir }}/group_vars/libvirt_guests_{{ hostname }}"
+                mode=0600

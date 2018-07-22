@@ -1,0 +1,67 @@
+# file: roles/hetzner_bridged_networking/tasks/main.yaml
+#
+# Hetzner CentOS bridged networking for additional IP addresses (virtualization)  
+# See: http://wiki.hetzner.de/index.php/Netzkonfiguration_CentOS/en#Bridged
+#
+---
+
+- name: Ensure bridge-utils is present
+  when: ansible_pkg_mgr == "yum"
+  become: yes
+  yum: name=bridge-utils state=present
+
+- name: Configure network bridge br0
+  when: ansible_os_family == "RedHat"
+  become: yes
+  template: src=ifcfg-br0.j2
+            dest=/etc/sysconfig/network-scripts/ifcfg-br0
+            owner=root group=root mode=0644
+
+- name: Configure the default network interface
+  when: ansible_os_family == "RedHat" and ansible_default_ipv4 is defined and
+        ansible_default_ipv4.interface != "br0"
+  become: yes
+  template:
+    src: "ifcfg-default.j2"
+    dest: "/etc/sysconfig/network-scripts/ifcfg-{{ ansible_default_ipv4.interface }}"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Move the default route to the bridge br0
+  when: ansible_default_ipv4.interface != "br0"
+  become: yes
+  command: chdir="/etc/sysconfig/network-scripts/"
+           creates="route-br0"
+           mv route-{{ ansible_default_ipv4.interface }} route-br0
+
+- name: Fix the default route comments on bridge br0
+  become: yes
+  lineinfile:
+    dest: "/etc/sysconfig/network-scripts/route-br0"
+    regexp: "^#\\s*routing\\s+for"
+    line: "# routing for br0"
+
+- name: Ensure bridged networking is configured
+  become: yes
+  command: ip link show br0
+  register: br0_configured
+  changed_when: br0_configured.rc != 0
+  failed_when: False
+  notify:
+  - Restart network
+
+- name: Enable IPv4 and IPv6 forwarding
+  with_items:
+  - "net.ipv4.ip_forward"
+  - "net.ipv6.conf.all.forwarding"
+  become: yes
+  sysctl:
+    name: "{{ item }}"
+    value: 1
+    sysctl_set: yes
+    reload: yes
+
+- name: Change the virbr0 interface to the internal firewall zone
+  become: yes
+  command: firewall-cmd --permanent --zone=internal --change-interface=virbr0

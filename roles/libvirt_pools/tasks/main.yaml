@@ -1,0 +1,42 @@
+# file: roles/libvirt_pools/tasks/main.yaml
+#
+# Defines an LVM-based storage pool to use with libvirt.
+# The volume group is created during the operating system installation
+# by the role: hetzner_rescue_centos
+#
+---
+
+- name: Python libvirt packages
+  when: ansible_pkg_mgr == "yum"
+  with_items:
+  - libvirt-python
+  - python-lxml
+  become: yes
+  yum: name="{{ item }}" state=present
+
+- name: Check available storage pools
+  become: yes
+  virt_pool:
+    command: list_pools
+  register: pools_result
+  changed_when: not vg_pool_name in pools_result.list_pools
+
+- name: Storage pool based on LVM volume group
+  when: pools_result is changed
+  become: yes
+  virt_pool:
+    command: define
+    name: '{{ vg_pool_name }}'
+    xml: '{{ lookup("template", "logical.xml.j2") }}'
+
+- name: Enable logical storage pools autostart
+  become: yes
+  virt_pool:
+    name: '{{ vg_pool_name }}'
+    autostart: yes
+
+- name: Activate logical storage pools
+  become: yes
+  virt_pool:
+    name: '{{ vg_pool_name }}'
+    state: active

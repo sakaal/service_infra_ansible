@@ -6,7 +6,7 @@
 
 #
 # Set all the following variables in file:
-# com.example_main_ansible/group_vars/all/admin_access.yml
+# com.example_main_ansible/group_vars/all/admin_access.yaml
 #
 
 #
@@ -31,6 +31,12 @@
 # Administrative account
 #
 
+- name: Set the hostname
+  when: hostname is defined
+  become: yes
+  command: hostnamectl set-hostname {{ hostname }}
+  ignore_errors: yes
+
 - name: Create the admin SSH account
   user:
     name: "{{ admin_username }}"
@@ -47,7 +53,7 @@
     src: "authorized_keys.j2"
     dest: "/home/{{ admin_username }}/.ssh/authorized_keys"
     owner: "{{ admin_username }}"
-    group. "{{ admin_username }}"
+    group: "{{ admin_username }}"
     mode: 0600
 
 - name: Configure Git
@@ -77,7 +83,7 @@
 - name: Prevent entering interactive boot
   lineinfile:
     dest: "/etc/sysconfig/init"
-    regexp: "^\s*PROMPT"
+    regexp: '^\s*PROMPT'
     line: "PROMPT=no"
     state: present
 
@@ -85,7 +91,7 @@
   become: yes
   lineinfile:
     dest: /etc/grub.d/40_custom
-    regexp: "^\s*set superusers"
+    regexp: '^\s*set superusers'
     line: "set superusers=\"{{ admin_username }}\""
     state: present
 
@@ -93,8 +99,8 @@
   become: yes
   lineinfile:
     dest: /etc/grub.d/40_custom
-    regexp: "^\s*password_pbkdf2"
-    insertafter: "^\s*set superusers"
+    regexp: '^\s*password_pbkdf2'
+    insertafter: '^\s*set superusers'
     line: "password_pbkdf2 {{ admin_username }} {{ host_bootpw_pbkdf2 }}"
     state: present
   register: boot_password
@@ -107,7 +113,7 @@
 - name: Disallow root SSH access
   lineinfile:
     dest: /etc/ssh/sshd_config
-    regexp: "^PermitRootLogin"
+    regexp: '^PermitRootLogin'
     line: "PermitRootLogin no"
     state: present
   notify:
@@ -116,7 +122,7 @@
 - name: Disallow password authentication
   lineinfile:
     dest: /etc/ssh/sshd_config
-    regexp: "^PasswordAuthentication"
+    regexp: '^PasswordAuthentication'
     line: "PasswordAuthentication no"
     state: present
   notify:
@@ -129,7 +135,7 @@
 - name: Set SSH port
   lineinfile:
     dest: "/etc/ssh/sshd_config"
-    regexp: "^Port"
+    regexp: '^Port'
     line: "Port {{ admin_ssh_port }}"
     state: present
   notify:

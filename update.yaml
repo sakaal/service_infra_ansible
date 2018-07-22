@@ -1,0 +1,11 @@
+# file: update.yaml
+#
+# ansible-playbook -vv -l host.example.com -i development update.yaml -e reboot_after_update=yes
+#
+---
+
+- name: UPDATE ALL PACKAGES
+  hosts: all
+  serial: 1
+  roles:
+  - update_all

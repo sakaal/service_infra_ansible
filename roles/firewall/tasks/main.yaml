@@ -1,0 +1,58 @@
+# file: roles/firewall/tasks/main.yaml
+#
+# Initial firewall configuration
+#
+---
+
+- name: Dynamically managed firewall
+  become: yes
+  yum: name=firewalld
+
+- name: Deactivate the firewall
+  become: yes
+  service: name=firewalld state=stopped enabled=no
+
+- name: Check if the administrative firewall zone exists
+  become: yes
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone }}
+           --get-target
+  register: firewall_exists
+  changed_when: firewall_exists.rc != 0 and
+                firewall_exists.stderr.find('INVALID_ZONE') != -1
+  failed_when: False
+
+- name: Create the administrative firewall zone
+  when: firewall_exists is changed
+  become: yes
+  command: firewall-offline-cmd --new-zone="{{ firewall_zone }}"
+
+- name: Check if the administrative firewall zone is default
+  become: yes
+  command: firewall-offline-cmd --get-default-zone
+  register: firewall_default
+  changed_when: not "{{ firewall_zone }}" in firewall_default.stdout
+  failed_when: False
+
+- name: Set the administrative firewall zone as default
+  when: firewall_default is changed
+  become: yes
+  command: firewall-offline-cmd
+           --set-default-zone={{ firewall_zone }}
+
+- name: Add the default interface to the administrative firewall zone
+  become: yes
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone }}
+           --change-interface="{{ ansible_default_ipv4.interface }}"
+
+- name: Open firewall ports
+  with_items: "{{ firewall_allow }}"
+  become: yes
+  command: firewall-offline-cmd
+           --zone={{ firewall_zone }}
+           --add-port={{ item.port }}/{{ item.protocol }}
+
+- name: Activate the firewall
+  become: yes
+  service: name=firewalld state=started enabled=yes

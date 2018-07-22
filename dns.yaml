@@ -2,7 +2,7 @@
 #
 # Creates security enabled DNS zones via the Managed DNS provider API.
 #
-# ansible-playbook -vvv dns.yml -i zones
+# ansible-playbook -vvv dns.yaml -i zones
 #
 ---
 

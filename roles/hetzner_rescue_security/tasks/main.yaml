@@ -1,0 +1,54 @@
+# file: roles/hetzner_rescue_security/tasks/main.yaml
+#
+# Completes a CentOS minimal installation
+# - Collects SSH server key fingerprints for DNS SSHFP records
+# - Enables SELinux
+#
+---
+
+- name: Wait for the server to restart to collect SSH keys
+  local_action: wait_for host={{ inventory_hostname }} port=22
+                state=started delay=20
+
+- name: Collect SSH server key fingerprints for SSHFP records
+  no_log: True
+  local_action: command sshpass -p'{{ ansible_password }}'
+                ssh -o StrictHostKeyChecking=no
+                root@{{ inventory_hostname }}
+                ssh-keygen -r {{ hostname }}
+  register: sshfp_records
+  failed_when: sshfp_records.rc != 0
+
+#
+# Enabling SELinux
+#
+# https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/SELinux_Users_and_Administrators_Guide/chap-Security-Enhanced_Linux-Targeted_Policy.html
+#
+
+- name: SELinux packages
+  yum: name={{ item }} state=latest
+  with_items:
+  - selinux-policy-targeted
+  - libselinux-python
+  - policycoreutils-python
+
+- name: Set SELinux mode
+  lineinfile: dest="/etc/selinux/config" regexp="^SELINUX="
+              line="SELINUX=permissive" state=present
+
+- name: Set SELinux type
+  lineinfile: dest="/etc/selinux/config" regexp="^SELINUXTYPE="
+              line="SELINUXTYPE=targeted" state=present
+
+#
+# Reboot https://github.com/ansible/ansible/issues/10616
+#
+- name: Restart the server to enable SELinux
+  shell: sleep 2 && shutdown -r now "Ansible triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+
+- name: Wait for the server to restart
+  local_action: wait_for host={{ inventory_hostname }} port=22
+                state=started delay=20

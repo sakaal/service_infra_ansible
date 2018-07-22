@@ -1,0 +1,6 @@
+# file: roles/hetzner_bridged_networking/handlers/main.yaml
+---
+
+- name: Restart network
+  become: yes
+  service: name=network state=restarted

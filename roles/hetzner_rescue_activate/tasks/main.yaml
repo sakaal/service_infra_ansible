@@ -1,0 +1,75 @@
+# file: roles/hetzner_rescue_activate/tasks/main.yaml
+#
+# Activates the Hetzner rescue system for CentOS installation 
+#
+---
+
+#
+# Sign on the target system via SSH using the rescue system password
+# from the Hetzner Webservice API.
+#
+
+- name: Check configuration
+  assert:
+    that:
+    - vg_pool_name is defined
+
+- name: Check the rescue system status
+  no_log: True
+  local_action:
+    module: uri
+    method: "GET"
+    url: "{{ hetzner_api_url }}/boot/{{ inventory_hostname }}/rescue"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    return_content: yes
+  register: hetzner_rescue
+  changed_when: hetzner_rescue.json.rescue is defined and
+                hetzner_rescue.json.rescue.active | default(False) | bool
+
+- name: Output errors if any
+  when: hetzner_rescue.json.error is defined
+  fail:
+    msg: "{{ hetzner_rescue.json.error }}"
+
+- name: Deactivate the rescue system
+  when: hetzner_rescue is changed
+  no_log: True
+  local_action:
+    module: uri
+    method: DELETE
+    url: "{{ hetzner_api_url }}/boot/{{ inventory_hostname }}/rescue"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+
+- name: Activate the rescue system
+  no_log: True
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ hetzner_api_url }}/boot/{{ inventory_hostname }}/rescue"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    body: "os=linux&arch=64"
+  register: hetzner_rescue
+  changed_when: hetzner_rescue.json.rescue.active | bool
+
+- name: Use the rescue root password
+  when: hetzner_rescue is changed
+  no_log: True
+  set_fact:
+    ansible_password: "{{ hetzner_rescue.json.rescue.password }}"
+
+- name: Hard reset
+  when: hetzner_rescue is changed
+  no_log: True
+  local_action:
+    module: uri
+    method: POST
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    url: "{{ hetzner_api_url }}/reset/{{ inventory_hostname }}"
+    body: "type=hw"
+    return_content: yes
+  register: hetzner_reset
+  failed_when: hetzner_reset.status != 200

@@ -1,0 +1,77 @@
+# file: roles/libvirt_guests_terminate/tasks/main.yaml
+---
+
+- set_fact:
+    ex_group: "ex_{{ libvirt_guests_group }}"
+
+- name: Remove static local IP addresses from /etc/hosts
+  with_items: "{{ groups[ ex_group ] }}"
+  become: yes
+  lineinfile: >
+              dest="/etc/hosts"
+              regexp='^[^ \t]*[ \t]+{{ item }}[ \t]+'
+              state=absent
+
+- name: Remove static local IP addresses from the libvirt default network
+  with_items: "{{ groups[ ex_group ] }}"
+  become: yes
+  lineinfile: >
+              dest="/etc/libvirt/qemu/networks/default.xml"
+              regexp='^[ \t]+<host[ \t]+.*name="{{ item }}"'
+              state=absent
+
+- name: Destroy the guest domain
+  with_items: "{{ groups[ ex_group ] }}"
+  become: yes
+  virt: name="{{ item }}" command=destroy state=destroyed
+  ignore_errors: yes
+
+- name: Undefine the guest domain
+  with_items: "{{ groups[ ex_group ] }}"
+  become: yes
+  virt: name="{{ item }}" command=undefine
+  ignore_errors: yes
+
+- name: Delete DNS SSHFP records
+  with_items: "{{ groups[ ex_group ] }}"
+  when: dynect_session_result is success
+  local_action: >
+                command curl -s -X DELETE -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
+                {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ item }}/
+  ignore_errors: yes
+
+- name: Publish DNS zones
+  when: dynect_session_result is success
+  local_action: >
+                command curl -s -X PUT -H 'Content-Type: application/json'
+                -H 'Auth-Token: {{ dynect_session_token }}'
+                {{ dynect_api_url }}/Zone/{{ dns_zone }} -d '{"publish":true}'
+
+- name: Check if SSH known hosts file exists
+  stat: path="~/.ssh/known_hosts"
+  register: known_hosts
+
+- name: Remove FQDNs from SSH known hosts
+  with_items: "{{ groups[ ex_group ] }}"
+  when: known_hosts.stat.exists
+  command: ssh-keygen -R {{ item }}
+  ignore_errors: yes
+
+- name: Remove FQDNs (admin port) from SSH known hosts
+  with_items: "{{ groups[ ex_group ] }}"
+  when: known_hosts.stat.exists
+  command: ssh-keygen -R "[{{ item }}]:{{ admin_ssh_port }}"
+  ignore_errors: yes
+
+- name: Remove simple hostnames from SSH known hosts
+  with_items: "{{ groups[ ex_group ] }}"
+  when: known_hosts.stat.exists
+  command: ssh-keygen -R {{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}
+  ignore_errors: yes
+
+- name: Remove simple hostnames (admin port) from SSH known hosts
+  with_items: "{{ groups[ ex_group ] }}"
+  when: known_hosts.stat.exists
+  command: ssh-keygen -R "[{{ item | regex_replace("^([^\.]*)\..*$", "\\1") }}]:{{ admin_ssh_port }}"
+  ignore_errors: yes

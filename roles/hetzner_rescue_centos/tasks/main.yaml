@@ -1,0 +1,90 @@
+# file: roles/hetzner_rescue_centos/tasks/main.yaml
+#
+# Installs the latest CentOS minimal image via the Hetzner rescue system
+# - Calculates the storage partition plan
+#
+---
+
+- name: Wait for the server to boot in the rescue system
+  local_action: wait_for host={{ inventory_hostname }} port=22
+                state=started delay=20
+
+- name: Locate the latest CentOS image on the Hetzner rescue system
+  local_action: command sshpass -p'{{ ansible_password }}'
+                ssh -o StrictHostKeyChecking=no
+                root@{{ inventory_hostname }}
+                ls -1 {{ hetzner_rescue_images_path }} | grep "^CentOS.*\.gz$" | sort | tail -n1
+  register: centos_image
+  failed_when: centos_image.rc != 0 or centos_image.stdout.strip() == ""
+
+- name: Resolve the latest CentOS image name
+  set_fact:
+    centos_image: "{{ centos_image.stdout_lines[0] }}"
+
+- name: Latest CentOS image available on the Hetzner rescue system
+  debug: var=centos_image
+
+#
+# Storage partitioning
+#
+# Reserve most free space for a LVM storage pool that will be set up later.
+#
+# The Hetzner rescue system supports only MSDOS partition tables,
+# so maximum size for a single partition is 2T.
+#
+# Calculate the system volume group size so that
+# the remaining space is within the above limit.
+#
+
+- name: Obtain the SSH host key and storage devices list from the Hetzner rescue system
+  local_action: command sshpass -p'{{ ansible_password }}'
+                ssh -o StrictHostKeyChecking=no
+                root@{{ inventory_hostname }}
+                sfdisk -s 2>/dev/null | grep '^/dev/[hsv]d.:' | sort
+  register: disks_KiB
+  failed_when: disks_KiB.rc != 0 or disks_KiB.stdout.strip() == ""
+
+- name: List storage devices
+  set_fact:
+    disks_KiB: "{{ disks_KiB.stdout_lines | list }}"
+
+- name: Check the first storage device size
+  set_fact:
+    disk_KiB: "{{ disks_KiB[0] | regex_replace('^.+: (\\d+)$', '\\1') | int }}"
+  failed_when: disk_KiB|int < (vg_sys_GiB * 1024 * 1024)
+
+- name: Disk <= 2 TiB
+  when: disk_KiB|int <= ((2048 + vg_sys_GiB) * 1024 * 1024)
+  set_fact:
+    vg_sys_size: "{{ vg_sys_GiB }}G"
+    vg_pool_size: all
+
+- name: Disk > 2 TiB
+  when: disk_KiB|int > ((2048 + vg_sys_GiB) * 1024 * 1024)
+  set_fact:
+    vg_sys_size: "{{ ((( disk_KiB|int - 2147483648 ) / 1048576) + 1)|round|int }}G"
+    vg_pool_size: all 
+
+- name: Set the Ansible SSH user to root
+  set_fact:
+    ansible_user: "root"
+
+- name: Upload autosetup configuration file
+  template: src=autosetup.j2 dest=/autosetup
+
+#
+# Installing the operating system image. This step can take minutes to complete.
+#
+
+- name: Hetzner Online AG - installimage
+  command: /root/.oldroot/nfs/install/installimage
+  register: installimage
+
+#
+# Reboot https://github.com/ansible/ansible/issues/10616
+#
+- name: Restart the server after installation
+  shell: sleep 2 && shutdown -r now "Ansible triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true

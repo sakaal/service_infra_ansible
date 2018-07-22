@@ -1,0 +1,31 @@
+# file: roles/admin_tools/tasks/main.yaml
+---
+
+- name: Tools to support automated administration tasks
+  when: ansible_pkg_mgr == "yum"
+  with_items:
+  - ansible
+  - bind-utils
+  - git
+  - gnupg
+  - htop
+  - iotop
+  - iptraf
+  - lshw
+  - mtr
+  - nano
+  - net-tools
+  - parallel
+  - pciutils
+  - procps
+  - python-setuptools
+  - python-pip
+  - screen
+  - strace
+  - sysstat
+  - tcpdump
+  yum: name="{{ item }}" state=latest
+
+#  - munin-node
+# Fully Automated Nagios (FAN)
+# Cacti

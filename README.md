@@ -198,7 +198,7 @@ as instructed in the main repository (file `group_vars/all`).
 1. Having added the addresses to the `reset_servers` group,
    prepare the hosts for automated configuration (15 min):
 
-        ansible-playbook service_infra_ansible/reset_servers.yml -i com.example_main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/reset_servers.yaml -i com.example_main_ansible/bootstrap
 
 1. Set strong root account passwords as appropriate, if you need them.
    The automatically created random passwords were only used when preparing
@@ -207,7 +207,7 @@ as instructed in the main repository (file `group_vars/all`).
 
 1. Configure the hosts as virtualization hypervisors (10 min):
 
-        ansible-playbook service_infra_ansible/hypervisors.yml -i com.example_main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/hypervisors.yaml -i com.example_main_ansible/bootstrap
 
 The hypervisors are now ready to be transferred to service operation.
 
@@ -231,7 +231,7 @@ The hypervisors are now ready to be transferred to service operation.
 
 1. Provision the guest virtual machines:
 
-        ansible-playbook service_infra_ansible/guests.yml -i com.example_main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/guests.yaml -i com.example_main_ansible/bootstrap
 
 1. Start the guest virtual machines manually after the installation
    has completed. This will be automated later.
@@ -256,7 +256,7 @@ from the bootstrap inventory to the main configuration management inventory.
 
 1. Perform the transfer:
 
-        ansible-playbook service_infra_ansible/handovers.yml -i com.example_main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/handovers.yaml -i com.example_main_ansible/bootstrap
     * Ensure that the bootstrap inventory no longer contains
       any hosts that were transferred to the main inventory.
       You may have to do this manually, if you are redeploying

@@ -1,6 +1,0 @@
-# file: roles/firewall_iptables/handlers/main.yml
----
-
-- name: Restart iptables
-  become: yes
-  service: name=iptables state=restarted

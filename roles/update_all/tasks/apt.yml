@@ -1,9 +1,0 @@
-# file: roles/update_all/tasks/apt.yml
----
-
-- name: Update all packages (apt) This can take several minutes
-  become: yes
-  apt:
-    update_cache: yes
-    upgrade: "safe"
-  register: update_all_apt
