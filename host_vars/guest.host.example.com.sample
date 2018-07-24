@@ -16,6 +16,11 @@ guest_ram: 1536
 guest_vcpus: 2
 guest_os_variant: rhel7
 
+guest_disks:
+- path: "/dev/vg_pool/lv_guest.host.example.com_sys"
+  size: "12" # GiB
+  cache: "none" # none, writethrough, writeback, directsync, unsafe
+
 guest_lang: en_US.UTF-8
 #guest_keyboard: fi-latin1
 guest_keyboard: us

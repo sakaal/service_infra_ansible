@@ -8,11 +8,6 @@ sudo virsh -q dominfo "{{ item }}" >/dev/null 2>&1 && {
     exit 1
 }
 
-#
-# The logical volume group that serves as a libvirt storage pool.
-#
-VG={{ vg_pool_name }}
-LV=lv_{{ item }}_sys
 KS=guest_{{ item }}-ks.cfg
 
 # Tested on CentOS 7 hypervisors
@@ -22,7 +17,9 @@ virt-install --connect=qemu:///system \
 --extra-args="ks=file:/$KS console=tty0 console=xvc0,115200n8" \
 --name={{ item }} \
 --description="{{ hostvars[item].guest_description }}" \
---disk path=/dev/$VG/$LV,size=12,bus=virtio,sparse=false,cache={{ hostvars[item].kvm_disk_cache | default('none') }} \
+{% for disk in hostvars[item].guest_disks %}
+--disk path={{ disk.path }},size={{ disk.size }},bus=virtio,sparse=false,cache={{ disk.cache | default('none') }} \
+{% endfor %}
 --ram={{ hostvars[item].guest_ram }} \
 --vcpus={{ hostvars[item].guest_vcpus }} \
 --check-cpu \
