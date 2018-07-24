@@ -1,0 +1,72 @@
+# file: roles/hetzner_robot_ssh_keys/tasks/main.yaml
+---
+
+- name: Define the SSH key comment pattern
+  set_fact:
+    ssh_key_comment_pattern: "^(.*)\\s([0-9a-zA-Z@._-]+)$"
+
+- name: Verify that SSH keys have identifying comments
+  with_items: "{{ admin_authorized_keys }}"
+  assert:
+    that: (item | regex_replace(ssh_key_comment_pattern, '\\2') | length) < (item | length)
+
+- name: Check existing SSH keys
+  local_action:
+    module: uri
+    method: GET
+    url: "{{ hetzner_api_url }}/key"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    status_code: 200,404
+    return_content: yes
+  register: hetzner_robot_existing_keys
+
+- debug:
+    var: hetzner_robot_existing_keys.json
+
+- name: Update existing SSH keys
+  with_nested:
+  - "{{ hetzner_robot_existing_keys.json }}"
+  - "{{ admin_authorized_keys }}"
+  when: item.0.key.data == item.1 | regex_replace(ssh_key_comment_pattern, '\\1') and
+        item.0.key.name != item.1 | regex_replace(ssh_key_comment_pattern, '\\2')
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ hetzner_api_url }}/key/{{ item.0.key.fingerprint }}"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    body: "name={{ item.1 | regex_replace(ssh_key_comment_pattern, '\\2') | urlencode }}"
+    status_code: 200
+    return_content: yes
+  register: hetzner_robot_ssh_keys_result
+  changed_when: yes
+
+- name: Delete unrecognized SSH keys
+  with_items:
+  - "{{ hetzner_robot_existing_keys.json }}"
+  when: item.key.data not in (admin_authorized_keys | string)  
+  local_action:
+    module: uri
+    method: DELETE
+    url: "{{ hetzner_api_url }}/key/{{ item.key.fingerprint }}"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    status_code: 200
+  changed_when: yes
+
+- name: Add new SSH keys
+  with_items: "{{ admin_authorized_keys }}"
+  when: item | regex_replace(ssh_key_comment_pattern, '\\1')
+        not in (hetzner_robot_existing_keys.json | string)
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ hetzner_api_url }}/key"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    body: "name={{ item | regex_replace(ssh_key_comment_pattern, '\\2') | urlencode }}&data={{ item | regex_replace(ssh_key_comment_pattern, '\\1') | urlencode }}"
+    status_code: 201,409
+    return_content: yes
+  register: hetzner_robot_ssh_keys_result
+  changed_when: hetzner_robot_ssh_keys_result.status == 201

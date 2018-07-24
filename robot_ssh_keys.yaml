@@ -1,0 +1,12 @@
+# file: robot_ssh_keys.yaml
+#
+# Manage SSH keys recognized by the Hetzner Robot
+#
+---
+
+- name: HETZNER ROBOT SSH KEYS
+  hosts: all
+  run_once: yes
+  gather_facts: no
+  roles:
+  - hetzner_robot_ssh_keys
