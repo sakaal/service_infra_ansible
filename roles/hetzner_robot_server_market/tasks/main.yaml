@@ -1,0 +1,114 @@
+# file: roles/hetzner_robot_server_market/tasks/main.yaml
+#
+# You must manually activate the Hetzner Robot Webservice ordering feature
+# before using this script.
+#
+---
+
+- name: Search criteria
+  set_fact:
+    server_market_per_euro:
+      traffic_TB: 2.0
+      cpu_benchmark: 1000.0
+      memory_GB: 2.0
+      hdd_GB: 400.0
+    server_market_factor:
+      ent_hdd: 1.10
+      ecc:     1.10
+      inic:    1.03
+      red_ps:  1.10
+      hwr:     1.05
+      dc_ssd:  1.15
+      sas:     1.03
+      kvm:     1.03
+    server_market:
+      memory:
+        min: 8
+      price:
+        max: 140
+      hdd_count:
+        min: 5
+      cpu_benchmark:
+        min: 6000
+      datacenter:
+        pattern: '^.*$'
+      search: "ECC" # Red.PS Ent.HDD ECC HWR INIC "DC SSD" SAS KVM
+
+- name: Check currently offered server market products
+  local_action:
+    module: uri
+    method: GET
+    url: "{{ hetzner_api_url }}/order/server_market/product?max_price={{ server_market.price.max
+          }}&min_hdd_count={{ server_market.hdd_count.min
+          }}&min_memory_size={{ server_market.memory.min
+          }}&min_cpu_benchmark={{ server_market.cpu_benchmark.min
+          }}{% if server_market.search is defined
+            %}&search={{ server_market.search
+          }}{% endif %}"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    status_code: 200
+    return_content: yes
+  register: hetzner_robot_server_market
+
+- name: Filter results by datacenter
+  set_fact:
+    hetzner_robot_server_market: "{{ hetzner_robot_server_market.json
+                                   | selectattr('product.datacenter', 'match', server_market.datacenter.pattern)
+                                   | list }}"
+
+- name: Evaluate all matching servers
+  with_items: "{{ hetzner_robot_server_market }}"
+  set_fact:
+    item_value: "{{ (
+        (item.product.traffic.split()[0]|float / server_market_per_euro.traffic_TB)
+      + (item.product.cpu_benchmark|float / server_market_per_euro.cpu_benchmark)
+      + (item.product.memory_size|float / server_market_per_euro.memory_GB)
+      + (item.product.hdd_count|float * item.product.hdd_size|float / server_market_per_euro.hdd_GB)
+      ) * (server_market_factor.ent_hdd if 'ENT.HDD' in item.product.hdd_text else 1.0)
+      * (server_market_factor.ecc     if 'ECC' in item.product.hdd_text else 1.0)
+      * (server_market_factor.inic    if 'INIC' in item.product.hdd_text else 1.0)
+      * (server_market_factor.red_ps  if 'RED.PS' in item.product.hdd_text else 1.0)
+      * (server_market_factor.hwr     if 'HWR' in item.product.hdd_text else 1.0)
+      * (server_market_factor.dc_ssd  if 'DC SSD' in item.product.hdd_text else 1.0)
+      * (server_market_factor.sas     if 'SAS' in item.product.hdd_text else 1.0)
+      * (server_market_factor.kvm     if 'KVM' in item.product.hdd_text else 1.0)
+      }}"
+    item_benefit_cost_ratio: "{{ (
+        (item.product.traffic.split()[0]|float / server_market_per_euro.traffic_TB)
+      + (item.product.cpu_benchmark|float / server_market_per_euro.cpu_benchmark)
+      + (item.product.memory_size|float / server_market_per_euro.memory_GB)
+      + (item.product.hdd_count|float * item.product.hdd_size|float / server_market_per_euro.hdd_GB)
+      ) * (server_market_factor.ent_hdd if 'ENT.HDD' in item.product.hdd_text else 1.0)
+      * (server_market_factor.ecc     if 'ECC' in item.product.hdd_text else 1.0)
+      * (server_market_factor.inic    if 'INIC' in item.product.hdd_text else 1.0)
+      * (server_market_factor.red_ps  if 'RED.PS' in item.product.hdd_text else 1.0)
+      * (server_market_factor.hwr     if 'HWR' in item.product.hdd_text else 1.0)
+      * (server_market_factor.dc_ssd  if 'DC SSD' in item.product.hdd_text else 1.0)
+      * (server_market_factor.sas     if 'SAS' in item.product.hdd_text else 1.0)
+      * (server_market_factor.kvm     if 'KVM' in item.product.hdd_text else 1.0)
+      / item.product.price|float
+      }}"
+  register: hetzner_market_evaluation
+
+- name: Sort by benefit-cost ratio
+  set_fact:
+    hetzner_market_evaluation: "{{ hetzner_market_evaluation.results
+                                 | sort(attribute='ansible_facts.item_benefit_cost_ratio', reverse=True)
+                                 | list }}"
+
+- debug: var=hetzner_market_evaluation
+
+#- name: Show the top servers on the list
+#  with_items: "{{ hetzner_market_evaluation[0:10] }}"
+#  local_action:
+#    module: uri
+#    method: GET
+#    url: "{{ hetzner_api_url }}/order/server_market/product/{{ item.item.product.id }}"
+#    user: "{{ hetzner_api_user }}"
+#    password: "{{ hetzner_api_password }}"
+#    status_code: 200
+#    return_content: yes
+#  register: hetzner_robot_server_product
+#
+#- debug: var=hetzner_robot_server_product
