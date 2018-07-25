@@ -12,17 +12,16 @@
   when: ansible_pkg_mgr == "yum"
   become: yes
   with_items:
-  - "@Virtualization"
-  - "@Virtualization Client"
-  - "@Virtualization Platform"
-  - "@Virtualization Tools"
+  - "@^Virtualization Host"
   - kvm
   - libvirt
   - libvirt-python
   - virt-viewer
   - libguestfs-tools
   - avahi-dnsconfd
-  yum: name="{{ item }}" state=present
+  yum:
+    name: "{{ item }}"
+    state: present
 
 - name: Graphical interface and fonts
   when: ansible_pkg_mgr == "yum"
