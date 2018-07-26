@@ -14,16 +14,16 @@
 - name: HYPERVISORS
   hosts: libvirt_hosts
   pre_tasks:
-  - include: "../service_commons_ansible/tasks/group_distros.yaml"
+  - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yaml"
   roles:
-  - role: "../../service_commons_ansible/roles/admin_bastion"
+  - role: "{{ playbook_dir | dirname }}/service_commons_ansible/roles/admin_bastion"
     tags: access
   - role: ssh_bastion
     tags: access
   - hetzner_bridged_networking
   - linux_kvm
   - libvirt_pools
-  - "../../service_commons_ansible/roles/updates_auto"
+  - "{{ playbook_dir | dirname }}/service_commons_ansible/roles/updates_auto"
 
 - name: FINISH
   hosts: localhost
