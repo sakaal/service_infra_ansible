@@ -1,0 +1,70 @@
+# file: roles/hetzner_robot_server_cancellation/tasks/main.yaml
+---
+
+- name: Make sure that the IP address has been listed to be terminated
+  assert:
+    that:
+    - inventory_hostname in groups['ex_libvirt_hosts']
+    - inventory_hostname | ipaddr
+
+- name: Lookup the reverse DNS PTR record
+  set_fact:
+    cancel_ptr_record: "{{ lookup('dig', inventory_hostname + '/PTR') | regex_replace('\\.$', '') }}"
+
+- name: Check server cancellation status
+  local_action:
+    module: uri
+    method: GET
+    url: "{{ hetzner_api_url }}/server/{{ inventory_hostname }}/cancellation"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    status_code: 200,404
+    return_content: yes
+  register: hetzner_robot_server
+  changed_when: hetzner_robot_server.status == 200 and
+                not hetzner_robot_server.json.cancellation.cancelled | bool
+
+- name: Cancel the server
+  when: hetzner_robot_server is changed
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ hetzner_api_url }}/server/{{ inventory_hostname }}/cancellation"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    body: >-
+      cancellation_date={{ hetzner_robot_server.json.cancellation.earliest_cancellation_date
+      }}{% if cancellation_reason in hetzner_robot_server.json.cancellation.cancellation_reason
+      %}&cancellation_reason={{ cancellation_reason | urlencode }}{% endif %}
+    status_code: 200,404,409
+    return_content: yes
+    changed_when: hetzner_robot_server_cancellation.status = 200
+  register: hetzner_robot_server_cancellation
+
+- name: Remove IPs from SSH known hosts
+  when: hetzner_robot_server_cancellation is changed
+  with_items:
+  - "{{ inventory_hostname }}"
+  - "[{{ inventory_hostname }}]:{{ admin_ssh_port }}"
+  local_action:
+    module: known_hosts
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Remove FQDNs from SSH known hosts
+  when: cancel_ptr_record != 'NXDOMAIN' and
+        hetzner_robot_server_cancellation is changed
+  with_items:
+  - "{{ cancel_ptr_record }}"
+  - "[{{ cancel_ptr_record }}]:{{ admin_ssh_port }}"
+  local_action:
+    module: known_hosts
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: yes
+
+- name: Cancellation result
+  debug:
+    msg: "{{ hetzner_robot_server_cancellation.json if hetzner_robot_server_cancellation is changed
+             else hetzner_robot_server.json }}"

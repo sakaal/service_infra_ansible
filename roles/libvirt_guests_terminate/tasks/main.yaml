@@ -7,35 +7,40 @@
 - name: Remove static local IP addresses from /etc/hosts
   with_items: "{{ groups[ ex_group ] }}"
   become: yes
-  lineinfile: >
-              dest="/etc/hosts"
-              regexp='^[^ \t]*[ \t]+{{ item }}[ \t]+'
-              state=absent
+  lineinfile:
+    dest: "/etc/hosts"
+    regexp: '^[^ \t]*[ \t]+{{ item }}[ \t]+'
+    state: absent
 
 - name: Remove static local IP addresses from the libvirt default network
   with_items: "{{ groups[ ex_group ] }}"
   become: yes
-  lineinfile: >
-              dest="/etc/libvirt/qemu/networks/default.xml"
-              regexp='^[ \t]+<host[ \t]+.*name="{{ item }}"'
-              state=absent
+  lineinfile:
+    dest: "/etc/libvirt/qemu/networks/default.xml"
+    regexp: '^[ \t]+<host[ \t]+.*name="{{ item }}"'
+    state: absent
 
 - name: Destroy the guest domain
   with_items: "{{ groups[ ex_group ] }}"
   become: yes
-  virt: name="{{ item }}" command=destroy state=destroyed
+  virt:
+    name: "{{ item }}"
+    command: destroy
+    state: destroyed
   ignore_errors: yes
 
 - name: Undefine the guest domain
   with_items: "{{ groups[ ex_group ] }}"
   become: yes
-  virt: name="{{ item }}" command=undefine
+  virt:
+    name: "{{ item }}"
+    command: undefine
   ignore_errors: yes
 
 - name: Delete DNS SSHFP records
   with_items: "{{ groups[ ex_group ] }}"
   when: dynect_session_result is success
-  local_action: >
+  local_action: >-
                 command curl -s -X DELETE -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/SSHFPRecord/{{ dns_zone }}/{{ item }}/
@@ -43,13 +48,14 @@
 
 - name: Publish DNS zones
   when: dynect_session_result is success
-  local_action: >
+  local_action: >-
                 command curl -s -X PUT -H 'Content-Type: application/json'
                 -H 'Auth-Token: {{ dynect_session_token }}'
                 {{ dynect_api_url }}/Zone/{{ dns_zone }} -d '{"publish":true}'
 
 - name: Check if SSH known hosts file exists
-  stat: path="~/.ssh/known_hosts"
+  stat:
+    path: "~/.ssh/known_hosts"
   register: known_hosts
 
 - name: Remove FQDNs from SSH known hosts

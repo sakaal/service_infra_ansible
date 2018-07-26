@@ -55,7 +55,7 @@
   local_action: command chdir="{{ inventory_dir }}"
                 git status --porcelain {{ item.file }}
   register: inventories
-  changed_when: inventories is defined and "{{ item.file }}" in inventories.stdout
+  changed_when: inventories is defined and item.file in inventories.stdout
 
 - name: Add target inventory changes to git commit index
   run_once: yes
@@ -109,7 +109,7 @@
   local_action: command chdir="{{ inventory_dir }}"
                 git status --porcelain host_vars/{{ item.host }}
   register: managed_host_vars
-  changed_when: managed_host_vars is defined and "{{ item.host }}" in managed_host_vars.stdout
+  changed_when: managed_host_vars is defined and item.host in managed_host_vars.stdout
 
 - name: Add managed node host_vars changes to git commit index
   run_once: yes

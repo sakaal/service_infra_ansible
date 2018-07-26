@@ -8,4 +8,9 @@
 
 - hosts: libvirt_hosts
   roles:
-    - libvirt_guests_terminate
+  - libvirt_guests_terminate
+
+- hosts: ex_libvirt_hosts
+  gather_facts: no
+  roles:
+  - hetzner_robot_server_cancellation
