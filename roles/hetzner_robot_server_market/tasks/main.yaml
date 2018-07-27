@@ -12,7 +12,43 @@
 #
 ---
 
-- name: Search criteria
+- name: Target inventory file for new servers
+  local_action:
+    module: stat
+    path: "{{ inventory_file }}"
+    get_mime: yes
+  register: target_inventory_file
+
+- name: Sanity check the target inventory file
+  assert:
+    that:
+    - target_inventory_file.stat.isreg
+    - target_inventory_file.stat.writeable
+    - target_inventory_file.stat.mimetype in [ 'text/plain' ]
+    - target_inventory_file.stat.charset
+      in [ 'us-ascii', 'utf-8', 'iso-8859-1' ]
+    msg: "{{ inventory_file }} does not look like an Ansible inventory file."
+
+- name: Safety check to avoid repeated server market orders
+  local_action:
+    module: uri
+    method: GET
+    url: "{{ hetzner_api_url }}/order/server/transaction"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    status_code: 200,404
+    return_content: yes
+  register: hetzner_robot_transactions
+  changed_when: hetzner_robot_transactions.status != 404
+
+- name: Stop if any server market transaction still in progress
+  with_items: "{{ hetzner_robot_transactions.json }}"
+  when: hetzner_robot_transactions is changed and
+        item.transaction.status not in [ "cancelled" ]
+  fail:
+    msg: "ACTIVE TRANSACTION {{ item.transaction }}"
+
+- name: Benefit-cost evaluation criteria
   set_fact:
     server_market_per_euro:
       traffic_TB: 2.0
@@ -28,17 +64,21 @@
       ssd:     0.15
       sas:     0.03
       kvm:     0.03
+
+- name: Search criteria
+  set_fact:
+    server_order_count: 2
     server_market:
       memory:
         min: 32
       price:
-        max: 105
+        max: 35
       hdd_count:
         min: 2
       cpu_benchmark:
         min: 6000
       datacenter:
-        pattern: '^.*$'
+        pattern: '^HEL.*$'
 #      search: "RED.PS" # Red.PS Ent.HDD ECC HWR INIC "SSD" SAS KVM
 
 - name: Check currently offered server market products
@@ -102,24 +142,38 @@
       }}"
   register: hetzner_market_evaluation
 
-- name: Sort by benefit-cost ratio
+- name: Sort matching servers by benefit-cost ratio
   set_fact:
     hetzner_market_evaluation: "{{ hetzner_market_evaluation.results
                                  | sort(attribute='ansible_facts.item_benefit_cost_ratio', reverse=True)
                                  | list }}"
 
-- debug: var=hetzner_market_evaluation
+- name: Order the top servers by benefit-cost ratio
+  with_items: "{{ hetzner_market_evaluation[0:server_order_count] }}"
+  local_action:
+    module: uri
+    method: POST
+    url: "{{ hetzner_api_url }}/order/server_market/transaction"
+    user: "{{ hetzner_api_user }}"
+    password: "{{ hetzner_api_password }}"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+    body: "test=true&product_id={{ item.item.product.id
+           }}{% for ssh_id in hetzner_robot_existing_keys.json
+             %}&authorized_key[]={{ ssh_id.key.fingerprint
+           }}{% endfor %}"
+    status_code: 201
+    return_content: yes
+  register: hetzner_server_market_order
 
-#- name: Show the top servers on the list
-#  with_items: "{{ hetzner_market_evaluation[0:10] }}"
-#  local_action:
-#    module: uri
-#    method: GET
-#    url: "{{ hetzner_api_url }}/order/server_market/product/{{ item.item.product.id }}"
-#    user: "{{ hetzner_api_user }}"
-#    password: "{{ hetzner_api_password }}"
-#    status_code: 200
-#    return_content: yes
-#  register: hetzner_robot_server_product
-#
-#- debug: var=hetzner_robot_server_product
+- name: Create transaction tickets as YAML files
+  with_items: "{{ hetzner_server_market_order.results }}"
+  local_action:
+    module: copy
+    content: |-
+      {{ item.json | to_nice_yaml(indent=2) }}
+      product:
+      {{ item.item.item.product | to_nice_yaml(indent=2) | indent(2, true) }}
+      product_evaluation:
+      {{ item.item.ansible_facts | to_nice_yaml(indent=2) | indent(2, true) }}
+    dest: "{{ inventory_dir }}/hetzner_transaction_{{ item.json.transaction.id }}.yaml~"

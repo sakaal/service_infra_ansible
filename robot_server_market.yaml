@@ -5,5 +5,7 @@
   hosts: all
   run_once: yes
   gather_facts: no
+  any_errors_fatal: yes
   roles:
+  - hetzner_robot_ssh_keys
   - hetzner_robot_server_market
