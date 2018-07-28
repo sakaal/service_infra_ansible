@@ -1,0 +1,13 @@
+{# file: roles/ssh_bastion/templates/ssh_config_guests.j2
+#}
+#
+# Each hypervisor serves as an SSH proxy for its guests.
+#
+Host {{ hostname }}
+  Port {{ admin_ssh_port }}
+  User {{ admin_username }}
+  ForwardAgent yes
+
+Host *.{{ hostname }}
+  # ProxyCommand="ssh -A -W %h:%p -q {{'{{'}} admin_username }}@{{ hostname }} -p{{'{{'}} admin_ssh_port }}"'
+  ProxyJump {{ hostname }}

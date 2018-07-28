@@ -2,6 +2,8 @@
 ---
 
 - name: SSH bastion host configuration
-  local_action: template src="libvirt_guests_group.j2"
-                dest="{{ inventory_dir }}/group_vars/libvirt_guests_{{ hostname }}"
-                mode=0600
+  local_action:
+    module: template
+    src: "ssh_config_guests.j2"
+    dest: "{{ ansible_user_dir }}/.ssh/config.d/{{ hostname }}_guests"
+    mode: 0600

@@ -1,7 +1,0 @@
-# file: group_vars/libvirt_guests_{{ hostname }}
----
-
-#
-# Each hypervisor serves as an SSH proxy for its guests.
-#
-ansible_ssh_common_args: '-o ProxyCommand="ssh -A -W %h:%p -q {{'{{'}} admin_username }}@{{ hostname }} -p{{'{{'}} admin_ssh_port }}"'
