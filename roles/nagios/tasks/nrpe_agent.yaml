@@ -61,3 +61,14 @@
     name: nrpe
     state: restarted
     enabled: yes
+
+- name: Register NRPE remote agents
+  with_items: "{{ nagios_nrpe_monitor_hosts | difference( [inventory_hostname] ) }}"
+  become: yes
+  delegate_to: "{{ item }}"
+  template:
+    src: "remote.cfg.j2"
+    dest: "/etc/nagios/servers/{{ inventory_hostname }}.cfg"
+    owner: root
+    group: nagios
+    mode: 0640
