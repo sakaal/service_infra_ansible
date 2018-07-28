@@ -6,6 +6,7 @@ nagios_packages:
 - "nagios-plugins-all"
 - "nagios-plugins-nrpe"
 - "nsca" # Nagios Service Check Acceptor
+- "python-passlib" # for Ansible htpasswd module
 
 nagios_nrpe_packages:
 - "nrpe" # Nagios Remote Plugin Executor

@@ -4,22 +4,6 @@
 #
 ---
 
-- name: NRPE allowed hosts
-  become: yes
-  lineinfile:
-    path: "/etc/nagios/nrpe.cfg"
-    regexp: "^allowed_hosts=.*$"
-    line: "allowed_hosts={{ ( [ '127.0.0.1', '::1' ] + nagios_nrpe_monitor_hosts ) | join(',') }}"
-    insertafter: "^#?allowed_hosts.*$"
-
-- name: Add NRPE to /etc/services
-  become: yes
-  lineinfile:
-    path: /etc/services
-    regexp: '^nrpe\s+5666/tcp\s+.*$'
-    line: 'nrpe            5666/tcp                # NRPE'
-    insertafter: '^.*\s+5666\s+.*NRPE.*$'
-
 - name: NRPE packages (yum)
   when: ansible_pkg_mgr == "yum"
   with_items: "{{ nagios_nrpe_packages }}"
@@ -35,6 +19,22 @@
   dnf:
     name: "{{ item }}"
     state: present
+
+- name: NRPE allowed hosts
+  become: yes
+  lineinfile:
+    path: "/etc/nagios/nrpe.cfg"
+    regexp: "^allowed_hosts=.*$"
+    line: "allowed_hosts={{ ( [ '127.0.0.1', '::1' ] + nagios_nrpe_monitor_hosts ) | join(',') }}"
+    insertafter: "^#?allowed_hosts.*$"
+
+- name: Add NRPE to /etc/services
+  become: yes
+  lineinfile:
+    path: /etc/services
+    regexp: '^nrpe\s+5666/tcp\s+.*$'
+    line: 'nrpe            5666/tcp                # NRPE'
+    insertafter: '^.*\s+5666\s+.*NRPE.*$'
 
 - name: NRPE tokens
   become: yes
