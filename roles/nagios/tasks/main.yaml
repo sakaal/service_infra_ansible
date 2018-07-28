@@ -60,3 +60,5 @@
     regexp: '^(\s+)check_command(\s+)check_ssh.*$'
     line: '\1check_command\2check_ssh{{ "" if admin_ssh_port == 22 else "!-p " + (admin_ssh_port|string) }}'
     backrefs: yes
+  notify:
+  - Restart Nagios

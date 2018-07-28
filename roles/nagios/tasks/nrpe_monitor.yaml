@@ -12,6 +12,8 @@
     owner: root
     group: nagios
     mode: 0640
+  notify:
+  - Restart Nagios
 
 - name: Agent servers directory
   become: yes
@@ -29,6 +31,8 @@
     regexp: "^#?cfg_dir=/etc/nagios/servers$"
     line: "cfg_dir=/etc/nagios/servers"
     insertafter: "^#?cfg_dir=.*$"
+  notify:
+  - Restart Nagios
 
 - name: NRPE remote agents
   with_items: "{{ nagios_nrpe_agent_hosts | difference( [ inventory_hostname ] ) }}"
@@ -39,6 +43,8 @@
     owner: root
     group: nagios
     mode: 0640
+  notify:
+  - Restart Nagios
 
 - name: NRPE command
   become: yes
@@ -49,6 +55,8 @@
               command_name    check_nrpe
               command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -t 30 -c $ARG1$ $ARG2$
       }
+  notify:
+  - Restart Nagios
 
 - name: Nagios users
   with_items: "{{ nagios_users }}"
@@ -70,17 +78,19 @@
     regexp: '^(\s+)check_command(\s+)check_http.*$'
     line: '\1check_command\2check_http!-u /nagios -e 401'
     backrefs: yes
+  notify:
+  - Restart Nagios
 
 - name: Nagios service
   become: yes
   service:
     name: nagios
-    state: restarted
+    state: started
     enabled: yes
 
 - name: HTTP service
   become: yes
   service:
     name: httpd
-    state: restarted
+    state: started
     enabled: yes
