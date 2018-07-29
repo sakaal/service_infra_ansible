@@ -69,9 +69,9 @@ server_market_factor:
 | select("search", "RAM")| list | join(" &middot; ") | regex_replace("RAM", "") | regex_replace(" MB", "&nbsp;MB") }}</td>
 
 <td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| join(" &middot; ") | regex_replace("(HDD|SATA)", "") | regex_replace("^([0-9]+)x.*$", "\1") }}</td>
+| join(" &middot; ") | regex_replace("(HDD|SATA)", "") | regex_replace("^([0-9]+)x.*$", "\\1") }}</td>
 <td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| join(" &middot; ") | regex_replace("(HDD|SATA)", "") | regex_replace("^[0-9]+x\s+([0-9,]+)\s+.*$", "\1") | regex_replace(",", ".") }}</td>
+| join(" &middot; ") | regex_replace("(HDD|SATA)", "") | regex_replace("^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | regex_replace(",", ".") }}</td>
 <td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
 | join(" &middot; ") | regex_replace("(HDD|SATA)", "") | regex_replace(",", ".") }}</td>
 
