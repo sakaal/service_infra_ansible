@@ -33,7 +33,11 @@ server_market_value:
 <th>Storage</th>
 <th>PSU</th>
 <th style="text-align:left;">CPU</th>
-<th>Memory Modules</th>
+
+<th style="text-align:right;">&times;</th>
+<th style="text-align:right;">Size</th>
+<th style="text-align:right;">RAM</th>
+<th style="text-align:right;">Modules</th>
 
 <th style="text-align:right;">&times;</th>
 <th style="text-align:right;">Size</th>
@@ -78,12 +82,15 @@ server_market_value:
 <td>{{ item.product.name }}</td>
 <td>{{ item.product.id }}</td>
 <td style="text-align:right;">{{ item.product.cpu_benchmark }}</td>
-<td style="text-align:right;">{{ item.product.memory_total | round(2) }} GB</td>
+<td style="text-align:right;">{{ item.product.memory_total | float | round(2) }} GB</td>
 <td style="text-align:right;">{{ (item.product.storage_total / 1024.0) | float | round(2) }} TB</td>
 <td>{{ "Red.PS" if "Red.PS" in item.product.psu else "" }}</td>
 <td>{{ item.product.cpu }}</td>
-<td style="text-align:right;">{{ item.product.memory_modules
-| select("search", "RAM") | list | join(" &middot; ") | regex_replace("RAM", "") | regex_replace(" MB", "&nbsp;MB") }}</td>
+
+<td>{{ item.product.memory_module_counts | join("<br></br>") }}</td>
+<td>{{ item.product.memory_module_sizes | join("<br></br>") }}</td>
+<td>{{ item.product.memory_module_units | join("<br></br>") }}</td>
+<td>{{ item.product.memory_module_types | join("<br></br>") }}</td>
 
 <td>{{ item.product.hdd_sata_counts | join("<br></br>") }}</td>
 <td>{{ item.product.hdd_sata_sizes | join("<br></br>") }}</td>
