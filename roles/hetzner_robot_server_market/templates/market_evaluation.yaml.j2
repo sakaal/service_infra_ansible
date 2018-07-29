@@ -37,7 +37,7 @@ server_market_analysis:
 
     memory_module_total: {% for count in item.product.memory_module_counts
     %}({{ count|float }} * {{ item.product.memory_module_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ]|float ]
+                * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ] ]|float
     }}) +{% endfor %} 0
 
     memory_module_value: {% for count in item.product.memory_module_counts
