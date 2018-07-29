@@ -34,7 +34,7 @@ server_market_analysis:
     memory_module_units: {{ item.item.product.description | select("search", "RAM") | list
     | map("regex_replace", "RAM\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([MGT]B).*$", "\\1") | list | to_yaml }}
     memory_module_types: {{ item.item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "(RAM\\s?|\\.*$)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[MGT]B\\s?(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(RAM\\s?|\\.*$)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[MGT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     hdd_sata_counts: {{ item.item.product.description | select("search", "HDD.*SATA") | list
     | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
@@ -43,7 +43,7 @@ server_market_analysis:
     hdd_sata_units: {{ item.item.product.description | select("search", "HDD.*SATA") | list
     | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     hdd_sata_types: {{ item.item.product.description | select("search", "HDD.*SATA") | list
-    | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     hdd_sas_counts: {{ item.item.product.description | select("search", "HDD.*SAS") | list
     | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
@@ -52,16 +52,16 @@ server_market_analysis:
     hdd_sas_units: {{ item.item.product.description | select("search", "HDD.*SAS") | list
     | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     hdd_sas_types: {{ item.item.product.description | select("search", "HDD.*SAS") | list
-    | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?*(.*)$", "\\1") | list | to_yaml }}
 
     ssd_sata_counts: {{ item.item.product.description | select("search", "SSD") | list
-    | map("regex_replace", "(SSD|SATA)\\s?", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
     ssd_sata_sizes: {{ item.item.product.description | select("search", "SSD") | list
-    | map("regex_replace", "(SSD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list | to_yaml }}
+    | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list | to_yaml }}
     ssd_sata_units: {{ item.item.product.description | select("search", "SSD") | list
-    | map("regex_replace", "(SSD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     ssd_sata_types: {{ item.item.product.description | select("search", "SSD") | list
-    | map("regex_replace", "(SSD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     raid_controllers: {{ item.item.product.description | select("search", "RAID") | map("regex_replace", "RAID Controller\\s*", "") | list | to_yaml }}
 
