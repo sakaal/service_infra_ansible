@@ -140,7 +140,8 @@
   local_action:
     module: copy
     dest: "{{ inventory_dir
-           }}/hetzner_transaction_{{ item.json.transaction.id }}.yaml~"
+           }}/hetzner_transaction_{{ item.json.transaction.id }}.yaml{%
+           if server_order_dry_run | default(True) | bool %}~{% endif %}"
     content: |-
       # file: hetzner_transaction_{{ item.json.transaction.id }}.yaml
       ---
