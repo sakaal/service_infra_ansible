@@ -14,32 +14,34 @@ server_market_analysis:
 
 - product:
     benefit_cost_ratio: {{ ( (
-        item.product.value.cpu
-      + item.product.value.psu
-      + item.product.value.hwr
-      + item.product.value.ram
-      + item.product.value.hdd_sata
-      + item.product.value.hdd_sas
-      + item.product.value.ssd_sata
-      + item.product.value.traffic
-      + item.product.value.nic
+        item.product.value.cpu|float
+      + item.product.value.psu|float
+      + item.product.value.hwr|float
+      + item.product.value.ram|float
+      + item.product.value.hdd_sata|float
+      + item.product.value.hdd_sas|float
+      + item.product.value.ssd_sata|float
+      + item.product.value.traffic|float
+      + item.product.value.nic|float
       ) / item.product.price ) | float | round(2)
     }}
 
 {{ item.product | to_nice_yaml(indent=2) | indent(4, true) }}
 
-    storage_total: {{ item.product.hdd_sata_total + item.product.hdd_sas_total + item.product.ssd_sata_total }}
+    storage_total: {{ item.product.hdd_sata_total|float
+      + item.product.hdd_sas_total|float
+      + item.product.ssd_sata_total|float }}
 
     value_total: {{ (
-        item.product.value.cpu
-      + item.product.value.psu
-      + item.product.value.hwr
-      + item.product.value.ram
-      + item.product.value.hdd_sata
-      + item.product.value.hdd_sas
-      + item.product.value.ssd_sata
-      + item.product.value.traffic
-      + item.product.value.nic
+        item.product.value.cpu|float
+      + item.product.value.psu|float
+      + item.product.value.hwr|float
+      + item.product.value.ram|float
+      + item.product.value.hdd_sata|float
+      + item.product.value.hdd_sas|float
+      + item.product.value.ssd_sata|float
+      + item.product.value.traffic|float
+      + item.product.value.nic|float
       ) | float | round(2)
     }}
 {% endfor %}
