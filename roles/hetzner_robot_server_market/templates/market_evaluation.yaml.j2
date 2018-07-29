@@ -37,13 +37,13 @@ server_market_analysis:
 
     memory_module_total: {% for count in item.product.memory_module_counts
     %}({{ count|float }} * {{ item.product.memory_module_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.memory_module_units[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     memory_module_value: {% for count in item.product.memory_module_counts
     %}({{ count|float }} * {{ item.product.memory_module_sizes[ loop.index0 ]|float
                 * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ] ]|float }}
-                * {{ server_market_value.memory_module[ item.product.memory_module_types[ loop.index0 ].trim() ]|float
+                * {{ server_market_value.memory_module[ (item.product.memory_module_types[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sata_counts: {{ item.product.hdd_sata_counts | to_yaml }}
@@ -53,13 +53,13 @@ server_market_analysis:
 
     hdd_sata_total: {% for count in item.product.hdd_sata_counts
     %}({{ count|float }} * {{ item.product.hdd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.hdd_sata_units[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sata_value: {% for count in item.product.hdd_sata_counts
     %}({{ count|float }} * {{ item.product.hdd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ].trim() ]|float }}
-                * {{ server_market_value.hdd_sata[ item.product.hdd_sata_types[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.hdd_sata_units[ loop.index0 ]|string).trim() ]|float }}
+                * {{ server_market_value.hdd_sata[ (item.product.hdd_sata_types[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sas_counts: {{ item.product.hdd_sas_counts | to_yaml }}
@@ -69,13 +69,13 @@ server_market_analysis:
 
     hdd_sas_total: {% for count in item.product.hdd_sas_counts
     %}({{ count|float }} * {{ item.product.hdd_sas_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.hdd_sas_units[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sas_value: {% for count in item.product.hdd_sas_counts
     %}({{ count|float }} * {{ item.product.hdd_sas_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ].trim() ]|float }}
-                * {{ server_market_value.hdd_sas[ item.product.hdd_sas_types[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.hdd_sas_units[ loop.index0 ]|string).trim() ]|float }}
+                * {{ server_market_value.hdd_sas[ (item.product.hdd_sas_types[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     ssd_sata_counts: {{ item.product.ssd_sata_counts | to_yaml }}
@@ -85,13 +85,13 @@ server_market_analysis:
 
     ssd_sata_total: {% for count in item.product.ssd_sata_counts
     %}({{ count|float }} * {{ item.product.ssd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.ssd_sata_units[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     ssd_sata_value: {% for count in item.product.ssd_sata_counts
     %}({{ count|float }} * {{ item.product.ssd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ].trim() ]|float }}
-                * {{ server_market_value.ssd_sata[ item.product.ssd_sata_types[ loop.index0 ].trim() ]|float
+                * prefix_multiplier[ (item.product.ssd_sata_units[ loop.index0 ]|string).trim() ]|float }}
+                * {{ server_market_value.ssd_sata[ (item.product.ssd_sata_types[ loop.index0 ]|string).trim() ]|float
     }}) +{% endfor %} 0
 
     raid_controllers: {{ item.product.raid_controllers }}
