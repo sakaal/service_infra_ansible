@@ -31,7 +31,7 @@
 <th>Price</th>
 </tr>
 
-{% for item in hetzner_market_evaluation %}
+{% for item in hetzner_market_evaluation | list %}
 <tr>
 <td>{{ item.ansible_facts.benefit_cost_ratio }}</td>
 <td>{{ item.item.product.datacenter }}</td>
