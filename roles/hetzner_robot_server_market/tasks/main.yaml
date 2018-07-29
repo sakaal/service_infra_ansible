@@ -116,12 +116,19 @@
         | list }}"
     current_date_time: "{{ lookup('pipe', 'date +%Y-%m-%d_%H%M%Z') }}"
 
-- name: Generate the server market evaluation report
+- name: Generate the server market evaluation report (HTML)
   local_action:
     module: template
     src: "server_market.html.j2"
     dest: "{{ inventory_dir
            }}/hetzner_server_market_{{ current_date_time }}.html"
+
+- name: Generate the server market evaluation report (YAML)
+  local_action:
+    module: template
+    src: "hetzner_server_market.yaml.j2"
+    dest: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}.yaml"
 
 - name: Order the top servers by benefit-cost ratio
   with_items: "{{ hetzner_market_evaluation[0:server_order_count] }}"
