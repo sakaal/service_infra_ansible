@@ -5,11 +5,14 @@
 <h2>{{ current_date_time }}</h2>
 
 <pre>
-{{ server_market | to_nice_yaml(indent=2) }}
+server_market:
+{{ server_market | to_nice_yaml(indent=2) | indent(2, true) }}
 
-{{ server_market_per_euro | to_nice_yaml(indent=2) }}
+server_market_per_euro:
+{{ server_market_per_euro | to_nice_yaml(indent=2) | indent(2, true) }}
 
-{{ server_market_factor | to_nice_yaml(indent=2) }}
+server_market_factor:
+{{ server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
 </pre>
 
 <table style="width:100%;th{text-align:left;}">
