@@ -59,6 +59,7 @@ prefix_multiplier:
 server_market_value:
 
   memory_module:
+    '':            0.5
     default:       0.5
     DDR3:          0.5
     DDR3 ECC:      0.6
@@ -66,12 +67,15 @@ server_market_value:
     DDR4 ECC reg:  0.6
 
   hdd_sata:
+    '':           0.003
     default:      0.003
     Enterprise:   0.004
 
   hdd_sas:
+    '':           0.006
     default:      0.006
 
   ssd_sata:
+    '':           0.005
     default:      0.005
     Datacenter:   0.006
