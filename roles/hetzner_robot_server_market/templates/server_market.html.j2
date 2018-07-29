@@ -36,7 +36,11 @@ server_market_factor:
 <th>RAM</th>
 <th>Storage</th>
 <th>Drives</th>
+<th style="text-align:left;">HDD</th>
+<th style="text-align:left;">SSD</th>
+<th style="text-align:left;">HWR</th>
 <th style="text-align:left;">Text</th>
+<th>PSU</th>
 <th>Traffic</th>
 <th>Network</th>
 <th style="text-align:left;">Description</th>
@@ -50,12 +54,17 @@ server_market_factor:
 <td>{{ item.item.product.datacenter }}</td>
 <td>{{ item.item.product.name }}</td>
 <td>{{ item.item.product.id }}</td>
-<td>{{ item.item.product.cpu }}</td>
+<td>{% "Red.PS" if "Red.PS" in item.item.product.cpu else "" %}</td>
 <td style="text-align:right;">{{ item.item.product.cpu_benchmark }}</td>
-<td style="text-align:right;">{{ item.item.product.memory_size }}</td>
+<td style="text-align:right;">{{ item.item.product.memory_size }}
+({{ item.item.product.description | select("search", "RAM") | list | join(" &middot; ") }})</td>
 <td style="text-align:right;">{{ (item.item.product.hdd_count * item.item.product.hdd_size|float / 1024.0) | round(2) }} TB</td>
 <td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}</td>
+<td>{{ item.item.product.description | select("search", "HDD") | list | join(" &middot; ") }}</td>
+<td>{{ item.item.product.description | select("search", "SDD") | list | join(" &middot; ") }}</td>
+<td>{{ item.item.product.description | select("search", "RAID") | list | join(" &middot; ") }}</td>
 <td>{{ item.item.product.hdd_text }}</td>
+<td>{{ item.item.product.cpu | regex_replace(' - Red.PS', '') }}</td>
 <td style="text-align:right;">{{ item.item.product.traffic }}</td>
 <td>{{ item.item.product.network_speed }}</td>
 <td>{{ item.item.product.description | join(" &middot; ") }}</td>
