@@ -1,7 +1,7 @@
 <html>
 <head><title>Server market evaluation</title></head>
 <body>
-<h1>Hetzner server market {{ ansible_date_time.iso8601 }}</h1>
+<h1>Hetzner server market {{ current_date_time }}</h1>
 
 <pre>
 {{ server_market | to_nice_yaml(indent=2) }}
