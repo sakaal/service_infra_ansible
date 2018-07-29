@@ -1,7 +1,8 @@
 <html>
 <head><title>Server market evaluation</title></head>
 <body>
-<h1>Hetzner server market {{ current_date_time }}</h1>
+<h1>Hetzner server market</h1>
+<h2>{{ current_date_time }}</h2>
 
 <pre>
 {{ server_market | to_nice_yaml(indent=2) }}
@@ -11,11 +12,11 @@
 {{ server_market_factor | to_nice_yaml(indent=2) }}
 </pre>
 
-<table style="width:100%">
+<table style="width:100%;th{text-align:left;}">
 
 <tr>
-<th>Benefit/Cost</th>
-<th>Data Center</th>
+<th>BCR</th>
+<th>DC</th>
 <th>Product</th>
 <th>ID</th>
 <th>CPU</th>
@@ -49,8 +50,8 @@
 <td>{{ item.item.product.traffic }}</td>
 <td>{{ item.item.product.network_speed }}</td>
 <td>{{ item.ansible_facts.value }}</td>
-<td>{{ item.item.product.price }}{% if item.item.product.price_setup > 0 %}
-(+ setup {{ item.item.product.price_setup }}){% endif %}</td>
+<td>{{ item.item.product.price | round(2) }}{% if item.item.product.price_setup|float > 0.0 %}
+(+ setup {{ item.item.product.price_setup | round(2) }}){% endif %}</td>
 </tr>
 
 {% endfor %}
