@@ -1,5 +1,14 @@
+<!DOCTYPE html>
 <html>
-<head><title>Server market evaluation</title></head>
+<head>
+<title>Server market evaluation</title>
+<style>
+tr:nth-child(even) { background: #EEE }
+tr:nth-child(odd) { background: #FFF }
+td { vertical-align: top; }
+</style>
+</head>
+
 <body>
 <h1>Hetzner server market</h1>
 <h2>{{ current_date_time }}</h2>
@@ -15,45 +24,43 @@ server_market_factor:
 {{ server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
 </pre>
 
-<table style="width:100%;th{text-align:left;}">
+<table style="width:100%;">
 
 <tr>
 <th>BCR</th>
 <th>DC</th>
-<th>Product</th>
-<th>ID</th>
-<th>CPU</th>
+<th style="text-align:left;">Product</th>
+<th style="text-align:left;">ID</th>
+<th style="text-align:left;">CPU</th>
 <th>CPU-B</th>
 <th>RAM</th>
-<th>Description</th>
-<th>HDD</th>
-<th>Text</th>
+<th>Storage</th>
+<th>Drives</th>
+<th style="text-align:left;">Text</th>
 <th>Traffic</th>
 <th>Network</th>
+<th style="text-align:left;">Description</th>
 <th>Evaluation</th>
 <th>Price</th>
 </tr>
 
 {% for item in hetzner_market_evaluation | list %}
 <tr>
-<td>{{ item.ansible_facts.benefit_cost_ratio }}</td>
+<td style="text-align:right;">{{ item.ansible_facts.benefit_cost_ratio }}</td>
 <td>{{ item.item.product.datacenter }}</td>
 <td>{{ item.item.product.name }}</td>
 <td>{{ item.item.product.id }}</td>
 <td>{{ item.item.product.cpu }}</td>
-<td>{{ item.item.product.cpu_benchmark }}</td>
-<td>{{ item.item.product.memory_size }}</td>
-<td><ul>
-{% for line in item.item.product.description %}
-<li>{{ line }}</li>
-{% endfor %}
-</ul></td>
+<td style="text-align:right;">{{ item.item.product.cpu_benchmark }}</td>
+<td style="text-align:right;">{{ item.item.product.memory_size }}</td>
+<td style="text-align:right;">{{ (item.item.product.hdd_count * item.item.product.hdd_size|float / 1024.0) | round(2) }} TB</td>
 <td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}</td>
 <td>{{ item.item.product.hdd_text }}</td>
-<td>{{ item.item.product.traffic }}</td>
+<td style="text-align:right;">{{ item.item.product.traffic }}</td>
 <td>{{ item.item.product.network_speed }}</td>
-<td>{{ item.ansible_facts.value }}</td>
-<td>{{ item.item.product.price | float | round(2) }}{% if (item.item.product.price_setup | float) > 0.0 %}
+<td>{{ item.item.product.description | join(" &middot; ") }}</td>
+<td style="text-align:right;">{{ item.ansible_facts.value }}</td>
+<td style="text-align:right;">{{ item.item.product.price | float | round(2) }}{% if (item.item.product.price_setup | float) > 0.0 %}
 (+ setup {{ item.item.product.price_setup | float | round(2) }}){% endif %}</td>
 </tr>
 
