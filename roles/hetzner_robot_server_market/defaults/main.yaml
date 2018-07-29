@@ -52,7 +52,7 @@ server_market_factor:
   kvm:     0.03
 
 prefix_multiplier:
-  MB: 1.0 / 1024.0
+  MB: "{{ 1.0 / 1024.0 }}"
   GB: 1.0
   TB: 1024.0
 
