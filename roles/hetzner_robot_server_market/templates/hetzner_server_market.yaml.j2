@@ -79,7 +79,7 @@ server_market_analysis:
     | reject("search", "Redundante Stromversorgung")
     | reject("search", "NIC")
     | list }}
-    text: {{ (item.item.product.hdd_text
+    text: '{{ (item.item.product.hdd_text
     | regex_replace("ECC", "")
     | regex_replace("DC SSD", "")
     | regex_replace("ENT.HDD", "")
@@ -87,5 +87,5 @@ server_market_analysis:
     | regex_replace("HWR", "")
     | regex_replace("INIC", "")
     | regex_replace("\\+([0-9]+x)?[0-9]+[GT]B\\s(DC SSD|SSD|SAS)", "")
-    ).trim() }}
+    | string).trim() }}'
 {% endfor %}
