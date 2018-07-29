@@ -64,9 +64,16 @@ server_market_analysis:
     | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     raid_controllers: {{ item.item.product.description | select("search", "RAID")
-    | map("regex_replace", "RAID Controller\\s*", "") | map("regex_replace", "\\s\\s+", " ") | list | to_yaml }}
+    | map("regex_replace", "RAID Controller\\s*", "")
+    | map("regex_replace", "\\s\\s+", " ")
+    | list | to_yaml }}
 
-    nics: {{ item.item.product.description | select("search", "NIC") | map("regex_replace", "NIC\\s*", "") | list | to_yaml }}
+    nics: {{ item.item.product.description | select("search", "NIC")
+    | map("regex_replace", "(NIC|PCI)\\s?", "")
+    | map("regex_replace", "1000Mbit", "1 Gbit")
+    | map("regex_replace", "Pro1000GT", "Pro/1000 GT")
+    | map("regex_replace", "\\s\\s+", " ")
+    | list | to_yaml }}
     traffic:       '{{ item.item.product.traffic }}'
     network_speed: '{{ item.item.product.network_speed }}'
 
