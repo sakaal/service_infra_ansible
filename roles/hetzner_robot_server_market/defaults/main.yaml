@@ -74,6 +74,7 @@ server_market_value:
   hwr:
     4-Port SATA PCI-E - LSI MegaRAID SAS 9260-4i:     10.0
     4-Port SATA PCI-E - Adaptec 5405:                 10.0
+    4-Port SATA PCI-E - Adaptec 5405 Kit:             10.0
     4-Port SATA PCI-E - Adaptec 5405 Single:          10.0
     4-Port SATA PCI-E - Adaptec 8405 SGL (2277600-R): 10.0
     4-Port SATA PCI-E - 3ware 9650SE-04LPML:          10.0
