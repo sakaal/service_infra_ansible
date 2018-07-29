@@ -50,3 +50,28 @@ server_market_factor:
   ssd:     0.15
   sas:     0.03
   kvm:     0.03
+
+prefix_multiplier:
+  MB: 1.0 / 1024.0
+  GB: 1.0
+  TB: 1024.0
+
+server_market_value:
+
+  memory_module:
+    default:       0.5
+    DDR3:          0.5
+    DDR3 ECC:      0.6
+    DDR3 ECC reg:  0.6
+    DDR4 ECC reg:  0.6
+
+  hdd_sata:
+    default:      0.003
+    Enterprise:   0.004
+
+  hdd_sas:
+    default:      0.006
+
+  ssd_sata:
+    default:      0.005
+    Datacenter:   0.006

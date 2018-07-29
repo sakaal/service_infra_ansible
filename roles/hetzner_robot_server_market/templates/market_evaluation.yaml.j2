@@ -1,0 +1,105 @@
+# file: hetzner_server_market_evaluation_{{ current_date_time }}.yaml
+---
+
+date_time: {{ current_date_time }}
+
+server_market:
+{{ hetzner_robot.server_market | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_per_euro:
+{{ hetzner_robot.server_market_per_euro | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_factor:
+{{ hetzner_robot.server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_value:
+{{ hetzner_robot.server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_analysis:
+{% for item in hetzner_robot.server_market_analysis | list %}
+
+- product:
+    datacenter:    '{{ item.product.datacenter }}'
+    name:          '{{ item.product.name }}'
+    id:            '{{ item.product.id }}'
+    cpu:           '{{ item.product.cpu }}'
+    psu:           '{{ item.product.psu }}'
+    cpu_benchmark: {{ item.product.cpu_benchmark }}
+    memory_size:   {{ item.product.memory_size }}
+
+    price:         {{ item.product.price }}
+    price_setup:   {{ item.product.price_setup }}
+
+    memory_module_counts: {{ item.product.memory_module_counts }}
+    memory_module_sizes: {{ item.product.memory_module_sizes }}
+    memory_module_units: {{ item.product.memory_module_units }}
+    memory_module_types: {{ item.product.memory_module_types }}
+
+    memory_module_total: {% for count in item.product.memory_module_counts
+    %}({{ count }} * {{ item.product.memory_module_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.memory_module_units[ loop.index ] ]
+    }}) +{% endfor %} 0
+
+    memory_module_value: {% for count in item.product.memory_module_counts
+    %}({{ count }} * {{ item.product.memory_module_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.memory_module_units[ loop.index ] ] }}
+                * {{ server_market_value.memory_module[ item.product.memory_module_types[ loop.index ] | default('default') ]
+    }}) +{% endfor %} 0
+
+    hdd_sata_counts: {{ item.product.hdd_sata_counts }}
+    hdd_sata_sizes: {{ item.product.hdd_sata_sizes }}
+    hdd_sata_units: {{ item.product.hdd_sata_units }}
+    hdd_sata_types: {{ item.product.hdd_sata_types }}
+
+    hdd_sata_total: {% for count in item.product.hdd_sata_counts
+    %}({{ count }} * {{ item.product.hdd_sata_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index ] ]
+    }}) +{% endfor %} 0
+
+    hdd_sata_value: {% for count in item.product.hdd_sata_counts
+    %}({{ count }} * {{ item.product.hdd_sata_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index ] ] }}
+                * {{ server_market_value.hdd_sata[ item.product.hdd_sata_types[ loop.index ] | default('default') ]
+    }}) +{% endfor %} 0
+
+    hdd_sas_counts: {{ item.product.hdd_sas_counts }}
+    hdd_sas_sizes: {{ item.product.hdd_sas_sizes }}
+    hdd_sas_units: {{ item.product.hdd_sas_units }}
+    hdd_sas_types: {{ item.product.hdd_sas_types }}
+
+    hdd_sas_total: {% for count in item.product.hdd_sas_counts
+    %}({{ count }} * {{ item.product.hdd_sas_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index ] ]
+    }}) +{% endfor %} 0
+
+    hdd_sas_value: {% for count in item.product.hdd_sas_counts
+    %}({{ count }} * {{ item.product.hdd_sas_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index ] ] }}
+                * {{ server_market_value.hdd_sas[ item.product.hdd_sas_types[ loop.index ] | default('default') ]
+    }}) +{% endfor %} 0
+
+    ssd_sata_counts: {{ item.product.ssd_sata_counts }}
+    ssd_sata_sizes: {{ item.product.ssd_sata_sizes }}
+    ssd_sata_units: {{ item.product.ssd_sata_units }}
+    ssd_sata_types: {{ item.product.ssd_sata_types }}
+
+    ssd_sata_total: {% for count in item.product.ssd_sata_counts
+    %}({{ count }} * {{ item.product.ssd_sata_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index ] ]
+    }}) +{% endfor %} 0
+
+    ssd_sata_value: {% for count in item.product.ssd_sata_counts
+    %}({{ count }} * {{ item.product.ssd_sata_sizes[ loop.index ]
+                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index ] ] }}
+                * {{ server_market_value.ssd_sata[ item.product.ssd_sata_types[ loop.index ] | default('default') ]
+    }}) +{% endfor %} 0
+
+    raid_controllers: {{ item.product.raid_controllers }}
+
+    nics: {{ item.product.nics }}
+    traffic:       '{{ item.product.traffic }}'
+    network_speed: '{{ item.product.network_speed }}'
+
+    misc: {{ item.product.misc | list }}
+    text: '{{ item.product.text }}'
+{% endfor %}

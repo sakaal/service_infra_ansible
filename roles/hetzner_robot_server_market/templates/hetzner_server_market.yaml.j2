@@ -16,25 +16,25 @@ server_market_analysis:
 {% for item in hetzner_market_evaluation | list %}
 
 - product:
-    datacenter:    {{ item.item.product.datacenter }}
-    name:          {{ item.item.product.name }}
-    id:            {{ item.item.product.id }}
-    cpu:           {{ item.item.product.cpu | regex_replace(' - Red.PS', '') }}
-    psu:           {{ "Red.PS" if "Red.PS" in item.item.product.cpu else "" }}
+    datacenter:    '{{ item.item.product.datacenter }}'
+    name:          '{{ item.item.product.name }}'
+    id:            '{{ item.item.product.id }}'
+    cpu:           '{{ item.item.product.cpu | regex_replace(' - Red.PS', '') }}'
+    psu:           '{{ "Red.PS" if "Red.PS" in item.item.product.cpu else "" }}'
     cpu_benchmark: {{ item.item.product.cpu_benchmark }}
     memory_size:   {{ item.item.product.memory_size }}
 
-    price: {{ item.item.product.price | float | round(2) }}
-    price_setup: {{ item.item.product.price_setup | float | round(2) }}
+    price:         {{ item.item.product.price | float | round(2) }}
+    price_setup:   {{ item.item.product.price_setup | float | round(2) }}
 
     memory_module_counts: {{ item.item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "RAM", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}
+    | map("regex_replace", "RAM\\s*", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}
     memory_module_sizes: {{ item.item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "RAM", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}
+    | map("regex_replace", "RAM\\s*", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}
     memory_module_units: {{ item.item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "RAM", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}
+    | map("regex_replace", "RAM\\s*", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([MGT]B).*$", "\\1") | list }}
     memory_module_types: {{ item.item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "RAM", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}
+    | map("regex_replace", "(RAM\\s|\\.*$)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[MGT]B\\s?(.*)$", "\\1") | list }}
 
     hdd_sata_counts: {{ item.item.product.description | select("search", "HDD.*SATA") | list
     | map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}
@@ -63,14 +63,11 @@ server_market_analysis:
     ssd_sata_types: {{ item.item.product.description | select("search", "SSD") | list
     | map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}
 
-    raid_controllers: {{ item.item.product.description | select("search", "RAID") | list
-    | map("regex_replace", "RAID Controller", "") | list }}
+    raid_controllers: {{ item.item.product.description | select("search", "RAID") | map("regex_replace", "RAID Controller\\s*", "") | list }}
 
-    nics: {{ item.item.product.description | select("search", "NIC") | list
-    | map("regex_replace", "NIC", "") | list }}
-
-    traffic: {{ item.item.product.traffic }}
-    network_speed: {{ item.item.product.network_speed }}
+    nics: {{ item.item.product.description | select("search", "NIC") | map("regex_replace", "NIC\\s*", "") | list }}
+    traffic:       '{{ item.item.product.traffic }}'
+    network_speed: '{{ item.item.product.network_speed }}'
 
     misc: {{ item.item.product.description
     | reject("search", item.item.product.cpu)
@@ -82,11 +79,11 @@ server_market_analysis:
     | reject("search", "Redundante Stromversorgung")
     | reject("search", "NIC")
     | list }}
-
     text: {{ item.item.product.hdd_text
     | regex_replace("ECC", "")
     | regex_replace("DC SSD", "")
     | regex_replace("ENT.HDD", "")
+    | regex_replace("SAS", "")
     | regex_replace("HWR", "")
     | regex_replace("INIC", "")
     | regex_replace("\\+[0-9]+x[0-9]+[GT]B\\s(DC SSD|SSD|SAS)", "")

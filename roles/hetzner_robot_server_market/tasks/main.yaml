@@ -123,12 +123,26 @@
     dest: "{{ inventory_dir
            }}/hetzner_server_market_{{ current_date_time }}.html"
 
-- name: Generate the server market evaluation report (YAML)
+- name: Generate the server market analysis report (YAML)
   local_action:
     module: template
     src: "hetzner_server_market.yaml.j2"
     dest: "{{ inventory_dir
            }}/hetzner_server_market_{{ current_date_time }}.yaml"
+
+- name: Read the server market analysis report
+  local_action:
+    module: include_vars
+    file: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}.yaml"
+    name: hetzner_robot
+
+- name: Generate the server market evaluation report (YAML)
+  local_action:
+    module: template
+    src: "market_evaluation.yaml.j2"
+    dest: "{{ inventory_dir
+           }}/hetzner_server_market_evaluation_{{ current_date_time }}.yaml"
 
 - name: Order the top servers by benefit-cost ratio
   with_items: "{{ hetzner_market_evaluation[0:server_order_count] }}"
