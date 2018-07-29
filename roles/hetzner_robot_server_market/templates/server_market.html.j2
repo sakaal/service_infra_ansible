@@ -1,0 +1,59 @@
+<html>
+<head><title>Server market evaluation</title></head>
+<body>
+<h1>Hetzner server market {{ ansible_date_time.iso8601 }}</h1>
+
+<pre>
+{{ server_market | to_nice_yaml(indent=2) }}
+
+{{ server_market_per_euro | to_nice_yaml(indent=2) }}
+
+{{ server_market_factor | to_nice_yaml(indent=2) }}
+</pre>
+
+<table style="width:100%">
+
+<tr>
+<th>Benefit/Cost</th>
+<th>Data Center</th>
+<th>Product</th>
+<th>ID</th>
+<th>CPU</th>
+<th>CPU-B</th>
+<th>RAM</th>
+<th>Description</th>
+<th>HDD</th>
+<th>Text</th>
+<th>Traffic</th>
+<th>Network</th>
+<th>Evaluation</th>
+<th>Price</th>
+</tr>
+
+{% for item in hetzner_market_evaluation %}
+<tr>
+<td>{{ item.ansible_facts.benefit_cost_ratio }}</td>
+<td>{{ item.item.product.datacenter }}</td>
+<td>{{ item.item.product.name }}</td>
+<td>{{ item.item.product.id }}</td>
+<td>{{ item.item.product.cpu }}</td>
+<td>{{ item.item.product.cpu_benchmark }}</td>
+<td>{{ item.item.product.memory_size }}</td>
+<td><ul>
+{% for line in item.item.product.description %}
+<li>{{ line }}</li>
+{% endfor %}
+</ul></td>
+<td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}</td>
+<td>{{ item.item.product.hdd_text }}</td>
+<td>{{ item.item.product.traffic }}</td>
+<td>{{ item.item.product.network_speed }}</td>
+<td>{{ item.ansible_facts.value }}</td>
+<td>{{ item.item.product.price }}{% if item.item.product.price_setup > 0 %}
+(+ setup {{ item.item.product.price_setup }}){% endif %}</td>
+</tr>
+
+{% endfor %}
+</table>
+
+</body></html>
