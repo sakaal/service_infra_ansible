@@ -32,12 +32,12 @@ server_market_factor:
 <th style="text-align:left;">Product</th>
 <th style="text-align:left;">ID</th>
 <th>CPU-B</th>
-<th>Memory</th>
+<th>RAM</th>
 <th>Storage</th>
 <th>Drives</th>
 <th>PSU</th>
 <th style="text-align:left;">CPU</th>
-<th>RAM Modules</th>
+<th>Memory Modules</th>
 <th style="text-align:left;">HDD SATA</th>
 <th style="text-align:left;">HDD SAS</th>
 <th style="text-align:left;">SSD</th>
@@ -60,16 +60,16 @@ server_market_factor:
 <td style="text-align:right;">{{ item.item.product.cpu_benchmark }}</td>
 <td style="text-align:right;">{{ item.item.product.memory_size }} GB</td>
 <td style="text-align:right;">{{ (item.item.product.hdd_count * item.item.product.hdd_size|float / 1024.0) | round(2) }} TB</td>
+<td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}&nbsp;GB</td>
 <td>{{ "Red.PS" if "Red.PS" in item.item.product.cpu else "" }}</td>
 <td>{{ item.item.product.cpu | regex_replace(' - Red.PS', '') }}</td>
 <td style="text-align:right;">{{ item.item.product.description
-| select("search", "RAM")| list | join(" &middot; ") }}</td>
-<td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}&nbsp;GB</td>
-<td>{{ item.item.product.description | select("search", "HDD SATA") | list | join(" &middot; ") }}</td>
-<td>{{ item.item.product.description | select("search", "HDD SAS") | list | join(" &middot; ") }}</td>
-<td>{{ item.item.product.description | select("search", "SSD") | list | join(" &middot; ") }}</td>
-<td>{{ item.item.product.description | select("search", "RAID") | list | join(" &middot; ") }}</td>
-<td>{{ item.item.product.description | select("search", "NIC") | list | join(" &middot; ") }}</td>
+| select("search", "RAM")| list | join(" &middot; ") | regex_replace("RAM", "") | regex_replace(" MB", "&nbsp;MB") }}</td>
+<td>{{ item.item.product.description | select("search", "HDD SATA") | list | join(" &middot; ") | regex_replace("HDD SATA", "") }}</td>
+<td>{{ item.item.product.description | select("search", "HDD SAS") | list | join(" &middot; ") | regex_replace("HDD SAS", "") }}</td>
+<td>{{ item.item.product.description | select("search", "SSD") | list | join(" &middot; ") | regex_replace("SSD SATA", "") }}</td>
+<td>{{ item.item.product.description | select("search", "RAID") | list | join(" &middot; ") | regex_replace("RAID Controller", "") }}</td>
+<td>{{ item.item.product.description | select("search", "NIC") | list | join(" &middot; ") | regex_replace("NIC", "") }}</td>
 <td style="text-align:right;">{{ item.item.product.traffic }}</td>
 <td>{{ item.item.product.network_speed }}</td>
 <td>{{ item.item.product.description
