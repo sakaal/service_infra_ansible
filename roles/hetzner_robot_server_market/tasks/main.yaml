@@ -115,7 +115,7 @@
   local_action:
     module: include_vars
     file: "{{ inventory_dir
-           }}/hetzner_server_market_{{ current_date_time }}_evaluation.yaml"
+           }}/hetzner_server_market_{{ current_date_time }}_comparison.yaml"
     name: hetzner_robot
 
 - name: Sort the servers by benefit-cost ratio
