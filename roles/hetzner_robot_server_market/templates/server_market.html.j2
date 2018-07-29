@@ -54,7 +54,7 @@ server_market_factor:
 <td>{{ item.item.product.datacenter }}</td>
 <td>{{ item.item.product.name }}</td>
 <td>{{ item.item.product.id }}</td>
-<td>{% "Red.PS" if "Red.PS" in item.item.product.cpu else "" %}</td>
+<td>{{ "Red.PS" if "Red.PS" in item.item.product.cpu else "" }}</td>
 <td style="text-align:right;">{{ item.item.product.cpu_benchmark }}</td>
 <td style="text-align:right;">{{ item.item.product.memory_size }}
 ({{ item.item.product.description | select("search", "RAM") | list | join(" &middot; ") }})</td>
