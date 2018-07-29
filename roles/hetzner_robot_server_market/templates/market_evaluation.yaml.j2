@@ -30,68 +30,68 @@ server_market_analysis:
     price:         {{ item.product.price }}
     price_setup:   {{ item.product.price_setup }}
 
-    memory_module_counts: {{ item.product.memory_module_counts }}
-    memory_module_sizes: {{ item.product.memory_module_sizes }}
-    memory_module_units: {{ item.product.memory_module_units }}
-    memory_module_types: {{ item.product.memory_module_types }}
+    memory_module_counts: {{ item.product.memory_module_counts | to_yaml }}
+    memory_module_sizes: {{ item.product.memory_module_sizes | to_yaml }}
+    memory_module_units: {{ item.product.memory_module_units | to_yaml }}
+    memory_module_types: {{ item.product.memory_module_types | to_yaml }}
 
     memory_module_total: {% for count in item.product.memory_module_counts
     %}({{ count|float }} * {{ item.product.memory_module_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
     memory_module_value: {% for count in item.product.memory_module_counts
     %}({{ count|float }} * {{ item.product.memory_module_sizes[ loop.index0 ]|float
                 * prefix_multiplier[ item.product.memory_module_units[ loop.index0 ] ]|float }}
-                * {{ server_market_value.memory_module[ item.product.memory_module_types[ loop.index0 ] ]|float
+                * {{ server_market_value.memory_module[ item.product.memory_module_types[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
-    hdd_sata_counts: {{ item.product.hdd_sata_counts }}
-    hdd_sata_sizes: {{ item.product.hdd_sata_sizes }}
-    hdd_sata_units: {{ item.product.hdd_sata_units }}
-    hdd_sata_types: {{ item.product.hdd_sata_types }}
+    hdd_sata_counts: {{ item.product.hdd_sata_counts | to_yaml }}
+    hdd_sata_sizes: {{ item.product.hdd_sata_sizes | to_yaml }}
+    hdd_sata_units: {{ item.product.hdd_sata_units | to_yaml }}
+    hdd_sata_types: {{ item.product.hdd_sata_types | to_yaml }}
 
     hdd_sata_total: {% for count in item.product.hdd_sata_counts
     %}({{ count|float }} * {{ item.product.hdd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sata_value: {% for count in item.product.hdd_sata_counts
     %}({{ count|float }} * {{ item.product.hdd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ] ]|float }}
-                * {{ server_market_value.hdd_sata[ item.product.hdd_sata_types[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.hdd_sata_units[ loop.index0 ].trim() ]|float }}
+                * {{ server_market_value.hdd_sata[ item.product.hdd_sata_types[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
-    hdd_sas_counts: {{ item.product.hdd_sas_counts }}
-    hdd_sas_sizes: {{ item.product.hdd_sas_sizes }}
-    hdd_sas_units: {{ item.product.hdd_sas_units }}
-    hdd_sas_types: {{ item.product.hdd_sas_types }}
+    hdd_sas_counts: {{ item.product.hdd_sas_counts | to_yaml }}
+    hdd_sas_sizes: {{ item.product.hdd_sas_sizes | to_yaml }}
+    hdd_sas_units: {{ item.product.hdd_sas_units | to_yaml }}
+    hdd_sas_types: {{ item.product.hdd_sas_types | to_yaml }}
 
     hdd_sas_total: {% for count in item.product.hdd_sas_counts
     %}({{ count|float }} * {{ item.product.hdd_sas_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
     hdd_sas_value: {% for count in item.product.hdd_sas_counts
     %}({{ count|float }} * {{ item.product.hdd_sas_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ] ]|float }}
-                * {{ server_market_value.hdd_sas[ item.product.hdd_sas_types[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.hdd_sas_units[ loop.index0 ].trim() ]|float }}
+                * {{ server_market_value.hdd_sas[ item.product.hdd_sas_types[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
-    ssd_sata_counts: {{ item.product.ssd_sata_counts }}
-    ssd_sata_sizes: {{ item.product.ssd_sata_sizes }}
-    ssd_sata_units: {{ item.product.ssd_sata_units }}
-    ssd_sata_types: {{ item.product.ssd_sata_types }}
+    ssd_sata_counts: {{ item.product.ssd_sata_counts | to_yaml }}
+    ssd_sata_sizes: {{ item.product.ssd_sata_sizes | to_yaml }}
+    ssd_sata_units: {{ item.product.ssd_sata_units | to_yaml }}
+    ssd_sata_types: {{ item.product.ssd_sata_types | to_yaml }}
 
     ssd_sata_total: {% for count in item.product.ssd_sata_counts
     %}({{ count|float }} * {{ item.product.ssd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
     ssd_sata_value: {% for count in item.product.ssd_sata_counts
     %}({{ count|float }} * {{ item.product.ssd_sata_sizes[ loop.index0 ]|float
-                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ] ]|float }}
-                * {{ server_market_value.ssd_sata[ item.product.ssd_sata_types[ loop.index0 ] ]|float
+                * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ].trim() ]|float }}
+                * {{ server_market_value.ssd_sata[ item.product.ssd_sata_types[ loop.index0 ].trim() ]|float
     }}) +{% endfor %} 0
 
     raid_controllers: {{ item.product.raid_controllers }}
