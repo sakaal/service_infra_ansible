@@ -52,7 +52,7 @@ server_market_analysis:
     hdd_sas_units: {{ item.item.product.description | select("search", "HDD.*SAS") | list
     | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     hdd_sas_types: {{ item.item.product.description | select("search", "HDD.*SAS") | list
-    | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?*(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     ssd_sata_counts: {{ item.item.product.description | select("search", "SSD") | list
     | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
