@@ -87,5 +87,5 @@ server_market_analysis:
     | regex_replace("HWR", "")
     | regex_replace("INIC", "")
     | regex_replace("\\+([0-9]+x)?[0-9]+[GT]B\\s(DC SSD|SSD|SAS)", "")
-    | string).trim() }}'
+    | string).strip() }}'
 {% endfor %}
