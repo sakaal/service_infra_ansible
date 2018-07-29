@@ -1,0 +1,52 @@
+# file: roles/hetzner_robot_server_market/defaults/main.yaml
+---
+
+#
+# How many (top benefit-cost ratio) servers to order:
+#
+server_order_count: 2
+
+#
+# Server market search criteria for inclusion in the evaluation:
+#
+server_market:
+  memory:
+    min: 32
+  price:
+    max: 35
+  hdd_count:
+    min: 2
+  cpu_benchmark:
+    min: 6000
+  datacenter:
+    pattern: '^HEL.*$'
+#  search: "RED.PS" # Red.PS Ent.HDD ECC HWR INIC "SSD" SAS KVM
+
+
+#
+# Benefit-cost evaluation criteria
+#
+# How many units of each server specification attribute
+# you may expect to get per euro; this defines the usual
+# expected price of a server:
+#
+server_market_per_euro:
+  traffic_TB:       2.0
+  cpu_benchmark: 1000.0
+  memory_GB:        2.0
+  hdd_GB:         340.0
+
+#
+# How much more are you willing to pay for each special feature
+# (linearly cumulative), relative to the usual expected price (1.0)
+# of a server:
+#
+server_market_factor:
+  ent_hdd: 0.05
+  ecc:     0.10
+  inic:    0.05
+  red_ps:  0.10
+  hwr:     0.05
+  ssd:     0.15
+  sas:     0.03
+  kvm:     0.03

@@ -48,39 +48,6 @@
   fail:
     msg: "ACTIVE TRANSACTION {{ item.transaction }}"
 
-- name: Benefit-cost evaluation criteria
-  set_fact:
-    server_market_per_euro:
-      traffic_TB: 2.0
-      cpu_benchmark: 1000.0
-      memory_GB: 2.0
-      hdd_GB: 340.0
-    server_market_factor:
-      ent_hdd: 0.05
-      ecc:     0.10
-      inic:    0.05
-      red_ps:  0.10
-      hwr:     0.05
-      ssd:     0.15
-      sas:     0.03
-      kvm:     0.03
-
-- name: Search criteria
-  set_fact:
-    server_order_count: 2
-    server_market:
-      memory:
-        min: 32
-      price:
-        max: 35
-      hdd_count:
-        min: 2
-      cpu_benchmark:
-        min: 6000
-      datacenter:
-        pattern: '^HEL.*$'
-#      search: "RED.PS" # Red.PS Ent.HDD ECC HWR INIC "SSD" SAS KVM
-
 - name: Check currently offered server market products
   local_action:
     module: uri
@@ -101,8 +68,9 @@
 - name: Filter results by datacenter
   set_fact:
     hetzner_robot_server_market: "{{ hetzner_robot_server_market.json
-                                   | selectattr('product.datacenter', 'match', server_market.datacenter.pattern)
-                                   | list }}"
+                   | selectattr('product.datacenter',
+                                'match', server_market.datacenter.pattern)
+                   | list }}"
 
 - name: Evaluate all matching servers
   with_items: "{{ hetzner_robot_server_market }}"
@@ -144,8 +112,8 @@
 - name: Sort matching servers by benefit-cost ratio
   set_fact:
     hetzner_market_evaluation: "{{ hetzner_market_evaluation.results
-                                 | sort(attribute='ansible_facts.benefit_cost_ratio', reverse=True)
-                                 | list }}"
+        | sort(attribute='ansible_facts.benefit_cost_ratio', reverse=True)
+        | list }}"
 
 - name: Order the top servers by benefit-cost ratio
   with_items: "{{ hetzner_market_evaluation[0:server_order_count] }}"
@@ -157,7 +125,9 @@
     password: "{{ hetzner_api_password }}"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
-    body: "test=true&product_id={{ item.item.product.id
+    body: "{% if server_order_dry_run | default(True) | bool
+           %}test=true&{% endif
+           %}product_id={{ item.item.product.id
            }}{% for ssh_id in hetzner_robot_existing_keys.json
              %}&authorized_key[]={{ ssh_id.key.fingerprint
            }}{% endfor %}"
@@ -169,12 +139,15 @@
   with_items: "{{ hetzner_server_market_order.results }}"
   local_action:
     module: copy
-    dest: "{{ inventory_dir }}/hetzner_transaction_{{ item.json.transaction.id }}.yaml~"
+    dest: "{{ inventory_dir
+           }}/hetzner_transaction_{{ item.json.transaction.id }}.yaml~"
     content: |-
       # file: hetzner_transaction_{{ item.json.transaction.id }}.yaml
       ---
       {{ item.json | to_nice_yaml(indent=2) }}
       product:
-      {{ item.item.item.product | to_nice_yaml(indent=2) | indent(2, true) }}
+      {{ item.item.item.product
+         | to_nice_yaml(indent=2) | indent(2, true) }}
         evaluation:
-      {{ item.item.ansible_facts | to_nice_yaml(indent=2) | indent(4, true) }}
+      {{ item.item.ansible_facts
+         | to_nice_yaml(indent=2) | indent(4, true) }}
