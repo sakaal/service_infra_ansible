@@ -13,7 +13,7 @@ server_market_factor:
 {{ hetzner_robot.server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
 
 server_market_value:
-{{ hetzner_robot.server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}
+{{ server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}
 
 server_market_analysis:
 {% for item in hetzner_robot.server_market_analysis | list %}
