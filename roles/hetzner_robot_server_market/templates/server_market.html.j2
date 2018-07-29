@@ -17,11 +17,8 @@ td { vertical-align: top; }
 server_market:
 {{ server_market | to_nice_yaml(indent=2) | indent(2, true) }}
 
-server_market_per_euro:
-{{ server_market_per_euro | to_nice_yaml(indent=2) | indent(2, true) }}
-
-server_market_factor:
-{{ server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
+server_market_value:
+{{ server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}
 </pre>
 
 <table style="width:100%;">
@@ -34,24 +31,24 @@ server_market_factor:
 <th>CPU-B</th>
 <th>RAM</th>
 <th>Storage</th>
-<th>Drives</th>
 <th>PSU</th>
 <th style="text-align:left;">CPU</th>
 <th>Memory Modules</th>
-<th style="text-align:right;">&times;SATA</th>
-<th style="text-align:right;">Size</th>
-<th style="text-align:left;">HDD</th>
-<th style="text-align:left;">?</th>
 
-<th style="text-align:right;">&times;SAS</th>
+<th style="text-align:right;">&times;</th>
 <th style="text-align:right;">Size</th>
 <th style="text-align:left;">HDD</th>
-<th style="text-align:left;">?</th>
+<th style="text-align:left;">SATA</th>
+
+<th style="text-align:right;">&times;</th>
+<th style="text-align:right;">Size</th>
+<th style="text-align:left;">HDD</th>
+<th style="text-align:left;">SAS</th>
 
 <th style="text-align:right;">&times;</th>
 <th style="text-align:right;">Size</th>
 <th style="text-align:left;">SSD</th>
-<th style="text-align:left;">?</th>
+<th style="text-align:left;"></th>
 
 <th style="text-align:left;">HWR</th>
 <th style="text-align:left;">NIC</th>
@@ -59,70 +56,72 @@ server_market_factor:
 <th>Network</th>
 <th style="text-align:left;">Misc.</th>
 <th style="text-align:left;">Text</th>
-<th>Evaluation</th>
+
+<th>CPU</th>
+<th>PSU</th>
+<th>HWR</th>
+<th>RAM</th>
+<th>SATA</th>
+<th>SAS</th>
+<th>SSD</th>
+<th>Traffic</th>
+<th>NIC</th>
+
+<th>Value Total</th>
 <th>Price</th>
 </tr>
 
 {% for item in hetzner_market_evaluation | list %}
 <tr>
-<td style="text-align:right;">{{ item.ansible_facts.benefit_cost_ratio }}</td>
-<td>{{ item.item.product.datacenter }}</td>
-<td>{{ item.item.product.name }}</td>
-<td>{{ item.item.product.id }}</td>
-<td style="text-align:right;">{{ item.item.product.cpu_benchmark }}</td>
-<td style="text-align:right;">{{ item.item.product.memory_size }} GB</td>
-<td style="text-align:right;">{{ (item.item.product.hdd_count * item.item.product.hdd_size|float / 1024.0) | round(2) }} TB</td>
-<td>{{ item.item.product.hdd_count }}&nbsp;&times;&nbsp;{{ item.item.product.hdd_size }}&nbsp;GB</td>
-<td>{{ "Red.PS" if "Red.PS" in item.item.product.cpu else "" }}</td>
-<td>{{ item.item.product.cpu | regex_replace(' - Red.PS', '') }}</td>
-<td style="text-align:right;">{{ item.item.product.description
-| select("search", "RAM")| list | join(" &middot; ") | regex_replace("RAM", "") | regex_replace(" MB", "&nbsp;MB") }}</td>
+<td style="text-align:right;">{{ item.product.benefit_cost_ratio | float | round(2) }}</td>
+<td>{{ item.product.datacenter }}</td>
+<td>{{ item.product.name }}</td>
+<td>{{ item.product.id }}</td>
+<td style="text-align:right;">{{ item.product.cpu_benchmark }}</td>
+<td style="text-align:right;">{{ item.product.memory_total | round(2) }} GB</td>
+<td style="text-align:right;">{{ (item.product.storage_total / 1024.0) | float | round(2) }} TB</td>
+<td>{{ "Red.PS" if "Red.PS" in item.product.psu else "" }}</td>
+<td>{{ item.product.cpu }}</td>
+<td style="text-align:right;">{{ item.product.memory_modules
+| select("search", "RAM") | list | join(" &middot; ") | regex_replace("RAM", "") | regex_replace(" MB", "&nbsp;MB") }}</td>
 
-<td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SATA") | list
-| map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
+<td>{{ item.product.hdd_sata_counts | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sata_sizes | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sata_units | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sata_types | join("<br></br>") }}</td>
 
-<td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
+<td>{{ item.product.hdd_sas_counts | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sas_sizes | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sas_units | join("<br></br>") }}</td>
+<td>{{ item.product.hdd_sas_types | join("<br></br>") }}</td>
 
-<td>{{ item.item.product.description | select("search", "SSD") | list
-| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "SSD") | list
-| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}</td>
-<td>{{ item.item.product.description | select("search", "SSD") | list
-| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}</td>
-<td>{{ item.item.product.description | select("search", "SSD") | list
-| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
+<td>{{ item.product.ssd_sata_counts | join("<br></br>") }}</td>
+<td>{{ item.product.ssd_sata_sizes | join("<br></br>") }}</td>
+<td>{{ item.product.ssd_sata_units | join("<br></br>") }}</td>
+<td>{{ item.product.ssd_sata_types | join("<br></br>") }}</td>
 
-<td>{{ item.item.product.description | select("search", "RAID") | list | join(" &middot; ") | regex_replace("RAID Controller", "") }}</td>
-<td>{{ item.item.product.description | select("search", "NIC") | list | join(" &middot; ") | regex_replace("NIC", "") }}</td>
-<td style="text-align:right;">{{ item.item.product.traffic }}</td>
-<td>{{ item.item.product.network_speed }}</td>
-<td>{{ item.item.product.description
-| reject("search", item.item.product.cpu)
-| reject("search", "RAM")
-| reject("search", "HDD.*SATA")
-| reject("search", "HDD.*SAS")
-| reject("search", "SSD")
-| reject("search", "RAID")
-| reject("search", "Redundante Stromversorgung")
-| reject("search", "NIC")
-| join(" &middot; ") }}</td>
-<td>{{ item.item.product.hdd_text }}</td>
-<td style="text-align:right;">{{ item.ansible_facts.value }}</td>
-<td style="text-align:right;">{{ item.item.product.price | float | round(2) }}{% if (item.item.product.price_setup | float) > 0.0 %}
-(+ setup {{ item.item.product.price_setup | float | round(2) }}){% endif %}</td>
+<td>{{ item.product.raid_controllers | join("<br></br>") }}</td>
+
+<td>{{ item.product.nics | join("<br></br>") }}</td>
+<td style="text-align:right;">{{ item.product.traffic }}</td>
+<td>{{ item.product.network_speed }}</td>
+
+<td>{{ item.product.misc | join("<br></br>") }}</td>
+<td>{{ item.product.text }}</td>
+
+<td style="text-align:right;">{{ item.product.value.cpu | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.psu | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.hwr | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.ram | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.hdd_sata | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.hdd_sas | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.ssd_sata | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.traffic | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.value.nic | float | round(2) }}</td>
+
+<td style="text-align:right; font-weight: bold;">{{ item.product.value_total | float | round(2) }}</td>
+<td style="text-align:right;">{{ item.product.price | float | round(2) }}{% if (item.product.price_setup | float) > 0.0 %}
+(+ setup {{ item.product.price_setup | float | round(2) }}){% endif %}</td>
 </tr>
 
 {% endfor %}

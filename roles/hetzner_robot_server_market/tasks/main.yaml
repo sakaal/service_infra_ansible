@@ -72,69 +72,22 @@
                                 'match', server_market.datacenter.pattern)
                    | list }}"
 
-- name: Evaluate all matching servers
-  with_items: "{{ hetzner_robot_server_market }}"
+- name: Record the date and time
   set_fact:
-    value: "{{ ((
-        (item.product.traffic.split()[0]|float / server_market_per_euro.traffic_TB)
-      + (item.product.cpu_benchmark|float / server_market_per_euro.cpu_benchmark)
-      + (item.product.memory_size|float / server_market_per_euro.memory_GB)
-      + ((item.product.hdd_count|float - 1) * item.product.hdd_size|float / server_market_per_euro.hdd_GB)
-      ) * ( 1.0
-      + (server_market_factor.ent_hdd if 'ENT.HDD' in item.product.hdd_text else 0)
-      + (server_market_factor.ecc     if 'ECC' in item.product.hdd_text else 0)
-      + (server_market_factor.inic    if 'INIC' in item.product.hdd_text else 0)
-      + (server_market_factor.red_ps  if 'Red.PS' in item.product.cpu else 0)
-      + (server_market_factor.hwr     if 'HWR' in item.product.hdd_text else 0)
-      + (server_market_factor.ssd     if 'SSD' in item.product.hdd_text else 0)
-      + (server_market_factor.sas     if 'SAS' in item.product.hdd_text else 0)
-      + (server_market_factor.kvm     if 'KVM' in item.product.hdd_text else 0)
-      )) | round(2)
-      }}"
-    benefit_cost_ratio: "{{ ((
-        (item.product.traffic.split()[0]|float / server_market_per_euro.traffic_TB)
-      + (item.product.cpu_benchmark|float / server_market_per_euro.cpu_benchmark)
-      + (item.product.memory_size|float / server_market_per_euro.memory_GB)
-      + ((item.product.hdd_count|float - 1) * item.product.hdd_size|float / server_market_per_euro.hdd_GB)
-      ) * ( 1.0
-      + (server_market_factor.ent_hdd if 'ENT.HDD' in item.product.hdd_text else 0)
-      + (server_market_factor.ecc     if 'ECC' in item.product.hdd_text else 0)
-      + (server_market_factor.inic    if 'INIC' in item.product.hdd_text else 0)
-      + (server_market_factor.red_ps  if 'Red.PS' in item.product.cpu else 0)
-      + (server_market_factor.hwr     if 'HWR' in item.product.hdd_text else 0)
-      + (server_market_factor.ssd     if 'SSD' in item.product.hdd_text else 0)
-      + (server_market_factor.sas     if 'SAS' in item.product.hdd_text else 0)
-      + (server_market_factor.kvm     if 'KVM' in item.product.hdd_text else 0)
-      ) / item.product.price|float) | round(2)
-      }}"
-  register: hetzner_market_evaluation
-
-- name: Sort matching servers by benefit-cost ratio
-  set_fact:
-    hetzner_market_evaluation: "{{ hetzner_market_evaluation.results
-        | sort(attribute='ansible_facts.benefit_cost_ratio', reverse=True)
-        | list }}"
     current_date_time: "{{ lookup('pipe', 'date +%Y-%m-%d_%H%M%Z') }}"
-
-- name: Generate the server market evaluation report (HTML)
-  local_action:
-    module: template
-    src: "server_market.html.j2"
-    dest: "{{ inventory_dir
-           }}/hetzner_server_market_{{ current_date_time }}.html"
 
 - name: Generate the server market analysis report (YAML)
   local_action:
     module: template
-    src: "hetzner_server_market.yaml.j2"
+    src: "market_analysis.yaml.j2"
     dest: "{{ inventory_dir
-           }}/hetzner_server_market_{{ current_date_time }}.yaml"
+           }}/hetzner_server_market_{{ current_date_time }}_analysis.yaml"
 
 - name: Read the server market analysis report
   local_action:
     module: include_vars
     file: "{{ inventory_dir
-           }}/hetzner_server_market_{{ current_date_time }}.yaml"
+           }}/hetzner_server_market_{{ current_date_time }}_analysis.yaml"
     name: hetzner_robot
 
 - name: Generate the server market evaluation report (YAML)
@@ -142,7 +95,41 @@
     module: template
     src: "market_evaluation.yaml.j2"
     dest: "{{ inventory_dir
-           }}/hetzner_server_market_evaluation_{{ current_date_time }}.yaml"
+           }}/hetzner_server_market_{{ current_date_time }}_evaluation.yaml"
+
+- name: Read the server market evaluation report
+  local_action:
+    module: include_vars
+    file: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}_evaluation.yaml"
+    name: hetzner_robot
+
+- name: Generate the server market comparison report (YAML)
+  local_action:
+    module: template
+    src: "market_comparison.yaml.j2"
+    dest: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}_comparison.yaml"
+
+- name: Read the server market comparison report
+  local_action:
+    module: include_vars
+    file: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}_evaluation.yaml"
+    name: hetzner_robot
+
+- name: Sort the servers by benefit-cost ratio
+  set_fact:
+    hetzner_market_evaluation: "{{ hetzner_robot.server_market_analysis
+        | sort(attribute='product.benefit_cost_ratio', reverse=True)
+        | list }}"
+
+- name: Generate the server market evaluation report (HTML)
+  local_action:
+    module: template
+    src: "server_market.html.j2"
+    dest: "{{ inventory_dir
+           }}/hetzner_server_market_{{ current_date_time }}.html"
 
 - name: Order the top servers by benefit-cost ratio
   with_items: "{{ hetzner_market_evaluation[0:server_order_count] }}"
@@ -156,7 +143,7 @@
       Content-Type: "application/x-www-form-urlencoded"
     body: "{% if server_order_dry_run | default(True) | bool
            %}test=true&{% endif
-           %}product_id={{ item.item.product.id
+           %}product_id={{ item.product.id
            }}{% for ssh_id in hetzner_robot_existing_keys.json
              %}&authorized_key[]={{ ssh_id.key.fingerprint
            }}{% endfor %}"
@@ -176,8 +163,4 @@
       ---
       {{ item.json | to_nice_yaml(indent=2) }}
       product:
-      {{ item.item.item.product
-         | to_nice_yaml(indent=2) | indent(2, true) }}
-        evaluation:
-      {{ item.item.ansible_facts
-         | to_nice_yaml(indent=2) | indent(4, true) }}
+      {{ item.item.product | to_nice_yaml(indent=2) | indent(2, true) }}

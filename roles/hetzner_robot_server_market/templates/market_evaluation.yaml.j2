@@ -1,16 +1,10 @@
-# file: hetzner_server_market_evaluation_{{ current_date_time }}.yaml
+# file: hetzner_server_market_{{ current_date_time }}_evaluation.yaml
 ---
 
 date_time: {{ current_date_time }}
 
 server_market:
 {{ hetzner_robot.server_market | to_nice_yaml(indent=2) | indent(2, true) }}
-
-server_market_per_euro:
-{{ hetzner_robot.server_market_per_euro | to_nice_yaml(indent=2) | indent(2, true) }}
-
-server_market_factor:
-{{ hetzner_robot.server_market_factor | to_nice_yaml(indent=2) | indent(2, true) }}
 
 server_market_value:
 {{ server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}

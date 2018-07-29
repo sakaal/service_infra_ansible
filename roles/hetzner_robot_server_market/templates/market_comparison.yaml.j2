@@ -1,0 +1,45 @@
+# file: hetzner_server_market_{{ current_date_time }}_comparison.yaml
+---
+
+date_time: {{ current_date_time }}
+
+server_market:
+{{ hetzner_robot.server_market | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_value:
+{{ server_market_value | to_nice_yaml(indent=2) | indent(2, true) }}
+
+server_market_analysis:
+{% for item in hetzner_robot.server_market_analysis | list %}
+
+- product:
+    benefit_cost_ratio: {{ ( (
+        item.product.value.cpu
+      + item.product.value.psu
+      + item.product.value.hwr
+      + item.product.value.ram
+      + item.product.value.hdd_sata
+      + item.product.value.hdd_sas
+      + item.product.value.ssd_sata
+      + item.product.value.traffic
+      + item.product.value.nic
+      ) / item.product.price ) | float | round(2)
+    }}
+
+{{ item.product | to_nice_yaml(indent=2) | indent(4, true) }}
+
+    storage_total: {{ item.product.hdd_sata_total + item.product.hdd_sas_total + item.product.ssd_sata_total }}
+
+    value_total: {{ (
+        item.product.value.cpu
+      + item.product.value.psu
+      + item.product.value.hwr
+      + item.product.value.ram
+      + item.product.value.hdd_sata
+      + item.product.value.hdd_sas
+      + item.product.value.ssd_sata
+      + item.product.value.traffic
+      + item.product.value.nic
+      ) | float | round(2)
+    }}
+{% endfor %}

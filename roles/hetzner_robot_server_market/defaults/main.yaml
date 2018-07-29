@@ -22,40 +22,18 @@ server_market:
     pattern: '^HEL.*$'
 #  search: "RED.PS" # Red.PS Ent.HDD ECC HWR INIC "SSD" SAS KVM
 
-
-#
-# Benefit-cost evaluation criteria
-#
-# How many units of each server specification attribute
-# you may expect to get per euro; this defines the usual
-# expected price of a server:
-#
-server_market_per_euro:
-  traffic_TB:       2.0
-  cpu_benchmark: 1000.0
-  memory_GB:        2.0
-  hdd_GB:         340.0
-
-#
-# How much more are you willing to pay for each special feature
-# (linearly cumulative), relative to the usual expected price (1.0)
-# of a server:
-#
-server_market_factor:
-  ent_hdd: 0.05
-  ecc:     0.10
-  inic:    0.05
-  red_ps:  0.10
-  hwr:     0.05
-  ssd:     0.15
-  sas:     0.03
-  kvm:     0.03
-
 prefix_multiplier:
   MB: "{{ 1.0 / 1024.0 }}"
   GB: 1.0
   TB: 1024.0
 
+#
+# Benefit-cost evaluation criteria
+#
+# How much more are you willing to pay per unit for
+# each server specification attribute; this defines
+# the usual expected price of a server:
+#
 server_market_value:
 
   cpu:
@@ -65,19 +43,19 @@ server_market_value:
     redundant:     5.0
 
   memory_module:
-    '':            0.5
-    DDR3:          0.5
-    DDR3 ECC:      0.6
-    DDR3 ECC reg:  0.6
-    DDR4 ECC reg:  0.6
+    '':            0.50
+    DDR3:          0.50
+    DDR3 ECC:      0.55
+    DDR3 ECC reg:  0.60
+    DDR4 ECC reg:  0.65
 
   hwr:
     4-Port SATA PCI-E - LSI MegaRAID SAS 9260-4i:     10.0
     4-Port SATA PCI-E - Adaptec 5405:                 10.0
     4-Port SATA PCI-E - Adaptec 5405 Kit:             10.0
     4-Port SATA PCI-E - Adaptec 5405 Single:          10.0
-    4-Port SATA PCI-E - Adaptec 8405 SGL (2277600-R): 10.0
-    4-Port SATA PCI-E - 3ware 9650SE-04LPML:          10.0
+    4-Port SATA PCI-E - Adaptec 8405 SGL (2277600-R): 15.0
+    4-Port SATA PCI-E - 3ware 9650SE-04LPML:           4.0
     2-Port SATA PCI-E - 3ware 9650SE-2LP:              2.0
 
   hdd_sata:
@@ -85,19 +63,19 @@ server_market_value:
     Enterprise:   0.004
 
   hdd_sas:
-    '':           0.006
+    '':           0.015
 
   ssd_sata:
-    '':           0.005
-    Datacenter:   0.006
+    '':           0.024
+    Datacenter:   0.030
 
   traffic:         0.0005
 
   nic:
-    1 Gbit - Intel 82541PI:                         3.0
-    1 Gbit - Intel 82574L:                          3.0
-    1 Gbit - Intel 82579LM:                         3.0
-    1 Gbit - Intel EXPI9301CT:                      3.0
-    1 Gbit - Intel I210:                            3.0
-    1 Gbit - Intel I350:                            3.0
-    1 Gbit - Intel PWLA8391GT:                      3.0
+    1 Gbit - Intel 82541PI:                     1.0
+    1 Gbit - Intel 82574L:                      1.0
+    1 Gbit - Intel 82579LM:                     1.0
+    1 Gbit - Intel EXPI9301CT:                  3.0
+    1 Gbit - Intel I210:                        4.0
+    1 Gbit - Intel I350:                       10.0
+    1 Gbit - Intel PWLA8391GT:                  2.0
