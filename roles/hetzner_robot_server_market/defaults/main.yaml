@@ -93,12 +93,9 @@ server_market_value:
   traffic:         0.0005
 
   nic:
-    1 Gbit - Intel I210:                            3.0
-    1 Gbit - Intel I350:                            3.0
-    1 Gbit - Intel EXPI9301CT:                      3.0
-    1 Gbit - Intel PWLA8391GT:                      3.0
     1 Gbit - Intel 82574L:                          3.0
     1 Gbit - Intel 82579LM:                         3.0
-    1 Gbit - Intel CT Desktop Adapter (EXPI9301CT): 3.0
-    1 Gbit - Intel 82579LM:                         3.0
-    1 Gbit - Intel Pro/1000 GT PWLA8391GT:          3.0
+    1 Gbit - Intel EXPI9301CT:                      3.0
+    1 Gbit - Intel I210:                            3.0
+    1 Gbit - Intel I350:                            3.0
+    1 Gbit - Intel PWLA8391GT:                      3.0

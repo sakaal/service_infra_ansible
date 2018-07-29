@@ -71,8 +71,9 @@ server_market_analysis:
     nics: {{ item.item.product.description | select("search", "NIC")
     | map("regex_replace", "(NIC|PCI-E|PCI)\\s?", "")
     | map("regex_replace", "1000Mbit", "1 Gbit")
-    | map("regex_replace", "Pro1000GT", "Pro/1000 GT")
+    | map("regex_replace", "\\sPro/?1000\\s?GT", "")
     | map("regex_replace", "\\((.*)\\)", "\\1")
+    | map("regex_replace", "\\sCT Desktop Adapter", "")
     | map("regex_replace", "\\s\\s+", " ")
     | list | to_yaml }}
     traffic:       '{{ item.item.product.traffic }}'
