@@ -88,22 +88,22 @@ server_market_factor:
 | map("regex_replace", "(HDD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
 
 <td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| join(" &middot; ") | regex_replace("(HDD|SAS)", "") | regex_replace("^([0-9]+)x.*$", "\\1") }}</td>
+| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}</td>
 <td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| join(" &middot; ") | regex_replace("(HDD|SAS)", "") | regex_replace("^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | regex_replace(",", ".") }}</td>
+| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}</td>
 <td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| join(" &middot; ") | regex_replace("(HDD|SAS)", "") | regex_replace("^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") }}</td>
+| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}</td>
 <td>{{ item.item.product.description | select("search", "HDD.*SAS") | list
-| join(" &middot; ") | regex_replace("(HDD|SAS)", "") | regex_replace("^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") }}</td>
+| map("regex_replace", "(HDD|SAS)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
 
 <td>{{ item.item.product.description | select("search", "SSD") | list
-| join(" &middot; ") | regex_replace("SSD|SATA", "") | regex_replace("^([0-9]+)x.*$", "\\1") }}</td>
+| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list }}</td>
 <td>{{ item.item.product.description | select("search", "SSD") | list
-| join(" &middot; ") | regex_replace("SSD|SATA", "") | regex_replace("^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | regex_replace(",", ".") }}</td>
+| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+([0-9,]+)\\s+.*$", "\\1") | map("regex_replace", ",", ".") | list }}</td>
 <td>{{ item.item.product.description | select("search", "SSD") | list
-| join(" &middot; ") | regex_replace("SSD|SATA", "") | regex_replace("^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") }}</td>
+| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list }}</td>
 <td>{{ item.item.product.description | select("search", "SSD") | list
-| join(" &middot; ") | regex_replace("SSD|SATA", "") | regex_replace("^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") }}</td>
+| map("regex_replace", "SSD|SATA", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s?(.*)$", "\\1") | list }}</td>
 
 <td>{{ item.item.product.description | select("search", "RAID") | list | join(" &middot; ") | regex_replace("RAID Controller", "") }}</td>
 <td>{{ item.item.product.description | select("search", "NIC") | list | join(" &middot; ") | regex_replace("NIC", "") }}</td>
