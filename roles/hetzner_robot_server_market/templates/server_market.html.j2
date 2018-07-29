@@ -50,8 +50,8 @@
 <td>{{ item.item.product.traffic }}</td>
 <td>{{ item.item.product.network_speed }}</td>
 <td>{{ item.ansible_facts.value }}</td>
-<td>{{ item.item.product.price | round(2) }}{% if item.item.product.price_setup|float > 0.0 %}
-(+ setup {{ item.item.product.price_setup | round(2) }}){% endif %}</td>
+<td>{{ item.item.product.price | float | round(2) }}{% if (item.item.product.price_setup | float) > 0.0 %}
+(+ setup {{ item.item.product.price_setup | float | round(2) }}){% endif %}</td>
 </tr>
 
 {% endfor %}
