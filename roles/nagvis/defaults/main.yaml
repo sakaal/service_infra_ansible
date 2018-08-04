@@ -1,6 +1,0 @@
-# file: roles/nagvis/defaults/main.yaml
----
-
-nagvis_packages:
-- graphviz
-- php-pdo

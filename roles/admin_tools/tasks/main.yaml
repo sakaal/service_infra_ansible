@@ -25,7 +25,3 @@
   - sysstat
   - tcpdump
   yum: name="{{ item }}" state=latest
-
-#  - munin-node
-# Fully Automated Nagios (FAN)
-# Cacti
