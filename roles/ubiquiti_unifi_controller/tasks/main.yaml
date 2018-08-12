@@ -1,0 +1,80 @@
+# file: roles/ubiquiti_unifi_controller/tasks/main.yaml
+#
+# Ubiquiti Unifi controller installation using unofficial RPM.
+# This role is TESTING quality, not ready yet.
+#
+---
+
+- name: Currently testing with a fixed controller version number
+  set_fact:
+    unifi_controller_version: '5.8.24-1'
+
+- name: Download the unofficial RPM
+  become: yes
+  get_url:
+    url: "http://dl.marmotte.net/rpms/redhat/el7/{{ ansible_architecture }}/unifi-controller-{{
+          unifi_controller_version }}.el7/unifi-controller-{{
+          unifi_controller_version }}.el7.{{ ansible_architecture }}.rpm"
+    dest: "/opt/unifi-controller-{{
+          unifi_controller_version }}.el7.{{ ansible_architecture }}.rpm"
+  register: unifi_controller_download
+
+- name: Install the RPM
+  when: ansible_pkg_mgr == "yum"
+  become: yes
+  yum:
+    name: "{{ unifi_controller_download.dest }}"
+    state: present
+
+- name: Prefer IPv4 stack
+  with_items:
+  - key: "ExecStart"
+    val: >-
+      /usr/bin/java
+      -Djava.net.preferIPv4Stack=true
+      -Xmx1024M
+      -jar /opt/UniFi/lib/ace.jar start
+  become: yes
+  lineinfile:
+    path: "/usr/lib/systemd/system/unifi.service"
+    regexp: '#?\s*{{ item.key }}='
+    line: "{{ item.key }}={{ item.val }}"
+    state: "{{ item.state | default(omit) }}"
+
+- name: Open firewall ports
+  with_items:
+  - port: '3478/udp' # STUN
+  - port: '8080/tcp' # device and controller communication
+  - port: '8443/tcp' # controller GUI/API as seen in a web browser
+  - port: '8843/tcp' # HTTPS portal redirection
+  - port: '8880/tcp' # HTTP portal redirection
+  - port: '6789/tcp' # UniFi mobile speed test
+  become: yes
+  firewalld:
+    permanent: yes
+    immediate: yes
+    port: "{{ item.port | default(omit) }}"
+    service: "{{ item.service | default(omit) }}"
+    state: enabled
+
+- name: Start and enable
+  become: yes
+  service:
+    name: unifi
+    state: started
+    enabled: yes
+
+- name: Server IP
+  with_items:
+  - key: "server_ip"
+    val: "{{ ansible_default_ipv4.address }}"
+  become: yes
+  lineinfile:
+    path: "/opt/UniFi/data/system.properties"
+    regexp: '#?\s*{{ item.key }}='
+    line: "{{ item.key }}={{ item.val }}"
+    state: "{{ item.state | default(omit) }}"
+  ignore_errors: yes
+
+- debug:
+    msg: "UniFi mongod needs at least 4G available at /opt"

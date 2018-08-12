@@ -1,0 +1,12 @@
+# file: unifi.yaml
+#
+# Ubiquiti Unifi Controller
+#
+# ansible-playbook -vvv unifi.yaml -i development
+#
+---
+
+- name: UBIQUITI UNIFI CONTROLLER
+  hosts: unifi_controllers
+  roles:
+  - ubiquiti_unifi_controller
