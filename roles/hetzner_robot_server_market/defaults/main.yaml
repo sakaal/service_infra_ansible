@@ -78,5 +78,6 @@ server_market_value:
     1 Gbit - Intel 82579LM:                     1.0
     1 Gbit - Intel EXPI9301CT:                  3.0
     1 Gbit - Intel I210:                        4.0
+    1 Gbit - Intel I219-LM:                     3.0
     1 Gbit - Intel I350:                       10.0
     1 Gbit - Intel PWLA8391GT:                  2.0
