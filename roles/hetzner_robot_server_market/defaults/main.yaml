@@ -51,6 +51,7 @@ server_market_value:
     DDR4 ECC reg:  0.65
 
   hwr:
+    16-Port SATA PCI-E - LSI MegaRAID SAS 9260-16i:   20.0
     4-Port SATA PCI-E - LSI MegaRAID SAS 9260-4i:     10.0
     4-Port SATA PCI-E - Adaptec 5405:                 10.0
     4-Port SATA PCI-E - Adaptec 5405 Kit:             10.0
