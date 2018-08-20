@@ -1,9 +1,16 @@
 # file: roles/ssh_bastion/tasks/main.yaml
 ---
 
+- name: SSH user configuration directory
+  local_action:
+    module: file
+    state: directory
+    dest: "{{ lookup('env', 'HOME') }}/.ssh/config.d"
+    mode: 0700
+
 - name: SSH bastion host configuration
   local_action:
     module: template
     src: "ssh_config_guests.j2"
-    dest: "{{ ansible_user_dir }}/.ssh/config.d/{{ hostname }}_guests"
+    dest: "{{ lookup('env', 'HOME') }}/.ssh/config.d/{{ hostname }}_guests"
     mode: 0600
