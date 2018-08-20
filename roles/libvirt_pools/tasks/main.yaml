@@ -21,6 +21,17 @@
   register: pools_result
   changed_when: not vg_pool_name in pools_result.list_pools
 
+- name: Give qemu access to the storage pool
+  when: pools_result is changed
+  become: yes
+  acl:
+    path: "/dev/{{ vg_pool_name }}"
+    etype: user
+    entity: qemu
+    permissions: rx
+    state: present
+  ignore_errors: yes
+
 - name: Storage pool based on LVM volume group
   when: pools_result is changed
   become: yes
