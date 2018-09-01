@@ -1,0 +1,40 @@
+# file: roles/admin_authorized_keys/tasks/main.yaml
+---
+
+- name: Check hostname
+  become: yes
+  hostname:
+    name: "{{ hostname | default( inventory_hostname ) }}"
+  register: check_hostname
+
+- name: Set the hostname
+  with_items: "{{ check_hostname.results | default([]) }}"
+  when: item is changed
+  become: yes
+  command: hostnamectl set-hostname {{ hostname | default( inventory_hostname ) }}
+  ignore_errors: yes
+
+- name: Create the admin SSH account
+  user:
+    name: "{{ admin_username }}"
+    comment: "{{ admin_fullname }}"
+    append: yes
+    groups: wheel
+    shell: /bin/bash
+    generate_ssh_key: yes
+    ssh_key_comment: "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 | regex_replace(':', '') }}"
+    state: present
+
+- name: Authorize SSH keys
+  with_items: "{{ admin_authorized_keys | default([]) }}"
+  authorized_key:
+    user: "{{ admin_username }}"
+    key: "{{ item }}"
+    state: present
+
+- name: Revoke SSH keys
+  with_items: "{{ admin_revoked_keys | default([]) }}"
+  authorized_key:
+    user: "{{ admin_username }}"
+    key: "{{ item }}"
+    state: absent

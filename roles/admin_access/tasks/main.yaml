@@ -32,9 +32,8 @@
 #
 
 - name: Set the hostname
-  when: hostname is defined
   become: yes
-  command: hostnamectl set-hostname {{ hostname }}
+  command: hostnamectl set-hostname {{ hostname | default( inventory_hostname ) }}
   ignore_errors: yes
 
 - name: Create the admin SSH account
@@ -45,7 +44,7 @@
     groups: wheel
     shell: /bin/bash
     generate_ssh_key: yes
-    ssh_key_comment: "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 }}"
+    ssh_key_comment: "{{ admin_username }}@{{ ansible_fqdn }}-{{ ansible_date_time.iso8601 | regex_replace(':', '') }}"
     state: present
 
 - name: Authorize SSH keys

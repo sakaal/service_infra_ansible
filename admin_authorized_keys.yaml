@@ -1,0 +1,11 @@
+# file: admin_authorized_keys.yaml
+#
+# ansible-playbook -vv -l host.example.com -i development admin_authorized_keys.yaml
+#
+---
+
+- name: ADMIN AUTHORIZED KEYS
+  hosts: all
+  serial: 100%
+  roles:
+  - admin_authorized_keys
