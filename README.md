@@ -214,34 +214,40 @@ The hypervisors are now ready to be transferred to service operation.
 ### Provisioning guest virtual machines
 
 1. Replace the `[libvirt_guests_host.example.com]` group in the
-   `bootstrap` inventory by substituting your hypervisor hostnames for
+   main inventory by substituting your hypervisor hostnames for
    `host.example.com`. Create one group per hypervisor.
 
 1. Add the guest virtual machine fully qualified domain names (FQDNs) to the
-   `bootstrap` inventory under the guests group of the desired hypervisor.
+   main inventory under the guests group of the desired hypervisor.
     * These are local private guest names in the secure management domain
       for administrative access via the hypervisor.
 
 1. For each guest, copy the `host_vars/guest.host.example.com.sample`
-   to a file with a name matching the guest FQDN, and
+   to a directory with a name matching the guest FQDN, and
    edit the file to set the guest provisioning parameters:
 
-        cd service_infra_ansible/host_vars/
-        cp guest.host.example.com.sample guest.host.example.com
+        cd com.example_main_ansible/
+        mkdir host_vars/guest.host.example.com
+        cp ../service_infra_ansible/host_vars/guest.host.example.com.sample host_vars/guest.host.example.com/guest.yaml
 
 1. Provision the guest virtual machines:
 
-        ansible-playbook service_infra_ansible/guests.yaml -i com.example_main_ansible/bootstrap
+        ansible-playbook service_infra_ansible/guests.yaml -i com.example_main_ansible/staging
 
 1. Start the guest virtual machines manually after the installation
    has completed. This will be automated later.
 
-The guests are now ready to be transferred to service operation.
+The guests are now ready for service operation.
 
 ### Transfer to service operation
 
 The hypervisors and their guest virtual machines
 are collectively referred to as *managed nodes*. 
+
+This process has been updated recently so that guests can be
+now provisioned directly into the main inventory. You only
+need to perform this step for hosts which you created first
+in the bootstrap inventory.
 
 After the new managed nodes are ready, they will be transferred over
 from the bootstrap inventory to the main configuration management inventory.

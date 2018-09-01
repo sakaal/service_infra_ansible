@@ -34,9 +34,10 @@
 - name: Wait for the guest to receive an IP address from Dnsmasq
   with_items: "{{ macs.results }}"
   when: item is success
-  wait_for: path=/var/lib/libvirt/dnsmasq/virbr0.status
-            search_regex="{{ item.stdout }}"
-            timeout=30
+  wait_for:
+    path: "/var/lib/libvirt/dnsmasq/virbr0.status"
+    search_regex: "{{ item.stdout }}"
+    timeout: 30
 
 - name: Look up the local IP address of each guest
   with_items: "{{ macs.results }}"
@@ -49,7 +50,9 @@
   changed_when: False
   failed_when: macs_and_ips.stderr.strip() != ''
 
-- debug: var=macs_and_ips
+- name: Report MAC and IP addresses
+  debug:
+    var: macs_and_ips
 
 - name: Delete old static local IP addresses in the libvirt default network
   with_items: "{{ macs_and_ips.results }}"

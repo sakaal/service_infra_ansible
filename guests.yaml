@@ -2,7 +2,7 @@
 #
 # Installs virtual guest machines on the hypervisors. Usually run as:
 #
-# ansible-playbook -vv guests.yaml -i ../com.example_main_ansible/bootstrap
+# ansible-playbook -vv guests.yaml -i ../com.example_main_ansible/development
 #
 ---
 
@@ -10,15 +10,16 @@
   hosts: localhost
   connection: local
   tasks:
-  - debug: msg="{{ ansible_date_time.iso8601 }}"
+  - debug:
+      msg: "{{ ansible_date_time.iso8601 }}"
 
 - name: GUESTS
   hosts: libvirt_hosts
   vars_files:
-    - "../service_commons_ansible/roles/dynect_session/vars/main.yaml"
+  - "{{ playbook_dir | dirname }}/service_commons_ansible/roles/dynect_session/vars/main.yaml"
   roles:
-    - libvirt_guests_centos
-    - libvirt_guests_dhcp
+  - libvirt_guests_centos
+  - libvirt_guests_dhcp
 
 #
 # ~ 30 s from start
@@ -28,8 +29,10 @@
   hosts: localhost
   connection: local
   tasks:
-  - debug: msg="{{ ansible_date_time.iso8601 }}"
-  - debug: msg="Guest installation will complete in about 8 minutes."
+  - debug:
+      msg: "{{ ansible_date_time.iso8601 }}"
+  - debug:
+      msg: "Guest installation will complete in about 8 minutes."
 
 #
 # The unattended installation will complete at ~ 8 minutes from start.

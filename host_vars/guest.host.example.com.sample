@@ -1,4 +1,4 @@
-# file: host_vars/guest.host.example.com
+# file: host_vars/guest.host.example.com/guest.yaml
 #
 # The guest subdomains are assumed to be a local naming policy on the
 # hypervisor host. Guest names are not registered in DNS, but only

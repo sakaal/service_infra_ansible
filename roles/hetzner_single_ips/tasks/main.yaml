@@ -81,7 +81,7 @@
 - name: Declare the hetzner_single_ips variable in target repository host_vars
   local_action:
     module: lineinfile
-    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}/main.yaml"
     regexp: "^hetzner_single_ips:"
     line: "hetzner_single_ips:"
 
@@ -90,7 +90,7 @@
   with_items: "{{ hetzner_ips }}"
   local_action:
     module: lineinfile
-    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}"
+    dest: "{{ inventory_dir }}/host_vars/{{ hostvars[inventory_hostname].hostname }}/main.yaml"
     insertafter: "hetzner_single_ips"
     regexp: "^  - { ip: '{{ item.ip.ip }}'"
     line: "  - { ip: '{{ item.ip.ip }}', mac: '{{ item.ip.separate_mac }}' }"

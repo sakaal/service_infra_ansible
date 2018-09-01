@@ -43,20 +43,29 @@
 
 - name: Ensure guest target inventory group exists
   with_items: "{{ groups[ libvirt_guests_group ] }}"
-  local_action: lineinfile force=no
-                dest="{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
-                regexp="^\[{{ hostvars[item].target_ansible_group }}\]"
-                line="[{{ hostvars[item].target_ansible_group }}]"
-                state=present
+  local_action:
+    module: lineinfile
+    force: no
+    dest: "{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
+    regexp: "^\[{{ hostvars[item].target_ansible_group }}\]"
+    line: "[{{ hostvars[item].target_ansible_group }}]"
+    state: present
 
 - name: Ensure guest appears under the target inventory group
   with_items: "{{ groups[ libvirt_guests_group ] }}"
-  local_action: lineinfile dest="{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
-                regexp="^{{ item }}" line="{{ item }}"
-                insertafter="^\[{{ hostvars[item].target_ansible_group }}\]"
-                state=present
+  local_action:
+    module: lineinfile
+    dest: "{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
+    regexp: "^{{ item }}"
+    line: "{{ item }}"
+    insertafter: "^\[{{ hostvars[item].target_ansible_group }}\]"
+    state: present
 
 - name: Add new guest host_vars (retain existing)
   with_items: "{{ groups[ libvirt_guests_group ] }}"
-  local_action: template force=no backup=yes src=libvirt_guest_centos_host_vars.j2
-                dest="{{ inventory_dir }}/host_vars/{{ item }}"
+  local_action:
+    module: template
+    force: no
+    backup: yes
+    src: "libvirt_guest_centos_host_vars.j2"
+    dest: "{{ inventory_dir }}/host_vars/{{ item }}/handover.yaml"
