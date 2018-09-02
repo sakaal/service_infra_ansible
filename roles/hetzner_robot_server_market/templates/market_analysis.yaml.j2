@@ -57,9 +57,9 @@ server_market_analysis:
     | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     ssd_sata_types: {{ item.product.description | select("search", "SSD") | list
     | map("regex_replace", "(SSD|SATA)", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
-
     raid_controllers: {{ item.product.description | select("search", "RAID")
     | map("regex_replace", "RAID Controller\\s*", "")
+    | map("regex_replace", "\\([0-9A-Z-]+\\)", "")
     | map("regex_replace", "\\s\\s+", " ")
     | list | to_yaml }}
 
