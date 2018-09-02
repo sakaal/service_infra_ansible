@@ -28,7 +28,8 @@ server_market_analysis:
     memory_module_units: {{ item.product.description | select("search", "RAM") | list
     | map("regex_replace", "RAM\\s?", "") | map("regex_replace", "^.*\\s+[0-9,]+\\s*([MGT]B).*$", "\\1") | list | to_yaml }}
     memory_module_types: {{ item.product.description | select("search", "RAM") | list
-    | map("regex_replace", "(RAM\\s?|\\.*$)", "") | map("regex_replace", "^[0-9]+x\\s+(?:[0-9,]+\\s*[MGT]B|((?:[a-zA-Z][a-zA-Z0-9]*\\s+)+))(.*)$", "\\1\\2") | list | to_yaml }}
+    | map("regex_replace", "(RAM\\s?|\\.*$)", "") | map("regex_replace", "\\s[0-9,]+\\s*[MGT]B", "")
+    | map("regex_replace", "^[0-9]+x\\s+(.*)$", "\\1") | list | to_yaml }}
 
     hdd_sata_counts: {{ item.product.description | select("search", "HDD.*SATA") | list
     | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
