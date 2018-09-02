@@ -63,7 +63,7 @@ server_market_analysis:
     | list | to_yaml }}
 
     nics: {{ item.product.description | select("search", "NIC")
-    | map("regex_replace", "(NIC|PCI-E|PCI)\\s?", "")
+    | map("regex_replace", "(NIC|PCI-E|PCIe|PCI)\\s?", "")
     | map("regex_replace", "1000Mbit", "1 Gbit")
     | map("regex_replace", "\\sPro/?1000\\s?GT", "")
     | map("regex_replace", "\\((.*)\\)", "\\1")
