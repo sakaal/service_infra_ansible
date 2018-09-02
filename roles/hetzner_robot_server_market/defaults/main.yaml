@@ -51,14 +51,14 @@ server_market_value:
     DDR4 ECC reg:  0.65
 
   hwr:
-    16-Port SATA PCI-E - LSI MegaRAID SAS 9260-16i:   20.0
-    4-Port SATA PCI-E - LSI MegaRAID SAS 9260-4i:     10.0
-    4-Port SATA PCI-E - Adaptec 5405:                 10.0
-    4-Port SATA PCI-E - Adaptec 5405 Kit:             10.0
-    4-Port SATA PCI-E - Adaptec 5405 Single:          10.0
-    4-Port SATA PCI-E - Adaptec 8405 SGL:             15.0
-    4-Port SATA PCI-E - 3ware 9650SE-04LPML:           4.0
-    2-Port SATA PCI-E - 3ware 9650SE-2LP:              2.0
+    16-Port SATA PCI-E LSI MegaRAID SAS 9260-16i:   20.0
+    4-Port SATA PCI-E LSI MegaRAID SAS 9260-4i:     10.0
+    4-Port SATA PCI-E Adaptec 5405:                 10.0
+    4-Port SATA PCI-E Adaptec 5405 Kit:             10.0
+    4-Port SATA PCI-E Adaptec 5405 Single:          10.0
+    4-Port SATA PCI-E Adaptec 8405 SGL:             15.0
+    4-Port SATA PCI-E 3ware 9650SE-04LPML:           4.0
+    2-Port SATA PCI-E 3ware 9650SE-2LP:              2.0
 
   hdd_sata:
     '':           0.003
@@ -74,11 +74,11 @@ server_market_value:
   traffic:         0.0005
 
   nic:
-    1 Gbit - Intel 82541PI:                     1.0
-    1 Gbit - Intel 82574L:                      1.0
-    1 Gbit - Intel 82579LM:                     1.0
-    1 Gbit - Intel EXPI9301CT:                  3.0
-    1 Gbit - Intel I210:                        4.0
-    1 Gbit - Intel I219-LM:                     3.0
-    1 Gbit - Intel I350:                       10.0
-    1 Gbit - Intel PWLA8391GT:                  2.0
+    1 Gbit Intel 82541PI:                     1.0
+    1 Gbit Intel 82574L:                      1.0
+    1 Gbit Intel 82579LM:                     1.0
+    1 Gbit Intel EXPI9301CT:                  3.0
+    1 Gbit Intel I210:                        4.0
+    1 Gbit Intel I219-LM:                     3.0
+    1 Gbit Intel I350:                       10.0
+    1 Gbit Intel PWLA8391GT:                  2.0
