@@ -59,6 +59,7 @@ server_market_value:
     4-Port SATA PCI-E Adaptec 8405 SGL:             15.0
     4-Port SATA PCI-E 3ware 9650SE-04LPML:           4.0
     2-Port SATA PCI-E 3ware 9650SE-2LP:              2.0
+    Intel RAID Expander RES2SV240:                  12.0
 
   hdd_sata:
     '':           0.003

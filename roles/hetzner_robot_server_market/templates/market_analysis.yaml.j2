@@ -62,6 +62,7 @@ server_market_analysis:
     | map("regex_replace", "RAID [Cc]ontroller\\s*", "")
     | map("regex_replace", "\\([0-9A-Z-]+\\)", "")
     | map("regex_replace", "\\s-?\\s+", " ")
+    | map("regex_replace", "^[ -]+", "")
     | list | to_yaml }}
 
     nics: {{ item.product.description | select("search", "NIC")
