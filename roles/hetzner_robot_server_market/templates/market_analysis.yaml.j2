@@ -38,7 +38,9 @@ server_market_analysis:
     hdd_sata_units: {{ item.product.description | select("search", "HDD.*SATA") | list
     | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+([GT]B).*$", "\\1") | list | to_yaml }}
     hdd_sata_types: {{ item.product.description | select("search", "HDD.*SATA") | list
-    | map("regex_replace", "(HDD|SATA)\\s?", "") | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
+    | map("regex_replace", "(HDD|SATA)\\s?", "")
+    | map("regex_replace", "[Ee][nterpis]+e", "Enterprise")
+    | map("regex_replace", "^[0-9]+x\\s+[0-9,]+\\s+[GT]B\\s*(.*)$", "\\1") | list | to_yaml }}
 
     hdd_sas_counts: {{ item.product.description | select("search", "HDD.*SAS") | list
     | map("regex_replace", "(HDD|SAS)\\s?", "") | map("regex_replace", "^([0-9]+)x.*$", "\\1") | list | to_yaml }}
