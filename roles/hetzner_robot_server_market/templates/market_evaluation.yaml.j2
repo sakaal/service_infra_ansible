@@ -59,7 +59,8 @@ server_market_analysis:
                 }}) +{% endfor %} 0.0 {{ "}}" }}'
       traffic:  {% if item.product.traffic == 'unlimited' %}0{% else
                 %}{{ item.product.traffic.split()[0]|float * prefix_multiplier[ item.product.traffic.split()[1].strip() ]|float
-                * server_market_value.traffic }}{% endif %}
+                * server_market_value.traffic }}
+                {% endif %}
       nic:      '{{ "{{" }} {% for nic in item.product.nics
                 %}{{ server_market_value.nic[ nic.strip() ]|float }} +{% endfor %} 0.0 {{ "}}" }}'
 {% endfor %}
