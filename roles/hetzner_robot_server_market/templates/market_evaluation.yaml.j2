@@ -57,8 +57,8 @@ server_market_analysis:
                 * prefix_multiplier[ item.product.ssd_sata_units[ loop.index0 ].strip() ]|float
                 }} * {{ server_market_value.ssd_sata[ item.product.ssd_sata_types[ loop.index0 ].strip() ]|float
                 }}) +{% endfor %} 0.0 {{ "}}" }}'
-      traffic:  {% if item.product.traffic == 'unlimited' %}0{% else
-                %}{{ item.product.traffic.split()[0]|float * prefix_multiplier[ item.product.traffic.split()[1].strip() ]|float
+      traffic:  {% if item.product.traffic == 'unlimited' %}0
+                {% else %}{{ item.product.traffic.split()[0]|float * prefix_multiplier[ item.product.traffic.split()[1].strip() ]|float
                 * server_market_value.traffic }}
                 {% endif %}
       nic:      '{{ "{{" }} {% for nic in item.product.nics
