@@ -76,6 +76,7 @@ server_market_analysis:
     | map("regex_replace", "\\((.*)\\)", "\\1")
     | map("regex_replace", "\\sCT Desktop Adapter", "")
     | map("regex_replace", "\\s-?\\s+", " ")
+    | map("regex_replace", "(1 Gbit.*)\\s1 Gbit.*", "\\1")
     | list | to_yaml }}
     traffic:       '{{ item.product.traffic }}'
     network_speed: '{{ item.product.network_speed }}'
