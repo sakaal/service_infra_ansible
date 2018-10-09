@@ -78,6 +78,7 @@ server_market_value:
 
   nic:
     1 Gbit Broadcom BCM5720:                  0.0
+    1 Gbit Intel:                             1.0
     1 Gbit Intel 82541PI:                     1.0
     1 Gbit Intel 82574L:                      1.0
     1 Gbit Intel 82579LM:                     1.0
