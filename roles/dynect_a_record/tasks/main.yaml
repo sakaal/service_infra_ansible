@@ -25,8 +25,7 @@
       Auth-Token: "{{ dynect_session_token }}"
     return_content: yes
   register: dns_a_record
-  changed_when: "'{{ dns_a_record.json.data.rdata.address }}'
-                 != '{{ inventory_hostname }}'"
+  changed_when: dns_a_record.json.data.rdata.address != inventory_hostname
 
 #- name: Delete existing DNS A records
 #  when: dns_a_record is success

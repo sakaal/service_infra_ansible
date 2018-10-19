@@ -31,7 +31,7 @@
   become: yes
   command: firewall-offline-cmd --get-default-zone
   register: firewall_default
-  changed_when: not "{{ firewall_zone }}" in firewall_default.stdout
+  changed_when: not firewall_zone in firewall_default.stdout
   failed_when: False
 
 - name: Set the administrative firewall zone as default

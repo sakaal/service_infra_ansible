@@ -1,4 +1,4 @@
-# file: roles/ssh_bastion/tasks/main.yaml
+# file: roles/ssh_proxy/tasks/main.yaml
 ---
 
 - name: SSH user configuration directory
@@ -8,7 +8,7 @@
     dest: "{{ lookup('env', 'HOME') }}/.ssh/config.d"
     mode: 0700
 
-- name: SSH bastion host configuration
+- name: SSH proxy host configuration
   local_action:
     module: template
     src: "ssh_config_guests.j2"

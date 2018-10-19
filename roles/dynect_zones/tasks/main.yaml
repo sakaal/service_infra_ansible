@@ -15,9 +15,10 @@
   local_action:
     module: uri
     url: "{{ dynect_api_url }}/Zone/"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
-    return_content: True
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    return_content: yes
   register: available_zones
 
 #
@@ -25,13 +26,14 @@
 #
 - name: Create DNS zones
   with_items: "{{ groups['zone_defaults'] }}"
-  when: hostvars[item].dns_zone not in available_zones.json.data
+  when: ('/REST/Zone/' + hostvars[item].dns_zone + '/') not in available_zones.json.data
   local_action:
     module: uri
     method: "POST"
     url: "{{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}/"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
     body_format: "json"
     body:
       rname: "{{ hostvars[item].dns_soa_rname }}"
@@ -44,21 +46,23 @@
     module: uri
     url: "{{ dynect_api_url }}/ARecord/{{
           hostvars[item].dns_zone }}/{{ hostvars[item].dns_zone }}/"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
-    return_content: True
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
+    return_content: yes
   register: zone_a_record
 
 - name: Delete DNS zone default A records
   with_items: "{{ zone_a_record.results }}"
-  when: item|success and item.json.data
+  when: item is success and item.json.data
   local_action:
     module: uri
     method: "DELETE"
     url: "{{ dynect_api_url }}/ARecord/{{
           hostvars[item.item].dns_zone }}/{{ hostvars[item.item].dns_zone }}/"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
 
 #
 # DynECT ZoneAddNode user permission is required to add records. 
@@ -71,8 +75,9 @@
     url: "{{ dynect_api_url }}/ARecord/{{
           hostvars[item].dns_zone }}/{{
           hostvars[item].dns_zone }}/"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
     body_format: "json"
     body:
       rdata:
@@ -87,11 +92,12 @@
     module: uri
     url: "{{ dynect_api_url }}/Zone/{{ hostvars[item].dns_zone }}"
     method: "PUT"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
     body_format: "json"
     body:
-      publish: True
+      publish: yes
 
 #
 # DynECT DNSSECAdd user permission is required to enable DNSSEC.
@@ -102,8 +108,9 @@
     module: uri
     url: "{{ dynect_api_url }}/DNSSEC/{{ hostvars[item].dns_zone }}"
     method: "POST"
-    HEADER_Content-Type: "application/json"
-    HEADER_Auth-Token: "{{ dynect_session_token }}"
+    headers:
+      Content-Type: "application/json"
+      Auth-Token: "{{ dynect_session_token }}"
     body_format: "json"
     body:
       keys:

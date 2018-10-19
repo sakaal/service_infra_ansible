@@ -54,7 +54,6 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
     * Intermediate know-how of Linux virtualization
 1. [Service Commons configuration repository](https://github.com/sakaal/service_commons_ansible)
 1. Service Infrastructure configuration repository (this CMDB)
-1. [Bastion playbooks repository](https://github.com/sakaal/bastion_ansible)
 1. [Administrative Client System (ACS)](https://github.com/sakaal/admin_client_ansible)
    ready for use
 1. Account with the hosting provider (requires credit card)
@@ -65,10 +64,6 @@ Secure Domain Name System (DNS)   | http://www.dnssec.net/
 1. Another domain name to be publicly associated with your service instance
 1. Private [main configuration repository](https://github.com/sakaal/com.example_main_ansible)
    for the service operation stage (`com.example_main_ansible`)
-1. Private [bastion inventory repository](https://github.com/sakaal/com.example_bastion_ansible)
-   for controlling administrative access (`com.example_bastion_ansible`)
-    * Your ACS (or NAT) publicly visible IP addresses
-      added under `admin_access_sources`.
 1. Root access credentials and the IP addresses of one or more dedicated servers
 
 ### Domain name registration
@@ -175,23 +170,13 @@ Once you have the servers:
 
 1. Add the target host addresses to the `bootstrap` inventory.
 
-1. Copy the `host_vars/203.0.113.1.sample` to a file with
-   a name matching the inventory entry, and edit it to set
-   at least the `dns_zone` and `hostname`:
+1. Copy the `host_vars/203.0.113.1.sample` to a main.yaml file in a
+   directory with a name matching the inventory entry, and edit it to
+   set at least the `dns_zone` and `hostname`:
 
         cd service_infra_ansible/host_vars/
-        cp 203.0.113.1.sample 203.0.113.1
-
-### Administrative access via bastion hosts
-
-Service administrators need GnuPG keys to digitally sign changes
-committed to the bastion host configuration repository.
- * Add the administrative keys to your ACS keyring.
-
-Make sure that you have configured the bastion deployment key
-as instructed in the main repository (file `group_vars/all`).
- * Give the deployment key read-only access
-   to the bastion inventory repository.
+        mkdir 203.0.113.1
+        cp 203.0.113.1.sample 203.0.113.1/main.yaml
 
 ### Configuring the servers
 

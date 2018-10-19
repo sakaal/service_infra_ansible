@@ -16,9 +16,9 @@
   pre_tasks:
   - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yaml"
   roles:
-  - role: "{{ playbook_dir | dirname }}/service_commons_ansible/roles/admin_bastion"
-    tags: access
-  - role: ssh_bastion
+#  - role: "{{ playbook_dir | dirname }}/service_commons_ansible/roles/admin_bastion"
+#    tags: access
+  - role: ssh_proxy
     tags: access
   - hetzner_bridged_networking
   - linux_kvm
