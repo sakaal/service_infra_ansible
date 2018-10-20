@@ -6,8 +6,11 @@
 
 - name: Compare the target repository status with upstream
   run_once: yes
-  local_action: command chdir="{{ inventory_dir }}"
-                git rev-list HEAD@{upstream}..HEAD
+  args:
+    chdir: "{{ inventory_dir }}"
+  local_action:
+    module: command
+    _raw_params: git rev-list HEAD@{upstream}..HEAD
   register: repo_status
   changed_when: False
 
@@ -20,26 +23,36 @@
          by the following commit(s): {{ repo_status.stdout_lines | join(' ') }}
 
 - name: Ensure hypervisor target inventory group exists
-  local_action: lineinfile
-                dest="{{ inventory_dir }}/{{ target_ansible_inventory }}"
-                regexp="^\[{{ target_ansible_group }}\]"
-                line="[{{ target_ansible_group }}]"
-                state=present
+  local_action:
+    module: lineinfile
+    dest: "{{ inventory_dir }}/{{ target_ansible_inventory }}"
+    regexp: '^\[{{ target_ansible_group }}\]'
+    line: "[{{ target_ansible_group }}]"
+    state: present
 
 - name: Ensure hypervisor appears under the target inventory group
-  local_action: lineinfile dest="{{ inventory_dir }}/{{ target_ansible_inventory }}"
-                regexp="^{{ hostname }}" line="{{ hostname }}"
-                insertafter="^\[{{ target_ansible_group }}\]"
-                state=present
+  local_action:
+    module: lineinfile
+    dest: "{{ inventory_dir }}/{{ target_ansible_inventory }}"
+    regexp: "^{{ hostname }}"
+    line: "{{ hostname }}"
+    insertafter: '^\[{{ target_ansible_group }}\]'
+    state: present
 
 - name: Ensure target inventory host_vars directory exists
   run_once: yes
-  local_action: file state=directory path="{{ inventory_dir }}/host_vars"
+  local_action:
+    module: file
+    state: directory
+    path: "{{ inventory_dir }}/host_vars"
 
 - name: Add new hypervisor host_vars (retain existing)
-  local_action: template force=no backup=yes
-                src=libvirt_host_centos_host_vars.j2
-                dest="{{ inventory_dir }}/host_vars/{{ hostname }}"
+  local_action:
+    module: template
+    force: no
+    backup: yes
+    src: libvirt_host_centos_host_vars.j2
+    dest: "{{ inventory_dir }}/host_vars/{{ hostname }}"
 
 - name: Ensure guest target inventory group exists
   with_items: "{{ groups[ libvirt_guests_group ] }}"
@@ -47,7 +60,7 @@
     module: lineinfile
     force: no
     dest: "{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
-    regexp: "^\[{{ hostvars[item].target_ansible_group }}\]"
+    regexp: '^\[{{ hostvars[item].target_ansible_group }}\]'
     line: "[{{ hostvars[item].target_ansible_group }}]"
     state: present
 
@@ -58,7 +71,7 @@
     dest: "{{ inventory_dir }}/{{ hostvars[item].target_ansible_inventory }}"
     regexp: "^{{ item }}"
     line: "{{ item }}"
-    insertafter: "^\[{{ hostvars[item].target_ansible_group }}\]"
+    insertafter: '^\[{{ hostvars[item].target_ansible_group }}\]'
     state: present
 
 - name: Add new guest host_vars (retain existing)
