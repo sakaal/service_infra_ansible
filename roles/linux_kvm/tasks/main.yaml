@@ -17,6 +17,7 @@
   - libvirt
   - libvirt-python
   - virt-viewer
+  - virt-install
   - libguestfs-tools
   - avahi-dnsconfd
   yum:
