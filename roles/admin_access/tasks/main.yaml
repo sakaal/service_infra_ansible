@@ -113,7 +113,7 @@
   lineinfile:
     dest: /etc/ssh/sshd_config
     regexp: '^PermitRootLogin'
-    line: "PermitRootLogin no"
+    line: "PermitRootLogin forced-commands-only"
     state: present
   notify:
   - Restart sshd

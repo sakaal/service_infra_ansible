@@ -15,11 +15,13 @@
   hosts: libvirt_hosts
   pre_tasks:
   - include: "{{ playbook_dir | dirname }}/service_commons_ansible/tasks/group_distros.yaml"
+  - local_action:
+      module: include_role
+      name: ssh_proxy
+    tags: access
   roles:
 #  - role: "{{ playbook_dir | dirname }}/service_commons_ansible/roles/admin_bastion"
 #    tags: access
-  - role: ssh_proxy
-    tags: access
   - hetzner_bridged_networking
   - linux_kvm
   - libvirt_pools

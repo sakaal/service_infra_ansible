@@ -1,16 +1,23 @@
 # file: roles/ssh_proxy/tasks/main.yaml
 ---
 
+- name: Read the ansible_user_id getent passwd database
+  getent:
+    database: passwd
+    key: "{{ ansible_user_id }}"
+
+- name: Resolve home directory location
+  set_fact:
+    home_dir: "{{ getent_passwd[ansible_user_id][4] }}"
+
 - name: SSH user configuration directory
-  local_action:
-    module: file
+  file:
     state: directory
-    dest: "{{ lookup('env', 'HOME') }}/.ssh/config.d"
+    dest: "{{ home_dir }}/.ssh/config.d"
     mode: 0700
 
 - name: SSH proxy host configuration
-  local_action:
-    module: template
+  template:
     src: "ssh_config_guests.j2"
-    dest: "{{ lookup('env', 'HOME') }}/.ssh/config.d/{{ hostname }}_guests"
+    dest: "{{ home_dir }}/.ssh/config.d/{{ hostname }}_guests"
     mode: 0600
