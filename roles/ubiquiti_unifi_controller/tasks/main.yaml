@@ -59,10 +59,11 @@
 
 - name: Start and enable
   become: yes
-  service:
+  systemd:
     name: unifi
     state: started
     enabled: yes
+    daemon_reload: yes
 
 - name: Server IP
   with_items:
