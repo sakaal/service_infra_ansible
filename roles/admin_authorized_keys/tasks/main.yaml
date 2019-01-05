@@ -15,6 +15,7 @@
   ignore_errors: yes
 
 - name: Create the admin SSH account
+  become: yes
   user:
     name: "{{ admin_username }}"
     comment: "{{ admin_fullname }}"
@@ -27,6 +28,7 @@
 
 - name: Authorize SSH keys
   with_items: "{{ admin_authorized_keys | default([]) }}"
+  become: yes
   authorized_key:
     user: "{{ admin_username }}"
     key: "{{ item }}"
@@ -34,6 +36,7 @@
 
 - name: Revoke SSH keys
   with_items: "{{ admin_revoked_keys | default([]) }}"
+  become: yes
   authorized_key:
     user: "{{ admin_username }}"
     key: "{{ item }}"
