@@ -6,8 +6,12 @@
 ---
 
 - name: Wait for the server to boot in the rescue system
-  local_action: wait_for host={{ inventory_hostname }} port=22
-                state=started delay=20
+  local_action:
+    module: wait_for
+    host: "{{ inventory_hostname }}"
+    port: 22
+    state: started
+    delay: 20
 
 - name: Locate the latest CentOS image on the Hetzner rescue system
   local_action: command sshpass -p'{{ ansible_password }}'
@@ -22,7 +26,8 @@
     centos_image: "{{ centos_image.stdout_lines[0] }}"
 
 - name: Latest CentOS image available on the Hetzner rescue system
-  debug: var=centos_image
+  debug:
+    var: centos_image
 
 #
 # Storage partitioning
@@ -69,8 +74,16 @@
   set_fact:
     ansible_user: "root"
 
+- name: Local copy of the autosetup configuration file
+  local_action:
+    module: template
+    src: "autosetup.j2"
+    dest: "~/autosetup-{{ inventory_hostname }}"
+
 - name: Upload autosetup configuration file
-  template: src=autosetup.j2 dest=/autosetup
+  template:
+    src: "autosetup.j2"
+    dest: "/autosetup"
 
 #
 # Installing the operating system image. This step can take minutes to complete.
